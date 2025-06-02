@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบฟอร์มแจ้งซ่อมไฟฟ้าส่องสว่าง</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #F59E0B; /* Amber-500 (โทนส้ม-เหลือง) */
+            --primary-dark: #D97706; /* Amber-600 */
+            --primary-light: #FCD34D; /* Amber-300 */
+            --primary-lighter: #FEF3C7; /* Amber-100 */
+            --secondary-color: #4B5563; /* Cool Gray-600 */
+            --success-color: #10B981; /* Emerald-500 */
+            --danger-color: #EF4444; /* Red-500 */
+            --text-dark: #1F2937; /* Gray-800 */
+            --text-light: #ffffff;
+            --text-muted: #6B7280; /* Gray-500 */
+            --border-color: #D1D5DB; /* Gray-300 */
+            --input-bg: #F9FAFB; /* Gray-50 */
+            --body-bg: linear-gradient(135deg, #FEF3C7 0%, #FBBF24 100%); /* Amber gradient */
+            --card-bg: #ffffff;
+            --font-sans: 'Sarabun', sans-serif;
+            --radius-sm: 0.25rem;
+            --radius-md: 0.375rem;
+            --radius-lg: 0.5rem;
+            --radius-xl: 0.75rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--body-bg);
+            color: var(--text-dark);
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-weight: 400;
+        }
+
+        .form-container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .form-header h1 {
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .form-header .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        .form-header .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label.main-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .label-icon {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .form-input, 
+        .form-select, 
+        .form-textarea, 
+        .form-file-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-family: var(--font-sans);
+            font-weight: 400;
+            background-color: var(--input-bg);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus, 
+        .form-select:focus, 
+        .form-textarea:focus,
+        .form-file-input:focus {
+            border-color: var(--primary-color);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-input:hover,
+        .form-select:hover,
+        .form-textarea:hover {
+            border-color: var(--primary-light);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 3rem;
+            cursor: pointer;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: var(--font-sans);
+            line-height: 1.5;
+        }
+
+        .form-file-input {
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-file-input::-webkit-file-upload-button {
+            background-color: var(--primary-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            margin-right: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .form-file-input::-webkit-file-upload-button:hover {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .btn {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+            box-shadow: var(--shadow-md);
+            font-family: var(--font-sans);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: var(--text-light);
+            border: 2px solid transparent;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:disabled {
+            background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #374151 100%);
+            color: var(--text-light);
+            width: auto;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .location-display {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.75rem;
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            min-height: 2.5rem;
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 400;
+            transition: all 0.3s ease;
+        }
+
+        .location-display.has-location {
+            background: linear-gradient(135deg, var(--primary-lighter) 0%, #FDE68A 100%);
+            border-color: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        .image-preview-container {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: var(--radius-lg);
+            border: 3px solid var(--border-color);
+            object-fit: contain;
+            background-color: var(--input-bg);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+
+        .image-preview:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .message {
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.95rem;
+            position: relative;
+            border: 2px solid;
+        }
+
+        .message-success {
+            background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+            color: #065F46;
+            border-color: #34D399;
+        }
+
+        .message-error {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+            color: #991B1B;
+            border-color: #F87171;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .required-asterisk {
+            color: var(--danger-color);
+            margin-left: 3px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .form-section {
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-section-title {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 1.2rem;
+            height: 1.2rem;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            fill: currentColor;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 640px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+                border-radius: var(--radius-lg);
+            }
+            
+            .form-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .form-input, 
+            .form-select, 
+            .form-textarea {
+                padding: 0.875rem 1rem;
+            }
+        }
+
+        /* Animation for form appearance */
+        .form-container {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Improved focus states */
+        .form-group:focus-within .main-label {
+            color: var(--primary-color);
+        }
+
+        /* Success state for completed fields */
+        .form-input.filled,
+        .form-select.filled,
+        .form-textarea.filled {
+            border-color: var(--success-color);
+            background-color: #F0FDF4;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <div class="icon">💡⚡</div>
+            <h1>แบบฟอร์มแจ้งซ่อมไฟฟ้าส่องสว่าง</h1>
+            <div class="subtitle">องค์การบริหารส่วนตำบลข่าใหญ่</div>
+        </div>
+
+        <div id="messageArea" class="message hidden"></div>
+
+        <form id="repairRequestForm">
+            <input type="hidden" id="lineUserId" name="lineUserId">
+
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span>🗼</span> ข้อมูลตำแหน่งและเสาไฟฟ้า
+                </div>
+
+                <div class="form-group">
+                    <label for="poleId" class="main-label">
+                        <span class="label-icon">🏷️</span>
+                        รหัสเสาไฟฟ้า (ถ้าทราบ)
+                    </label>
+                    <input type="text" id="poleId" name="poleId" class="form-input" 
+                           placeholder="เช่น P-123, หรือเว้นว่างหากไม่ทราบ">
+                </div>
+
+                <div class="form-group">
+                    <label class="main-label">
+                        <span class="label-icon">📍</span>
+                        ตำแหน่งที่ตั้ง/จุดสังเกต
+                    </label>
+                    <button type="button" id="getLocationBtn" class="btn btn-secondary">
+                        <span>📍</span> จดจำตำแหน่งปัจจุบัน
+                    </button>
+                    <div id="locationDisplay" class="location-display">
+                        <span>📍</span> ยังไม่ได้ระบุตำแหน่ง (แตะปุ่มด้านบนเพื่อระบุพิกัด)
+                    </div>
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span>⚡</span> รายละเอียดปัญหา
+                </div>
+
+                <div class="form-group">
+                    <label for="problemTypeSelect" class="main-label">
+                        <span class="label-icon">🔧</span>
+                        อาการที่เสีย / ลักษณะปัญหา
+                        <span class="required-asterisk">*</span>
+                    </label>
+                    <select id="problemTypeSelect" name="problemTypeSelect" class="form-select" required>
+                        <option value="">-- โปรดเลือกอาการที่พบ --</option>
+                        <option value="ไฟดับ/ไม่ติด">💡 ไฟดับ/ไม่ติด</option>
+                        <option value="หลอดไฟกระพริบ">⚡ หลอดไฟกระพริบ</option>
+                        <option value="หลอดไฟแตก/ชำรุด">💥 หลอดไฟแตก/ชำรุด</option>
+                        <option value="เสาไฟเอียง/ล้ม">📐 เสาไฟเอียง/ล้ม</option>
+                        <option value="สายไฟขาด/ชำรุด">🔌 สายไฟขาด/ชำรุด</option>
+                        <option value="อื่นๆ">📝 อื่นๆ (โปรดระบุ)</option>
+                    </select>
+                    <textarea id="problemDescriptionOther" name="problemDescriptionOther" 
+                              class="form-textarea hidden" 
+                              placeholder="โปรดระบุอาการอื่นๆ โดยละเอียด..." 
+                              style="margin-top: 0.75rem;"></textarea>
+                    <input type="hidden" id="problemDescription" name="problemDescription">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span>📷</span> รูปภาพประกอบ
+                </div>
+
+                <div class="form-group">
+                    <label for="photoUpload" class="main-label">
+                        <span class="label-icon">🖼️</span>
+                        อัปโหลดรูปภาพ (ถ้ามี)
+                    </label>
+                    <input type="file" id="photoUpload" name="photoUpload" 
+                           class="form-file-input" accept="image/*">
+                    <div class="image-preview-container">
+                        <img id="imagePreview" src="#" alt="ตัวอย่างรูปภาพ" class="image-preview hidden"/>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn btn-primary">
+                <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
+                </svg>
+                ส่งข้อมูลการแจ้งซ่อม
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('repairRequestForm');
+        const poleIdInput = document.getElementById('poleId');
+        const getLocationBtn = document.getElementById('getLocationBtn');
+        const locationDisplay = document.getElementById('locationDisplay');
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        
+        const problemTypeSelect = document.getElementById('problemTypeSelect');
+        const problemDescriptionOtherTextarea = document.getElementById('problemDescriptionOther');
+        const finalProblemDescriptionInput = document.getElementById('problemDescription'); 
+
+        const photoUploadInput = document.getElementById('photoUpload');
+        const imagePreview = document.getElementById('imagePreview');
+        const lineUserIdInput = document.getElementById('lineUserId');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageArea = document.getElementById('messageArea');
+
+        // ดึง userId จาก URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        if (userId) {
+            lineUserIdInput.value = userId;
+        } else {
+            showMessage('ไม่พบข้อมูลผู้ใช้ LINE กรุณาเริ่มจากใน LINE Bot', 'error');
+            submitBtn.disabled = true;
+        }
+
+        // จัดการการดึงตำแหน่งปัจจุบัน
+        getLocationBtn.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                locationDisplay.innerHTML = '<span>🔄</span> กำลังค้นหาตำแหน่ง...';
+                getLocationBtn.disabled = true;
+                getLocationBtn.innerHTML = '<div class="loading-spinner"></div> กำลังดึงตำแหน่ง...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude.toFixed(6);
+                        const lon = position.coords.longitude.toFixed(6);
+                        latitudeInput.value = lat;
+                        longitudeInput.value = lon;
+                        
+                        locationDisplay.innerHTML = `<span>✅</span> ละติจูด: ${lat}, ลองจิจูด: ${lon}`;
+                        locationDisplay.classList.add('has-location');
+                        
+                        getLocationBtn.disabled = false;
+                        getLocationBtn.innerHTML = '<span>📍</span> จดจำตำแหน่งปัจจุบัน';
+                    },
+                    (error) => {
+                        console.error("Error getting location:", error);
+                        let errorMsg = '<span>❌</span> ไม่สามารถดึงตำแหน่งได้: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED: 
+                                errorMsg += "ผู้ใช้ปฏิเสธการเข้าถึงตำแหน่ง"; 
+                                break;
+                            case error.POSITION_UNAVAILABLE: 
+                                errorMsg += "ข้อมูลตำแหน่งไม่พร้อมใช้งาน"; 
+                                break;
+                            case error.TIMEOUT: 
+                                errorMsg += "หมดเวลาในการร้องขอตำแหน่ง"; 
+                                break;
+                            default: 
+                                errorMsg += "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ"; 
+                                break;
+                        }
+                        locationDisplay.innerHTML = errorMsg;
+                        getLocationBtn.disabled = false;
+                        getLocationBtn.innerHTML = '<span>📍</span> จดจำตำแหน่งปัจจุบัน';
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                locationDisplay.innerHTML = "<span>❌</span> เบราว์เซอร์นี้ไม่รองรับ Geolocation";
+            }
+        });
+
+        // จัดการการแสดงตัวอย่างรูปภาพ
+        photoUploadInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    showMessage('ขนาดไฟล์รูปภาพใหญ่เกินไป (สูงสุด 5MB)', 'error');
+                    this.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                    photoUploadInput.classList.add('filled');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.src = "#";
+                imagePreview.classList.add('hidden');
+                photoUploadInput.classList.remove('filled');
+            }
+        });
+
+        // จัดการการเลือกประเภทปัญหา
+        problemTypeSelect.addEventListener('change', function() {
+            if (this.value === 'อื่นๆ') {
+                problemDescriptionOtherTextarea.classList.remove('hidden');
+                problemDescriptionOtherTextarea.required = true;
+                problemDescriptionOtherTextarea.focus();
+            } else {
+                problemDescriptionOtherTextarea.classList.add('hidden');
+                problemDescriptionOtherTextarea.required = false;
+                problemDescriptionOtherTextarea.value = ''; 
+            }
+            
+            if (this.value) {
+                this.classList.add('filled');
+            } else {
+                this.classList.remove('filled');
+            }
+        });
+
+        // เพิ่ม event listener สำหรับ input fields เพื่อแสดง filled state
+        [poleIdInput, problemDescriptionOtherTextarea].forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.add('filled');
+                } else {
+                    this.classList.remove('filled');
+                }
+            });
+        });
+
+        // จัดการการส่งฟอร์ม
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            if (!userId) {
+                showMessage('ข้อผิดพลาด: ไม่พบ User ID กรุณาเข้าผ่าน LINE Bot', 'error');
+                return;
+            }
+
+            // ตรวจสอบการเลือกประเภทปัญหา
+            let problemDescriptionValue = '';
+            if (problemTypeSelect.value === '') {
+                 showMessage('กรุณาเลือกอาการที่เสีย / ลักษณะปัญหา', 'error');
+                 problemTypeSelect.focus();
+                 problemTypeSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                 return;
+            }
+            
+            if (problemTypeSelect.value === 'อื่นๆ') {
+                problemDescriptionValue = problemDescriptionOtherTextarea.value.trim();
+                if (!problemDescriptionValue) {
+                    showMessage('กรุณาระบุอาการที่เสียในช่อง "อื่นๆ"', 'error');
+                    problemDescriptionOtherTextarea.focus();
+                    problemDescriptionOtherTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+            } else {
+                problemDescriptionValue = problemTypeSelect.value;
+            }
+            
+            finalProblemDescriptionInput.value = problemDescriptionValue; 
+
+            // ปิดใช้งานปุ่มส่งและแสดงสถานะกำลังส่ง
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading-spinner"></div> กำลังส่งข้อมูล...';
+
+            // เตรียมข้อมูลสำหรับส่ง
+            const formDataForSubmission = {
+                lineUserId: userId,
+                poleId: poleIdInput.value.trim() || null,
+                latitude: latitudeInput.value || null,
+                longitude: longitudeInput.value || null,
+                problemDescription: problemDescriptionValue,
+                photoBase64: null
+            };
+
+            // แปลงรูปภาพเป็น Base64 ถ้ามี
+            const photoFile = photoUploadInput.files[0];
+            if (photoFile) {
+                try {
+                    formDataForSubmission.photoBase64 = await toBase64(photoFile);
+                } catch (error) {
+                    console.error("Error converting image to Base64:", error);
+                    showMessage('เกิดข้อผิดพลาดในการประมวลผลรูปภาพ', 'error');
+                    resetSubmitButton();
+                    return;
+                }
+            }
+
+            // ส่งข้อมูลไปยัง API
+            try {
+                const response = await fetch('/api/repair-form-submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formDataForSubmission),
+                });
+                
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    showMessage(`✅ ส่งข้อมูลสำเร็จ! เลขที่การแจ้งซ่อม: ${result.requestId || 'กำลังสร้าง'}\n\nกรุณากลับไปที่แอปพลิเคชัน LINE เพื่อดูข้อมูลการแจ้งซ่อม`, 'success');
+                    
+                    // รีเซ็ตฟอร์ม
+                    form.reset(); 
+                    imagePreview.classList.add('hidden');
+                    problemDescriptionOtherTextarea.classList.add('hidden');
+                    problemDescriptionOtherTextarea.required = false;
+                    locationDisplay.innerHTML = '<span>📍</span> ยังไม่ได้ระบุตำแหน่ง (แตะปุ่มด้านบนเพื่อระบุพิกัด)';
+                    locationDisplay.classList.remove('has-location');
+                    
+                    // ลบ filled class
+                    document.querySelectorAll('.filled').forEach(el => el.classList.remove('filled'));
+                    
+                    // Auto-close ถ้าเป็น LIFF
+                    setTimeout(() => { 
+                        if (typeof liff !== 'undefined' && liff.isInClient()) {
+                            liff.closeWindow(); 
+                        }
+                    }, 3000);
+                } else {
+                    showMessage(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล', 'error');
+                }
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showMessage('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message, 'error');
+            } finally {
+                resetSubmitButton();
+            }
+        });
+
+        // ฟังก์ชันรีเซ็ตปุ่มส่ง
+        function resetSubmitButton() {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `
+                <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
+                </svg>
+                ส่งข้อมูลการแจ้งซ่อม`;
+        }
+
+        // ฟังก์ชันแปลงไฟล์เป็น Base64
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // ฟังก์ชันแสดงข้อความ
+        function showMessage(text, type) {
+            messageArea.textContent = text;
+            messageArea.className = 'message';
+            messageArea.classList.add(type === 'success' ? 'message-success' : 'message-error');
+            messageArea.classList.remove('hidden');
+            messageArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // ซ่อนข้อความหลังจาก 10 วินาที สำหรับข้อความแสดงข้อผิดพลาด
+            if (type === 'error') {
+                setTimeout(() => {
+                    messageArea.classList.add('hidden');
+                }, 10000);
+            }
+        }
+    </script>
+</body>
+</html>

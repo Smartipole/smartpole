@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ เข้าสู่ระบบ - อบต.ข่าใหญ่</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .login-container {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.8));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+            position: relative;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(251, 191, 36, 0.05), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            pointer-events: none;
+        }
+
+        .login-container:hover::before {
+            animation: shine 2s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            color: #0f172a;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23000000" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23000000" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23000000" opacity="0.15"/><circle cx="80" cy="40" r="0.5" fill="%23000000" opacity="0.15"/><circle cx="20" cy="60" r="0.5" fill="%23000000" opacity="0.15"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.2), rgba(15, 23, 42, 0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(15, 23, 42, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: pulse-glow 3s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+            }
+            50% { 
+                transform: scale(1.05); 
+                box-shadow: 0 12px 40px rgba(15, 23, 42, 0.4); 
+            }
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .login-subtitle {
+            font-size: 1.1rem;
+            color: #374151;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-form {
+            padding: 2.5rem 2rem;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fbbf24;
+            margin-bottom: 0.75rem;
+            transition: color 0.3s;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3.5rem;
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(15, 23, 42, 0.5);
+            color: #f8fafc;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            background: rgba(15, 23, 42, 0.7);
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .form-input:focus + .form-label {
+            color: #fbbf24;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fbbf24;
+            font-size: 1.25rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .form-input:focus ~ .input-icon {
+            color: #f59e0b;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            color: #0f172a;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .loading-spinner {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 3px solid rgba(15, 23, 42, 0.3);
+            border-top: 3px solid #0f172a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .role-selection {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.3), rgba(30, 41, 59, 0.2));
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-top: 1rem;
+            border: 2px solid rgba(251, 191, 36, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .role-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .role-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .role-option {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(51, 65, 85, 0.4));
+            border: 2px solid rgba(251, 191, 36, 0.2);
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-option::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
+        }
+
+        .role-option:hover {
+            border-color: #fbbf24;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(30, 41, 59, 0.6));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
+        }
+
+        .role-option:hover::before {
+            opacity: 1;
+            animation: shine 0.8s ease-in-out;
+        }
+
+        .role-option.selected {
+            border-color: #fbbf24;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(251, 191, 36, 0.4);
+        }
+
+        .role-option.selected .role-icon {
+            background: rgba(15, 23, 42, 0.2);
+            color: #0f172a;
+            transform: scale(1.1);
+        }
+
+        .role-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1));
+            transition: all 0.3s ease;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .role-info h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: inherit;
+        }
+
+        .role-info p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            color: inherit;
+            line-height: 1.4;
+        }
+
+        .proceed-btn {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .proceed-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .proceed-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            background: rgba(148, 163, 184, 0.5);
+            box-shadow: none;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #fca5a5;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            backdrop-filter: blur(10px);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #86efac;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .logout-message {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #86efac;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .info-message {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #93c5fd;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: #f8fafc;
+        }
+
+        .loading-content {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+            padding: 3rem;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            backdrop-filter: blur(20px);
+        }
+
+        .loading-spinner-large {
+            width: 4rem;
+            height: 4rem;
+            border: 4px solid rgba(251, 191, 36, 0.3);
+            border-top: 4px solid #fbbf24;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        .redirect-info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 1rem 0;
+            text-align: center;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .redirect-info h4 {
+            color: #fbbf24;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .redirect-info p {
+            color: #93c5fd;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            body {
+                padding: 0.75rem;
+            }
+            
+            .login-container {
+                max-width: none;
+                margin: 0.5rem;
+            }
+            
+            .login-header {
+                padding: 2rem 1.5rem;
+            }
+            
+            .login-form {
+                padding: 2rem 1.5rem;
+            }
+
+            .logo {
+                width: 75px;
+                height: 75px;
+            }
+
+            .logo-text {
+                font-size: 2rem;
+            }
+
+            .login-title {
+                font-size: 1.7rem;
+            }
+
+            .role-option {
+                padding: 1.25rem;
+            }
+
+            .role-icon {
+                width: 3rem;
+                height: 3rem;
+                font-size: 1.5rem;
+                margin-right: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 0.25rem;
+            }
+
+            .login-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .login-form {
+                padding: 1.5rem 1rem;
+            }
+
+            .logo {
+                width: 65px;
+                height: 65px;
+            }
+
+            .logo-text {
+                font-size: 1.8rem;
+            }
+
+            .login-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus visible for better accessibility */
+        .login-btn:focus-visible,
+        .proceed-btn:focus-visible,
+        .role-option:focus-visible {
+            outline: 2px solid #fbbf24;
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .login-container {
+                border: 2px solid #fbbf24;
+            }
+            
+            .form-input {
+                border-width: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Header -->
+        <div class="login-header">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-text">⚡</div>
+                </div>
+                <h1 class="login-title">
+                    🏛️ ระบบจัดการ
+                </h1>
+                <p class="login-subtitle">อบต.ข่าใหญ่ - ส่องสว่างทุกมุมเมือง</p>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="login-form">
+            <!-- Logout/Info Messages -->
+            <div id="logoutMessage" class="logout-message hidden">
+                <span style="font-size: 1.2rem;">✅</span>
+                <span id="logoutText"></span>
+            </div>
+
+            <div id="infoMessage" class="info-message hidden">
+                <span style="font-size: 1.2rem;">ℹ️</span>
+                <span id="infoText"></span>
+            </div>
+
+            <div id="errorMessage" class="error-message hidden">
+                <span style="font-size: 1.2rem;">⚠️</span>
+                <span id="errorText"></span>
+            </div>
+
+            <div id="successMessage" class="success-message hidden">
+                <span style="font-size: 1.2rem;">✅</span>
+                <span id="successText"></span>
+            </div>
+
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label class="form-label">👤 ชื่อผู้ใช้</label>
+                    <div style="position: relative;">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form-input" 
+                            placeholder="กรอกชื่อผู้ใช้งาน"
+                            required
+                            autocomplete="username"
+                        >
+                        <div class="input-icon">👤</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🔒 รหัสผ่าน</label>
+                    <div style="position: relative;">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="กรอกรหัสผ่าน"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <div class="input-icon">🔒</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <div class="btn-content">
+                        <span id="loginBtnText">⚡ เข้าสู่ระบบ</span>
+                        <div id="loginSpinner" class="loading-spinner hidden"></div>
+                    </div>
+                </button>
+            </form>
+
+            <div class="footer-text">
+                🔐 กรอกชื่อผู้ใช้และรหัสผ่าน<br>
+                ระบบจะนำคุณไปหน้าที่เหมาะสมอัตโนมัติ ⚡
+            </div>
+        </div>
+
+        <!-- Role Selection (for admin) -->
+        <div id="roleSelection" class="login-form hidden">
+            <div class="role-selection">
+                <div class="role-title">
+                    🎯 เลือกระบบที่ต้องการเข้าใช้งาน
+                </div>
+                
+                <div class="role-options">
+                    <div class="role-option" data-target="admin" onclick="selectRole('admin')" tabindex="0">
+                        <div class="role-icon">⚙️</div>
+                        <div class="role-info">
+                            <h3>ระบบผู้ดูแลระบบ</h3>
+                            <p>จัดการผู้ใช้ ระบบ และข้อมูลทั้งหมด พร้อม Dashboard และรายงาน</p>
+                        </div>
+                    </div>
+                    
+                    <div class="role-option" data-target="executive" onclick="selectRole('executive')" tabindex="0">
+                        <div class="role-icon">👑</div>
+                        <div class="role-info">
+                            <h3>ระบบผู้บริหาร</h3>
+                            <p>อนุมัติคำขอแจ้งซ่อม ลงลายเซ็นดิจิทัล และติดตามสถานะงาน</p>
+                        </div>
+                    </div>
+                    
+                    <div class="role-option" data-target="technician" onclick="selectRole('technician')" tabindex="0">
+                        <div class="role-icon">🔧</div>
+                        <div class="role-info">
+                            <h3>ระบบช่างเทคนิค</h3>
+                            <p>จัดการงานซ่อม คลังอุปกรณ์ เสาไฟฟ้า และอัปเดตสถานะงาน</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="proceed-btn" id="proceedBtn" onclick="proceedToSystem()" disabled>
+                    🚀 เข้าสู่ระบบ
+                </button>
+            </div>
+        </div>
+
+        <!-- Redirect Info -->
+        <div id="redirectInfo" class="login-form hidden">
+            <div class="redirect-info">
+                <h4 id="redirectTitle">⚡ กำลังนำคุณเข้าสู่ระบบ...</h4>
+                <p id="redirectMessage">โปรดรอสักครู่</p>
+            </div>
+            
+            <div style="text-align: center; margin: 2rem 0;">
+                <div class="loading-spinner-large"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loading-spinner-large"></div>
+            <h3 style="margin-bottom: 0.75rem; color: #fbbf24; font-size: 1.3rem;">🔍 กำลังตรวจสอบข้อมูล</h3>
+            <p style="color: #94a3b8;">โปรดรอสักครู่...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let selectedRole = null;
+
+        // API Base URL
+        const API_BASE = '';
+
+        // System URLs
+        const SYSTEM_URLS = {
+            executive: '/admin/mobile-executive.html',
+            technician: '/admin/mobile-technician.html',
+            admin: '/admin/mobile-admin.html'
+        };
+
+        // Role display names
+        const ROLE_NAMES = {
+            executive: 'ผู้บริหาร',
+            technician: 'ช่างเทคนิค',
+            admin: 'ผู้ดูแลระบบ'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            handleUrlParameters();
+            checkExistingSession();
+        });
+
+        function setupEventListeners() {
+            // Login form submission
+            document.getElementById('loginFormElement').addEventListener('submit', handleLogin);
+            
+            // Enter key in password field
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin(e);
+                }
+            });
+
+            // Keyboard navigation for role options
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const role = this.getAttribute('data-target');
+                        selectRole(role);
+                    }
+                });
+            });
+        }
+
+        function handleUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Handle logout message
+            const message = urlParams.get('message');
+            if (message) {
+                const decodedMessage = decodeURIComponent(message);
+                showLogoutMessage(decodedMessage);
+                
+                // Clear URL parameters without refreshing page
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+            
+            // Handle session expired
+            const sessionExpired = urlParams.get('session');
+            if (sessionExpired === 'expired') {
+                showInfoMessage('⏰ เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
+                
+                // Clear URL parameters
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+            
+            // Handle access denied
+            const accessDenied = urlParams.get('access');
+            if (accessDenied === 'denied') {
+                showError('🚫 คุณไม่มีสิทธิ์เข้าถึงหน้าที่ร้องขอ');
+                
+                // Clear URL parameters
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        }
+
+        async function checkExistingSession() {
+            // Check for existing sessions
+            const executiveToken = localStorage.getItem('executive_token');
+            const technicianToken = localStorage.getItem('technician_token');
+            
+            // Function to validate and redirect to existing session
+            const validateAndRedirect = (token, userKey, systemUrl, systemName) => {
+                const userData = localStorage.getItem(userKey);
+                if (userData) {
+                    try {
+                        const user = JSON.parse(userData);
+                        
+                        // Check if token is expired (simple check)
+                        try {
+                            const tokenParts = token.split('.');
+                            if (tokenParts.length === 3) {
+                                const payload = JSON.parse(atob(tokenParts[1]));
+                                const now = Math.floor(Date.now() / 1000);
+                                
+                                if (payload.exp && payload.exp < now) {
+                                    // Token expired, clear session
+                                    localStorage.removeItem('executive_token');
+                                    localStorage.removeItem('executive_user');
+                                    localStorage.removeItem('technician_token');
+                                    localStorage.removeItem('technician_user');
+                                    showInfoMessage('⏰ เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
+                                    return false;
+                                }
+                            }
+                        } catch (e) {
+                            // If token parsing fails, clear session
+                            localStorage.removeItem('executive_token');
+                            localStorage.removeItem('executive_user');
+                            localStorage.removeItem('technician_token');
+                            localStorage.removeItem('technician_user');
+                            return false;
+                        }
+                        
+                        // Valid session found, redirect
+                        showRedirectInfo(systemName.toLowerCase(), user.role);
+                        setTimeout(() => {
+                            window.location.href = systemUrl;
+                        }, 2000);
+                        return true;
+                    } catch (e) {
+                        // Invalid user data, clear session
+                        localStorage.removeItem(userKey);
+                        localStorage.removeItem(userKey.replace('_user', '_token'));
+                    }
+                }
+                return false;
+            };
+            
+            // Check executive session first
+            if (executiveToken) {
+                if (validateAndRedirect(executiveToken, 'executive_user', SYSTEM_URLS.executive, 'executive')) {
+                    return;
+                }
+            }
+            
+            // Check technician session
+            if (technicianToken) {
+                if (validateAndRedirect(technicianToken, 'technician_user', SYSTEM_URLS.technician, 'technician')) {
+                    return;
+                }
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                showError('❌ กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
+                return;
+            }
+            
+            setLoginLoading(true);
+            hideMessages();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentUser = {
+                        username: data.username,
+                        role: data.role,
+                        token: data.token
+                    };
+                    
+                    showSuccess(`🎉 เข้าสู่ระบบสำเร็จ! สวัสดี ${ROLE_NAMES[data.role] || 'ผู้ใช้'} ${data.username}`);
+                    
+                    // Determine target system based on role
+                    await determineTargetSystem(data.role);
+                } else {
+                    showError(data.message || '❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('⚠️ เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองอีกครั้ง');
+            } finally {
+                setLoginLoading(false);
+            }
+        }
+
+        async function determineTargetSystem(role) {
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Show success message briefly
+            
+            switch (role) {
+                case 'executive':
+                    redirectToSystem('executive', role);
+                    break;
+                    
+                case 'technician':
+                    redirectToSystem('technician', role);
+                    break;
+                    
+                case 'admin':
+                    // Admin can access all systems - show selection
+                    showRoleSelection();
+                    break;
+                    
+                default:
+                    showError('🚫 ไม่พบสิทธิ์การเข้าถึงระบบ กรุณาติดต่อผู้ดูแลระบบ');
+            }
+        }
+
+        function showRoleSelection() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('roleSelection').classList.remove('hidden');
+        }
+
+        function selectRole(role) {
+            selectedRole = role;
+            
+            // Update UI
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            document.querySelector(`[data-target="${role}"]`).classList.add('selected');
+            document.getElementById('proceedBtn').disabled = false;
+
+            // Add haptic feedback for mobile
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        function proceedToSystem() {
+            if (!selectedRole || !currentUser) {
+                showError('❌ กรุณาเลือกระบบที่ต้องการเข้าใช้งาน');
+                return;
+            }
+            
+            redirectToSystem(selectedRole, currentUser.role);
+        }
+
+        function redirectToSystem(targetSystem, userRole) {
+            // Save session data based on target system
+            const userData = {
+                username: currentUser.username,
+                role: userRole
+            };
+            
+            if (targetSystem === 'executive') {
+                localStorage.setItem('executive_token', currentUser.token);
+                localStorage.setItem('executive_user', JSON.stringify(userData));
+                // Clear other sessions
+                localStorage.removeItem('technician_token');
+                localStorage.removeItem('technician_user');
+            } else if (targetSystem === 'technician') {
+                localStorage.setItem('technician_token', currentUser.token);
+                localStorage.setItem('technician_user', JSON.stringify(userData));
+                // Clear other sessions
+                localStorage.removeItem('executive_token');
+                localStorage.removeItem('executive_user');
+            } else if (targetSystem === 'admin') {
+                // For admin, we can use either executive or technician token
+                // Let's use executive token for admin dashboard access
+                localStorage.setItem('executive_token', currentUser.token);
+                localStorage.setItem('executive_user', JSON.stringify(userData));
+                // Clear technician session
+                localStorage.removeItem('technician_token');
+                localStorage.removeItem('technician_user');
+            }
+            
+            // Show redirect info
+            showRedirectInfo(targetSystem, userRole);
+            
+            // Redirect after delay
+            setTimeout(() => {
+                window.location.href = SYSTEM_URLS[targetSystem];
+            }, 3000);
+        }
+
+        function showRedirectInfo(targetSystem, userRole) {
+            const systemNames = {
+                executive: 'ระบบผู้บริหาร',
+                technician: 'ระบบช่างเทคนิค',
+                admin: 'ระบบผู้ดูแลระบบ'
+            };
+            
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('roleSelection').classList.add('hidden');
+            document.getElementById('redirectInfo').classList.remove('hidden');
+            
+            document.getElementById('redirectTitle').innerHTML = 
+                `⚡ กำลังเข้าสู่${systemNames[targetSystem]}`;
+            document.getElementById('redirectMessage').innerHTML = 
+                `🎯 สวัสดี ${ROLE_NAMES[userRole]} ${currentUser?.username || ''}<br>กำลังโหลดระบบ...`;
+        }
+
+        function setLoginLoading(loading) {
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('loginBtnText');
+            const spinner = document.getElementById('loginSpinner');
+            
+            btn.disabled = loading;
+            
+            if (loading) {
+                btnText.textContent = '🔍 กำลังตรวจสอบ...';
+                spinner.classList.remove('hidden');
+            } else {
+                btnText.textContent = '⚡ เข้าสู่ระบบ';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function showError(message) {
+            hideMessages();
+            document.getElementById('errorText').innerHTML = message;
+            document.getElementById('errorMessage').classList.remove('hidden');
+            
+            // Haptic feedback for error
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+            }
+            
+            // Auto-hide after 6 seconds
+            setTimeout(() => {
+                document.getElementById('errorMessage').classList.add('hidden');
+            }, 6000);
+        }
+
+        function showSuccess(message) {
+            hideMessages();
+            document.getElementById('successText').innerHTML = message;
+            document.getElementById('successMessage').classList.remove('hidden');
+
+            // Haptic feedback for success
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+        }
+
+        function showLogoutMessage(message) {
+            hideMessages();
+            document.getElementById('logoutText').innerHTML = message;
+            document.getElementById('logoutMessage').classList.remove('hidden');
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                document.getElementById('logoutMessage').classList.add('hidden');
+            }, 10000);
+        }
+
+        function showInfoMessage(message) {
+            hideMessages();
+            document.getElementById('infoText').innerHTML = message;
+            document.getElementById('infoMessage').classList.remove('hidden');
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                document.getElementById('infoMessage').classList.add('hidden');
+            }, 10000);
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+            document.getElementById('logoutMessage').classList.add('hidden');
+            document.getElementById('infoMessage').classList.add('hidden');
+        }
+
+        // Auto-focus username field
+        window.addEventListener('load', function() {
+            document.getElementById('username').focus();
+        });
+
+        // Handle escape key to clear form
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (!document.getElementById('loginForm').classList.contains('hidden')) {
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('username').focus();
+                    hideMessages();
+                }
+            }
+        });
+
+        // Add some visual feedback for better UX
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add focus effect to form inputs
+            const inputs = document.querySelectorAll('.form-input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-1px)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Show welcome message briefly
+            setTimeout(() => {
+                if (!document.querySelector('.logout-message:not(.hidden)') && 
+                    !document.querySelector('.info-message:not(.hidden)')) {
+                    showToast('🌟 ยินดีต้อนรับสู่ระบบจัดการ อบต.ข่าใหญ่', 'info');
+                }
+            }, 1000);
+        });
+
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                info: '#3b82f6',
+                warning: '#f59e0b'
+            };
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; 
+                top: 2rem; 
+                right: 2rem; 
+                background: ${colors[type]}; 
+                color: white; 
+                padding: 1rem 1.5rem; 
+                border-radius: 0.75rem; 
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+                z-index: 1000; 
+                max-width: 350px; 
+                font-size: 0.9rem;
+                font-weight: 500;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                backdrop-filter: blur(10px);
+            `;
+            toast.innerHTML = message;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

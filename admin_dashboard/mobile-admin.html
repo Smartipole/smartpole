@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ ระบบผู้ดูแลแจ้งซ่อมไฟฟ้า - อบต.ข่าใหญ่</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-icon {
+            font-size: 2.5rem;
+            color: #0f172a;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.1); filter: brightness(1.2); }
+        }
+
+        .header-title {
+            color: #0f172a;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header-subtitle {
+            color: #374151;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: rgba(15, 23, 42, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .header-user:hover {
+            background: rgba(15, 23, 42, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            color: #374151;
+            font-size: 0.8rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            padding-bottom: 6rem;
+        }
+
+        /* Stats Grid */
+        .stats-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            font-size: 2rem;
+            color: #f59e0b;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+        }
+
+        .stat-card:hover::before {
+            animation: shine 0.6s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .stat-icon.electric { color: #fbbf24; }
+        .stat-icon.users { color: #3b82f6; }
+        .stat-icon.requests { color: #10b981; }
+        .stat-icon.inventory { color: #f97316; }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fbbf24;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.3);
+            border-color: rgba(251, 191, 36, 0.6);
+        }
+
+        .action-card.requests {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .action-card.users {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .action-card.reports {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.1));
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .action-card.settings {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .action-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .action-card.requests .action-icon { color: #10b981; }
+        .action-card.users .action-icon { color: #3b82f6; }
+        .action-card.reports .action-icon { color: #8b5cf6; }
+        .action-card.settings .action-icon { color: #ef4444; }
+
+        .action-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-description {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Recent Activity */
+        .activity-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .activity-list {
+            space-y: 1rem;
+        }
+
+        .activity-item {
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 0.75rem;
+            border-left: 4px solid #fbbf24;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: rgba(15, 23, 42, 0.5);
+            transform: translateX(8px);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .activity-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .activity-status.pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .activity-status.approved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .activity-status.completed {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .activity-description {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(251, 191, 36, 0.3);
+            padding: 1rem 0.5rem;
+            display: flex;
+            justify-content: space-around;
+            z-index: 90;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .nav-item.active {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-item:hover:not(.active) {
+            color: #f8fafc;
+            background: rgba(248, 250, 252, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .modal-close:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .loading { opacity: 0.6; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .text-center { text-align: center; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-bottom: 6rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .header-title {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bottom-nav {
+                padding: 0.75rem 0.25rem;
+            }
+            
+            .nav-item {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.7rem;
+                min-width: 60px;
+            }
+            
+            .nav-icon {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="header-icon">⚡</div>
+                <div>
+                    <h1 class="header-title" id="pageTitle">ระบบผู้ดูแลแจ้งซ่อมไฟฟ้า</h1>
+                    <p class="header-subtitle">อบต.ข่าใหญ่ - ส่องสว่างทุกมุมเมือง</p>
+                </div>
+            </div>
+            <div class="header-user" onclick="showProfileModal()">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="user-role" id="userRole">ผู้ดูแลระบบ</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage">
+                <!-- Stats Section -->
+                <section class="stats-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">📊</span>
+                        สถิติระบบ
+                    </h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-icon electric">⚡</span>
+                            <h3 class="stat-title">เสาไฟฟ้าทั้งหมด</h3>
+                            <div class="stat-value" id="totalPoles">-</div>
+                            <div class="stat-change">
+                                <span>📍</span>
+                                <span>ครอบคลุมทุกพื้นที่</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <span class="stat-icon requests">📋</span>
+                            <h3 class="stat-title">คำขอแจ้งซ่อม</h3>
+                            <div class="stat-value" id="totalRequests">-</div>
+                            <div class="stat-change">
+                                <span>📈</span>
+                                <span>อัปเดตล่าสุด</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <span class="stat-icon users">👥</span>
+                            <h3 class="stat-title">ผู้ใช้ระบบ</h3>
+                            <div class="stat-value" id="totalUsers">-</div>
+                            <div class="stat-change">
+                                <span>✅</span>
+                                <span>ผู้ใช้งานที่ลงทะเบียน</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <span class="stat-icon inventory">📦</span>
+                            <h3 class="stat-title">อุปกรณ์ในคลัง</h3>
+                            <div class="stat-value" id="totalInventory">-</div>
+                            <div class="stat-change">
+                                <span>🔧</span>
+                                <span>พร้อมใช้งาน</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Actions -->
+                <section class="quick-actions-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">⚡</span>
+                        การจัดการระบบ
+                    </h2>
+                    <div class="quick-actions">
+                        <div class="action-card requests" onclick="showRequestsPage()">
+                            <span class="action-icon">🔧</span>
+                            <h3 class="action-title">จัดการคำขอซ่อม</h3>
+                            <p class="action-description">ดู อนุมัติ และติดตามสถานะการแจ้งซ่อมไฟฟ้า พร้อมพิมพ์เอกสาร PDF</p>
+                        </div>
+                        
+                        <div class="action-card users" onclick="showUsersPage()">
+                            <span class="action-icon">👥</span>
+                            <h3 class="action-title">จัดการผู้ใช้</h3>
+                            <p class="action-description">เพิ่ม แก้ไข และกำหนดสิทธิ์ผู้ใช้งานระบบ (Admin, Executive, Technician)</p>
+                        </div>
+                        
+                        <div class="action-card reports" onclick="showReportsPage()">
+                            <span class="action-icon">📊</span>
+                            <h3 class="action-title">รายงานและสถิติ</h3>
+                            <p class="action-description">สร้างรายงาน PDF และดู Dashboard ใน Looker Studio</p>
+                        </div>
+                        
+                        <div class="action-card settings" onclick="showSettingsPage()">
+                            <span class="action-icon">⚙️</span>
+                            <h3 class="action-title">ตั้งค่าระบบ</h3>
+                            <p class="action-description">จัดการการแจ้งเตือน Telegram และการตั้งค่าต่างๆ</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent Activity -->
+                <section class="activity-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">⏰</span>
+                        กิจกรรมล่าสุด
+                    </h2>
+                    <div class="activity-list" id="recentActivity">
+                        <div class="activity-item">
+                            <div class="text-center" style="color: #94a3b8; padding: 2rem;">
+                                <span style="font-size: 2rem;">⚡</span>
+                                <p>กำลังโหลดข้อมูลกิจกรรมล่าสุด...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Other Pages (will be shown/hidden based on navigation) -->
+            <div id="requestsPage" class="hidden">
+                <section>
+                    <h2 class="section-title">
+                        <span class="section-icon">🔧</span>
+                        จัดการคำขอแจ้งซ่อม
+                    </h2>
+                    <div class="text-center" style="padding: 4rem; color: #94a3b8;">
+                        <span style="font-size: 4rem;">🚧</span>
+                        <h3 style="margin: 1rem 0; color: #fbbf24;">กำลังพัฒนา</h3>
+                        <p>หน้าจัดการคำขอแจ้งซ่อมจะเปิดให้ใช้งานเร็วๆ นี้</p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="usersPage" class="hidden">
+                <section>
+                    <h2 class="section-title">
+                        <span class="section-icon">👥</span>
+                        จัดการผู้ใช้ระบบ
+                    </h2>
+                    
+                    <!-- User Management Controls -->
+                    <div class="activity-section" style="margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <input type="text" id="userSearchInput" placeholder="🔍 ค้นหาผู้ใช้..." 
+                                       class="form-input" style="min-width: 250px; margin: 0;"
+                                       onkeyup="searchUsers(event)">
+                                <select id="roleFilter" class="form-select" style="min-width: 150px; margin: 0;" onchange="filterUsers()">
+                                    <option value="">ทุกสิทธิ์</option>
+                                    <option value="admin">ผู้ดูแลระบบ</option>
+                                    <option value="executive">ผู้บริหาร</option>
+                                    <option value="technician">ช่างเทคนิค</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="showAddUserModal()">
+                                ➕ เพิ่มผู้ใช้ใหม่
+                            </button>
+                        </div>
+                        
+                        <!-- Users Stats -->
+                        <div class="stats-grid" style="margin-bottom: 2rem;">
+                            <div class="stat-card">
+                                <span class="stat-icon users">👑</span>
+                                <h3 class="stat-title">ผู้ดูแลระบบ</h3>
+                                <div class="stat-value" id="adminCount">-</div>
+                                <div class="stat-change">
+                                    <span>🔑</span>
+                                    <span>Admin</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <span class="stat-icon electric">👔</span>
+                                <h3 class="stat-title">ผู้บริหาร</h3>
+                                <div class="stat-value" id="executiveCount">-</div>
+                                <div class="stat-change">
+                                    <span>📊</span>
+                                    <span>Executive</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <span class="stat-icon requests">🔧</span>
+                                <h3 class="stat-title">ช่างเทคนิค</h3>
+                                <div class="stat-value" id="technicianCount">-</div>
+                                <div class="stat-change">
+                                    <span>🛠️</span>
+                                    <span>Technician</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <span class="stat-icon inventory">✅</span>
+                                <h3 class="stat-title">ใช้งานอยู่</h3>
+                                <div class="stat-value" id="activeCount">-</div>
+                                <div class="stat-change">
+                                    <span>🟢</span>
+                                    <span>Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="activity-section">
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid rgba(251, 191, 36, 0.3);">
+                                        <th style="padding: 1rem; text-align: left; color: #fbbf24; font-weight: 600;">👤 ผู้ใช้</th>
+                                        <th style="padding: 1rem; text-align: left; color: #fbbf24; font-weight: 600;">📧 อีเมล</th>
+                                        <th style="padding: 1rem; text-align: left; color: #fbbf24; font-weight: 600;">🔑 สิทธิ์</th>
+                                        <th style="padding: 1rem; text-align: left; color: #fbbf24; font-weight: 600;">📊 สถานะ</th>
+                                        <th style="padding: 1rem; text-align: left; color: #fbbf24; font-weight: 600;">⏰ เข้าใช้ล่าสุด</th>
+                                        <th style="padding: 1rem; text-align: center; color: #fbbf24; font-weight: 600;">⚙️ การจัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr>
+                                        <td colspan="6" style="padding: 3rem; text-align: center; color: #94a3b8;">
+                                            <div style="font-size: 2rem; margin-bottom: 1rem;">👥</div>
+                                            <p>กำลังโหลดข้อมูลผู้ใช้...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="reportsPage" class="hidden">
+                <section>
+                    <h2 class="section-title">
+                        <span class="section-icon">📊</span>
+                        รายงานและสถิติ Looker Studio
+                    </h2>
+                    
+                    <!-- Quick Reports -->
+                    <div class="quick-actions" style="margin-bottom: 2rem;">
+                        <div class="action-card reports" onclick="openLookerReport('general')">
+                            <span class="action-icon">📊</span>
+                            <h3 class="action-title">รายงานทั่วไป</h3>
+                            <p class="action-description">ดูข้อมูลภาพรวมของระบบแจ้งซ่อมไฟฟ้า</p>
+                        </div>
+                        
+                        <div class="action-card requests" onclick="openLookerReport('today')">
+                            <span class="action-icon">📈</span>
+                            <h3 class="action-title">รายงานวันนี้</h3>
+                            <p class="action-description">ข้อมูลคำขอแจ้งซ่อมในวันนี้</p>
+                        </div>
+                        
+                        <div class="action-card users" onclick="openLookerReport('thisWeek')">
+                            <span class="action-icon">📅</span>
+                            <h3 class="action-title">รายงานสัปดาห์นี้</h3>
+                            <p class="action-description">สรุปข้อมูลการแจ้งซ่อมประจำสัปดาห์</p>
+                        </div>
+                        
+                        <div class="action-card settings" onclick="openLookerReport('thisMonth')">
+                            <span class="action-icon">📆</span>
+                            <h3 class="action-title">รายงานเดือนนี้</h3>
+                            <p class="action-description">รายงานสรุปประจำเดือน</p>
+                        </div>
+                    </div>
+
+                    <!-- Status Reports -->
+                    <div class="stats-section">
+                        <h3 class="section-title" style="font-size: 1.4rem;">
+                            <span class="section-icon">🔍</span>
+                            รายงานตามสถานะ
+                        </h3>
+                        <div class="stats-grid">
+                            <div class="stat-card" onclick="openLookerReport('pending')" style="cursor: pointer;">
+                                <span class="stat-icon requests">⏳</span>
+                                <h3 class="stat-title">รายการรอดำเนินการ</h3>
+                                <div class="stat-value" id="pendingCount">-</div>
+                                <div class="stat-change">
+                                    <span>👆</span>
+                                    <span>คลิกเพื่อดูรายงาน</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card" onclick="openLookerReport('inProgress')" style="cursor: pointer;">
+                                <span class="stat-icon electric">🔧</span>
+                                <h3 class="stat-title">กำลังดำเนินการ</h3>
+                                <div class="stat-value" id="inProgressCount">-</div>
+                                <div class="stat-change">
+                                    <span>👆</span>
+                                    <span>คลิกเพื่อดูรายงาน</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card" onclick="openLookerReport('completed')" style="cursor: pointer;">
+                                <span class="stat-icon users">✅</span>
+                                <h3 class="stat-title">เสร็จสิ้นแล้ว</h3>
+                                <div class="stat-value" id="completedCount">-</div>
+                                <div class="stat-change">
+                                    <span>👆</span>
+                                    <span>คลิกเพื่อดูรายงาน</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card" onclick="showCustomReportModal()" style="cursor: pointer;">
+                                <span class="stat-icon inventory">🎯</span>
+                                <h3 class="stat-title">รายงานกำหนดเอง</h3>
+                                <div class="stat-value">🔧</div>
+                                <div class="stat-change">
+                                    <span>👆</span>
+                                    <span>คลิกเพื่อตั้งค่า</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions for Reports -->
+                    <div class="activity-section" style="margin-top: 2rem;">
+                        <h3 class="section-title" style="font-size: 1.4rem;">
+                            <span class="section-icon">⚡</span>
+                            การจัดการรายงาน
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <button class="btn btn-primary" onclick="refreshDashboardData()" style="width: 100%;">
+                                🔄 รีเฟรชข้อมูล
+                            </button>
+                            <button class="btn btn-secondary" onclick="openLookerReport('general', true)" style="width: 100%;">
+                                👁️ ตัวอย่างใหม่
+                            </button>
+                            <button class="btn btn-success" onclick="showExportModal()" style="width: 100%;">
+                                💾 ส่งออกข้อมูล
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="settingsPage" class="hidden">
+                <section>
+                    <h2 class="section-title">
+                        <span class="section-icon">⚙️</span>
+                        ตั้งค่าระบบ
+                    </h2>
+                    
+                    <!-- Telegram Settings -->
+                    <div class="stat-card" style="margin-bottom: 2rem;">
+                        <h3 style="color: #fbbf24; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📱</span>
+                            การแจ้งเตือน Telegram
+                        </h3>
+                        <form id="telegramForm">
+                            <div class="form-group">
+                                <label class="form-label">Telegram Bot Token</label>
+                                <input type="text" id="botToken" class="form-input" placeholder="ใส่ Bot Token จาก @BotFather">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Chat ID</label>
+                                <input type="text" id="chatId" class="form-input" placeholder="ใส่ Chat ID ของกลุ่มหรือผู้ใช้">
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" id="enableNotifications" style="margin: 0;">
+                                    <span class="form-label" style="margin: 0;">เปิดใช้งานการแจ้งเตือน</span>
+                                </label>
+                            </div>
+                            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                                <button type="button" class="btn btn-secondary" onclick="testTelegram()">🧪 ทดสอบ</button>
+                                <button type="submit" class="btn btn-primary">💾 บันทึก</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="showDashboard()">
+                <div class="nav-icon">🏠</div>
+                <div>หน้าหลัก</div>
+            </div>
+            <div class="nav-item" onclick="showRequestsPage()">
+                <div class="nav-icon">🔧</div>
+                <div>คำขอซ่อม</div>
+            </div>
+            <div class="nav-item" onclick="showUsersPage()">
+                <div class="nav-icon">👥</div>
+                <div>ผู้ใช้</div>
+            </div>
+            <div class="nav-item" onclick="showReportsPage()">
+                <div class="nav-icon">📊</div>
+                <div>รายงาน</div>
+            </div>
+            <div class="nav-item" onclick="showSettingsPage()">
+                <div class="nav-icon">⚙️</div>
+                <div>ตั้งค่า</div>
+            </div>
+        </nav>
+
+        <!-- Profile Modal -->
+        <div id="profileModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">ข้อมูลส่วนตัว</h3>
+                    <button class="modal-close" onclick="closeProfileModal()">×</button>
+                </div>
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div class="user-avatar" style="width: 5rem; height: 5rem; font-size: 2rem; margin: 0 auto 1rem;">A</div>
+                    <h4 style="color: #fbbf24; margin-bottom: 0.5rem;" id="profileUsername">Username</h4>
+                    <p style="color: #94a3b8;" id="profileRole">Role</p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="showChangePasswordModal()">🔑 เปลี่ยนรหัสผ่าน</button>
+                    <button class="btn btn-danger" onclick="logout()">🚪 ออกจากระบบ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div id="changePasswordModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">เปลี่ยนรหัสผ่าน</h3>
+                    <button class="modal-close" onclick="closeChangePasswordModal()">×</button>
+                </div>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label class="form-label">รหัสผ่านปัจจุบัน</label>
+                        <input type="password" id="currentPassword" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">รหัสผ่านใหม่</label>
+                        <input type="password" id="newPassword" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
+                        <input type="password" id="confirmPassword" class="form-input" required>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">✅ บันทึก</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Looker Studio Preview Modal -->
+        <div id="lookerPreviewModal" class="modal">
+            <div class="modal-content" style="max-width: 95vw; max-height: 95vh; width: 1200px;">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="lookerModalTitle">📊 Looker Studio Dashboard</h3>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <button class="btn btn-primary" onclick="printLookerReport()" style="padding: 0.5rem 1rem;">
+                            🖨️ พิมพ์
+                        </button>
+                        <button class="btn btn-secondary" onclick="openLookerInNewTab()" style="padding: 0.5rem 1rem;">
+                            🔗 เปิดในแท็บใหม่
+                        </button>
+                        <button class="modal-close" onclick="closeLookerPreviewModal()">×</button>
+                    </div>
+                </div>
+                <div style="position: relative; height: 70vh; border-radius: 0.5rem; overflow: hidden; background: #f8fafc;">
+                    <iframe 
+                        id="lookerFrame" 
+                        style="width: 100%; height: 100%; border: none; border-radius: 0.5rem;"
+                        src=""
+                        loading="lazy">
+                    </iframe>
+                    <div id="lookerLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(248, 250, 252, 0.9);">
+                        <div style="text-align: center; color: #64748b;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                            <p>กำลังโหลด Looker Studio Dashboard...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Report Modal -->
+        <div id="customReportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">🎯 สร้างรายงานกำหนดเอง</h3>
+                    <button class="modal-close" onclick="closeCustomReportModal()">×</button>
+                </div>
+                <form id="customReportForm">
+                    <div class="form-group">
+                        <label class="form-label">ช่วงวันที่</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <input type="date" id="customDateFrom" class="form-input" placeholder="วันที่เริ่มต้น">
+                            <input type="date" id="customDateTo" class="form-input" placeholder="วันที่สิ้นสุด">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">กรองตามสถานะ</label>
+                        <select id="customStatus" class="form-select">
+                            <option value="">ทุกสถานะ</option>
+                            <option value="รอดำเนินการ">รอดำเนินการ</option>
+                            <option value="อนุมัติแล้วรอช่าง">อนุมัติแล้วรอช่าง</option>
+                            <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
+                            <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+                            <option value="ยกเลิก">ยกเลิก</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">เลขที่คำขอ (ถ้ามี)</label>
+                        <input type="text" id="customRequestId" class="form-input" placeholder="เช่น REQ-20241201-1430-1234">
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">📊 สร้างรายงาน</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeCustomReportModal()" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Export Modal -->
+        <div id="exportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">💾 ส่งออกข้อมูล</h3>
+                    <button class="modal-close" onclick="closeExportModal()">×</button>
+                </div>
+                <div style="display: grid; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="exportToPDF()">
+                        📄 ส่งออกเป็น PDF
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportToExcel()">
+                        📊 ส่งออกเป็น Excel
+                    </button>
+                    <button class="btn btn-success" onclick="sendToTelegram()">
+                        📱 ส่งรายงานผ่าน Telegram
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeExportModal()">
+                        ❌ ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add User Modal -->
+        <div id="addUserModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">➕ เพิ่มผู้ใช้ใหม่</h3>
+                    <button class="modal-close" onclick="closeAddUserModal()">×</button>
+                </div>
+                <form id="addUserForm">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">ชื่อผู้ใช้ *</label>
+                            <input type="text" id="addUsername" class="form-input" required placeholder="เช่น admin, john.doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">รหัสผ่าน *</label>
+                            <input type="password" id="addPassword" class="form-input" required placeholder="อย่างน้อย 6 ตัวอักษร">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">ชื่อ</label>
+                            <input type="text" id="addFirstName" class="form-input" placeholder="ชื่อจริง">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">นามสกุล</label>
+                            <input type="text" id="addLastName" class="form-input" placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">อีเมล</label>
+                        <input type="email" id="addEmail" class="form-input" placeholder="example@email.com">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">สิทธิ์การใช้งาน *</label>
+                            <select id="addRole" class="form-select" required>
+                                <option value="">เลือกสิทธิ์</option>
+                                <option value="admin">👑 ผู้ดูแลระบบ (Admin)</option>
+                                <option value="executive">👔 ผู้บริหาร (Executive)</option>
+                                <option value="technician">🔧 ช่างเทคนิค (Technician)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">สถานะ</label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 0.5rem;">
+                                <input type="checkbox" id="addIsActive" checked style="margin: 0;">
+                                <span style="color: #f8fafc;">เปิดใช้งาน</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">✅ เพิ่มผู้ใช้</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeAddUserModal()" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit User Modal -->
+        <div id="editUserModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">✏️ แก้ไขผู้ใช้</h3>
+                    <button class="modal-close" onclick="closeEditUserModal()">×</button>
+                </div>
+                <form id="editUserForm">
+                    <input type="hidden" id="editUsernameHidden">
+                    
+                    <div class="form-group">
+                        <label class="form-label">ชื่อผู้ใช้</label>
+                        <input type="text" id="editUsername" class="form-input" readonly style="background: rgba(148, 163, 184, 0.2);">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">ชื่อ</label>
+                            <input type="text" id="editFirstName" class="form-input" placeholder="ชื่อจริง">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">นามสกุล</label>
+                            <input type="text" id="editLastName" class="form-input" placeholder="นามสกุล">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">อีเมล</label>
+                        <input type="email" id="editEmail" class="form-input" placeholder="example@email.com">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">สิทธิ์การใช้งาน</label>
+                            <select id="editRole" class="form-select" required>
+                                <option value="admin">👑 ผู้ดูแลระบบ (Admin)</option>
+                                <option value="executive">👔 ผู้บริหาร (Executive)</option>
+                                <option value="technician">🔧 ช่างเทคนิค (Technician)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">สถานะ</label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 0.5rem;">
+                                <input type="checkbox" id="editIsActive" style="margin: 0;">
+                                <span style="color: #f8fafc;">เปิดใช้งาน</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">รหัสผ่านใหม่ (เว้นว่างหากไม่เปลี่ยน)</label>
+                        <input type="password" id="editPassword" class="form-input" placeholder="ใส่รหัสผ่านใหม่หากต้องการเปลี่ยน">
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn btn-success" style="flex: 1;">💾 บันทึกการแก้ไข</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditUserModal()" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteUserModal" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">⚠️ ยืนยันการลบ</h3>
+                    <button class="modal-close" onclick="closeDeleteUserModal()">×</button>
+                </div>
+                <div style="text-align: center; margin: 2rem 0;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🗑️</div>
+                    <p style="color: #f8fafc; margin-bottom: 0.5rem;">คุณแน่ใจหรือไม่ที่จะลบผู้ใช้</p>
+                    <p style="color: #fbbf24; font-weight: 600; font-size: 1.1rem;" id="deleteUserName">""</p>
+                    <p style="color: #ef4444; font-size: 0.9rem; margin-top: 1rem;">⚠️ การลบจะไม่สามารถกู้คืนได้</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-danger" onclick="confirmDeleteUser()" style="flex: 1;">🗑️ ลบผู้ใช้</button>
+                    <button class="btn btn-secondary" onclick="closeDeleteUserModal()" style="flex: 1;">❌ ยกเลิก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/auth-utils.js"></script>
+    <script>
+        let currentUser = null;
+        let statsData = {
+            totalPoles: 0,
+            totalRequests: 0,
+            totalUsers: 0,
+            totalInventory: 0
+        };
+        let currentLookerUrl = '';
+        let currentReportType = '';
+        let allUsers = [];
+        let filteredUsers = [];
+        let userToDelete = null;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        async function initializeApp() {
+            // Check authentication
+            if (!window.AuthUtils || !window.AuthUtils.protectPage(['admin'])) {
+                window.location.href = '/admin/smart-login.html';
+                return;
+            }
+
+            const authUser = window.AuthUtils.getCurrentUser();
+            if (authUser && authUser.user) {
+                currentUser = {
+                    username: authUser.user.username,
+                    role: authUser.user.role,
+                    token: authUser.token
+                };
+                
+                updateUserDisplay();
+                await loadDashboardData();
+                showToast('ยินดีต้อนรับสู่ระบบผู้ดูแลแจ้งซ่อมไฟฟ้า! ⚡', 'success');
+            } else {
+                window.AuthUtils.forceLogout('ไม่พบข้อมูลผู้ใช้');
+            }
+        }
+
+        function updateUserDisplay() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.username;
+                document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
+                document.getElementById('userAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                document.getElementById('profileUsername').textContent = currentUser.username;
+                document.getElementById('profileRole').textContent = getRoleDisplayName(currentUser.role);
+            }
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = {
+                'admin': 'ผู้ดูแลระบบ',
+                'executive': 'ผู้บริหาร',
+                'technician': 'ช่างเทคนิค'
+            };
+            return roles[role] || role;
+        }
+
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                await Promise.all([
+                    loadStats(),
+                    loadRecentActivity()
+                ]);
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+            }
+        }
+
+        async function loadStats() {
+            try {
+                // Load repair requests
+                const requestsResponse = await window.AuthUtils.apiCall('/api/admin/repair-requests?limit=1000');
+                const requestsData = await requestsResponse.json();
+                statsData.totalRequests = requestsData.status === 'success' ? requestsData.data.length : 0;
+
+                // Count by status for reports page
+                if (requestsData.status === 'success') {
+                    const requests = requestsData.data;
+                    const pending = requests.filter(r => r.STATUS === 'รอดำเนินการ' || r.STATUS === 'อนุมัติแล้วรอช่าง').length;
+                    const inProgress = requests.filter(r => r.STATUS === 'กำลังดำเนินการ').length;
+                    const completed = requests.filter(r => r.STATUS === 'เสร็จสิ้น').length;
+                    
+                    document.getElementById('pendingCount').textContent = pending;
+                    document.getElementById('inProgressCount').textContent = inProgress;
+                    document.getElementById('completedCount').textContent = completed;
+                }
+
+                // Load users
+                const usersResponse = await window.AuthUtils.apiCall('/api/admin/users');
+                const usersData = await usersResponse.json();
+                statsData.totalUsers = usersData.status === 'success' ? usersData.data.length : 0;
+
+                // Load inventory
+                try {
+                    const inventoryResponse = await window.AuthUtils.apiCall('/api/admin/inventory');
+                    const inventoryData = await inventoryResponse.json();
+                    statsData.totalInventory = inventoryData.status === 'success' ? inventoryData.data.length : 0;
+                } catch (e) {
+                    statsData.totalInventory = 0;
+                }
+
+                // Load poles
+                try {
+                    const polesResponse = await window.AuthUtils.apiCall('/api/admin/poles');
+                    const polesData = await polesResponse.json();
+                    statsData.totalPoles = polesData.status === 'success' ? polesData.data.length : 0;
+                } catch (e) {
+                    statsData.totalPoles = 0;
+                }
+
+                updateStatsDisplay();
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                updateStatsDisplay(); // Show with default values
+            }
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('totalPoles').textContent = statsData.totalPoles;
+            document.getElementById('totalRequests').textContent = statsData.totalRequests;
+            document.getElementById('totalUsers').textContent = statsData.totalUsers;
+            document.getElementById('totalInventory').textContent = statsData.totalInventory;
+        }
+
+        async function loadRecentActivity() {
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/repair-requests?limit=5');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data.length > 0) {
+                    renderRecentActivity(data.data);
+                } else {
+                    renderEmptyActivity();
+                }
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                renderEmptyActivity();
+            }
+        }
+
+        function renderRecentActivity(requests) {
+            const container = document.getElementById('recentActivity');
+            container.innerHTML = requests.map(request => `
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <div class="activity-title">🎫 ${request.REQUEST_ID} - ${request.FIRST_NAME || ''} ${request.LAST_NAME || ''}</div>
+                        <span class="activity-status ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
+                    </div>
+                    <div class="activity-description">
+                        📍 ${request.PROBLEM_DESCRIPTION || request.REASON || 'ไม่มีรายละเอียด'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderEmptyActivity() {
+            document.getElementById('recentActivity').innerHTML = `
+                <div class="activity-item">
+                    <div class="text-center" style="color: #94a3b8; padding: 2rem;">
+                        <span style="font-size: 2rem;">💡</span>
+                        <p>ยังไม่มีกิจกรรมล่าสุด</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'รอดำเนินการ': return 'pending';
+                case 'อนุมัติแล้วรอช่าง': case 'กำลังดำเนินการ': return 'approved';
+                case 'เสร็จสิ้น': return 'completed';
+                default: return 'pending';
+            }
+        }
+
+        // 👥 User Management Functions
+        async function loadUsers() {
+            try {
+                showToast('กำลังโหลดข้อมูลผู้ใช้...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/users');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    allUsers = data.data || [];
+                    filteredUsers = [...allUsers];
+                    updateUserStats();
+                    renderUsersTable();
+                    showToast(`โหลดข้อมูลผู้ใช้สำเร็จ (${allUsers.length} คน)`, 'success');
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้', 'error');
+                renderEmptyUsersTable();
+            }
+        }
+
+        function updateUserStats() {
+            const adminCount = allUsers.filter(u => u.ROLE === 'admin').length;
+            const executiveCount = allUsers.filter(u => u.ROLE === 'executive').length;
+            const technicianCount = allUsers.filter(u => u.ROLE === 'technician').length;
+            const activeCount = allUsers.filter(u => u.IS_ACTIVE === 'TRUE').length;
+            
+            document.getElementById('adminCount').textContent = adminCount;
+            document.getElementById('executiveCount').textContent = executiveCount;
+            document.getElementById('technicianCount').textContent = technicianCount;
+            document.getElementById('activeCount').textContent = activeCount;
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (filteredUsers.length === 0) {
+                renderEmptyUsersTable();
+                return;
+            }
+            
+            tbody.innerHTML = filteredUsers.map(user => {
+                const fullName = user.FULL_NAME || `${user.USERNAME}`;
+                const roleIcon = user.ROLE === 'admin' ? '👑' : user.ROLE === 'executive' ? '👔' : '🔧';
+                const statusBadge = user.IS_ACTIVE === 'TRUE' 
+                    ? '<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem;">🟢 ใช้งานอยู่</span>'
+                    : '<span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem;">🔴 ระงับ</span>';
+                const lastLogin = user.LAST_LOGIN 
+                    ? new Date(user.LAST_LOGIN).toLocaleDateString('th-TH', { 
+                        year: 'numeric', month: 'short', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    }) 
+                    : 'ยังไม่เคยเข้าใช้';
+                
+                const canDelete = user.USERNAME !== currentUser.username && user.USERNAME !== 'admin';
+                
+                return `
+                    <tr style="border-bottom: 1px solid rgba(148, 163, 184, 0.2); transition: background 0.3s ease;" 
+                        onmouseover="this.style.background='rgba(251, 191, 36, 0.1)'" 
+                        onmouseout="this.style.background='transparent'">
+                        <td style="padding: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 2.5rem; height: 2.5rem; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                    ${user.USERNAME.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #f8fafc;">${user.USERNAME}</div>
+                                    <div style="font-size: 0.8rem; color: #94a3b8;">${fullName}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 1rem; color: #94a3b8;">
+                            ${user.EMAIL || 'ไม่ระบุ'}
+                        </td>
+                        <td style="padding: 1rem;">
+                            <span style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 500;">
+                                ${roleIcon} ${getRoleDisplayName(user.ROLE)}
+                            </span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            ${statusBadge}
+                        </td>
+                        <td style="padding: 1rem; color: #94a3b8; font-size: 0.85rem;">
+                            ${lastLogin}
+                        </td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                                <button onclick="editUser('${user.USERNAME}')" class="btn btn-secondary" style="padding: 0.5rem 0.75rem; font-size: 0.8rem;">
+                                    ✏️ แก้ไข
+                                </button>
+                                ${canDelete ? `
+                                    <button onclick="deleteUser('${user.USERNAME}')" class="btn btn-danger" style="padding: 0.5rem 0.75rem; font-size: 0.8rem;">
+                                        🗑️ ลบ
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderEmptyUsersTable() {
+            document.getElementById('usersTableBody').innerHTML = `
+                <tr>
+                    <td colspan="6" style="padding: 3rem; text-align: center; color: #94a3b8;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">👥</div>
+                        <p>ไม่พบข้อมูลผู้ใช้</p>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function searchUsers(event) {
+            const searchTerm = event.target.value.toLowerCase().trim();
+            filterUsersData(searchTerm, document.getElementById('roleFilter').value);
+        }
+
+        function filterUsers() {
+            const searchTerm = document.getElementById('userSearchInput').value.toLowerCase().trim();
+            const roleFilter = document.getElementById('roleFilter').value;
+            filterUsersData(searchTerm, roleFilter);
+        }
+
+        function filterUsersData(searchTerm, roleFilter) {
+            filteredUsers = allUsers.filter(user => {
+                const matchesSearch = !searchTerm || 
+                    user.USERNAME.toLowerCase().includes(searchTerm) ||
+                    (user.FULL_NAME && user.FULL_NAME.toLowerCase().includes(searchTerm)) ||
+                    (user.EMAIL && user.EMAIL.toLowerCase().includes(searchTerm));
+                
+                const matchesRole = !roleFilter || user.ROLE === roleFilter;
+                
+                return matchesSearch && matchesRole;
+            });
+            
+            renderUsersTable();
+        }
+
+        // Add User Functions
+        function showAddUserModal() {
+            document.getElementById('addUserModal').classList.add('show');
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('addUserModal').classList.remove('show');
+            document.getElementById('addUserForm').reset();
+        }
+
+        document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                username: document.getElementById('addUsername').value.trim(),
+                password: document.getElementById('addPassword').value,
+                role: document.getElementById('addRole').value,
+                fullName: `${document.getElementById('addFirstName').value.trim()} ${document.getElementById('addLastName').value.trim()}`.trim(),
+                email: document.getElementById('addEmail').value.trim(),
+                isActive: document.getElementById('addIsActive').checked
+            };
+            
+            if (!userData.username || !userData.password || !userData.role) {
+                showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                return;
+            }
+            
+            if (userData.password.length < 6) {
+                showToast('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร', 'error');
+                return;
+            }
+            
+            try {
+                showToast('กำลังเพิ่มผู้ใช้...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/users', {
+                    method: 'POST',
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast(`เพิ่มผู้ใช้ "${userData.username}" สำเร็จ! 👥`, 'success');
+                    closeAddUserModal();
+                    loadUsers();
+                } else {
+                    throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                }
+            } catch (error) {
+                console.error('Error adding user:', error);
+                showToast('เกิดข้อผิดพลาดในการเพิ่มผู้ใช้: ' + error.message, 'error');
+            }
+        });
+
+        // Edit User Functions
+        function editUser(username) {
+            const user = allUsers.find(u => u.USERNAME === username);
+            if (!user) return;
+            
+            // Populate form
+            document.getElementById('editUsernameHidden').value = user.USERNAME;
+            document.getElementById('editUsername').value = user.USERNAME;
+            
+            const nameParts = (user.FULL_NAME || '').split(' ');
+            document.getElementById('editFirstName').value = nameParts[0] || '';
+            document.getElementById('editLastName').value = nameParts.slice(1).join(' ') || '';
+            
+            document.getElementById('editEmail').value = user.EMAIL || '';
+            document.getElementById('editRole').value = user.ROLE;
+            document.getElementById('editIsActive').checked = user.IS_ACTIVE === 'TRUE';
+            document.getElementById('editPassword').value = '';
+            
+            document.getElementById('editUserModal').classList.add('show');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('show');
+            document.getElementById('editUserForm').reset();
+        }
+
+        document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('editUsernameHidden').value;
+            const updateData = {
+                role: document.getElementById('editRole').value,
+                fullName: `${document.getElementById('editFirstName').value.trim()} ${document.getElementById('editLastName').value.trim()}`.trim(),
+                email: document.getElementById('editEmail').value.trim(),
+                isActive: document.getElementById('editIsActive').checked
+            };
+            
+            const newPassword = document.getElementById('editPassword').value.trim();
+            if (newPassword) {
+                if (newPassword.length < 6) {
+                    showToast('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร', 'error');
+                    return;
+                }
+                updateData.password = newPassword;
+            }
+            
+            try {
+                showToast('กำลังแก้ไขผู้ใช้...', 'info');
+                
+                const response = await window.AuthUtils.apiCall(`/api/admin/users/${encodeURIComponent(username)}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updateData)
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast(`แก้ไขผู้ใช้ "${username}" สำเร็จ! ✏️`, 'success');
+                    closeEditUserModal();
+                    loadUsers();
+                    
+                    // If editing current user, reload app
+                    if (currentUser && currentUser.username === username) {
+                        setTimeout(() => {
+                            initializeApp();
+                        }, 1000);
+                    }
+                } else {
+                    throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                }
+            } catch (error) {
+                console.error('Error updating user:', error);
+                showToast('เกิดข้อผิดพลาดในการแก้ไขผู้ใช้: ' + error.message, 'error');
+            }
+        });
+
+        // Delete User Functions
+        function deleteUser(username) {
+            const user = allUsers.find(u => u.USERNAME === username);
+            if (!user) return;
+            
+            if (username === currentUser.username) {
+                showToast('ไม่สามารถลบบัญชีของตัวเองได้', 'error');
+                return;
+            }
+            
+            if (username === 'admin') {
+                showToast('ไม่สามารถลบบัญชีผู้ดูแลระบบหลักได้', 'error');
+                return;
+            }
+            
+            userToDelete = username;
+            document.getElementById('deleteUserName').textContent = `"${username}"`;
+            document.getElementById('deleteUserModal').classList.add('show');
+        }
+
+        function closeDeleteUserModal() {
+            document.getElementById('deleteUserModal').classList.remove('show');
+            userToDelete = null;
+        }
+
+        async function confirmDeleteUser() {
+            if (!userToDelete) return;
+            
+            try {
+                showToast('กำลังลบผู้ใช้...', 'info');
+                
+                const response = await window.AuthUtils.apiCall(`/api/admin/users/${encodeURIComponent(userToDelete)}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast(`ลบผู้ใช้ "${userToDelete}" สำเร็จ! 🗑️`, 'success');
+                    closeDeleteUserModal();
+                    loadUsers();
+                } else {
+                    throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                showToast('เกิดข้อผิดพลาดในการลบผู้ใช้: ' + error.message, 'error');
+            }
+        }
+
+        // Navigation Functions
+        function showDashboard() { setActivePage('dashboard', 'ระบบผู้ดูแลแจ้งซ่อมไฟฟ้า', 0); loadDashboardData(); }
+        function showRequestsPage() { setActivePage('requests', 'จัดการคำขอแจ้งซ่อม', 1); }
+        function showUsersPage() { setActivePage('users', 'จัดการผู้ใช้ระบบ', 2); loadUsers(); }
+        function showReportsPage() { setActivePage('reports', 'รายงานและสถิติ', 3); loadDashboardData(); }
+        function showSettingsPage() { setActivePage('settings', 'ตั้งค่าระบบ', 4); loadTelegramSettings(); }
+
+        function setActivePage(pageId, title, navIndex) {
+            document.getElementById('pageTitle').textContent = title;
+            
+            // Hide all pages
+            const pages = ['dashboardPage', 'requestsPage', 'usersPage', 'reportsPage', 'settingsPage'];
+            pages.forEach(page => {
+                const element = document.getElementById(page);
+                if (element) element.classList.add('hidden');
+            });
+            
+            // Show active page
+            const activePageElement = document.getElementById(pageId + 'Page');
+            if (activePageElement) activePageElement.classList.remove('hidden');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach((item, index) => {
+                item.classList.remove('active');
+                if (index === navIndex) item.classList.add('active');
+            });
+        }
+
+        // 📊 Looker Studio Functions
+        async function openLookerReport(type, forceNew = false) {
+            try {
+                showToast('กำลังโหลด Looker Studio Dashboard...', 'info');
+                
+                // Get Looker Studio URL from backend
+                const response = await window.AuthUtils.apiCall(`/api/admin/looker-studio/embed-url?filters=${encodeURIComponent(JSON.stringify({ type }))}`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data.embedUrl) {
+                    currentLookerUrl = data.data.embedUrl;
+                    currentReportType = type;
+                    
+                    const reportTitles = {
+                        general: 'รายงานทั่วไป - ภาพรวมระบบ',
+                        today: 'รายงานประจำวัน',
+                        thisWeek: 'รายงานประจำสัปดาห์',
+                        thisMonth: 'รายงานประจำเดือน',
+                        pending: 'รายการรอดำเนินการ',
+                        inProgress: 'รายการกำลังดำเนินการ',
+                        completed: 'รายการเสร็จสิ้น'
+                    };
+                    
+                    document.getElementById('lookerModalTitle').textContent = 
+                        `📊 ${reportTitles[type] || 'Looker Studio Dashboard'}`;
+                    
+                    showLookerPreviewModal(currentLookerUrl);
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลด Looker Studio ได้');
+                }
+            } catch (error) {
+                console.error('Error opening Looker report:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        function showLookerPreviewModal(url) {
+            const modal = document.getElementById('lookerPreviewModal');
+            const frame = document.getElementById('lookerFrame');
+            const loading = document.getElementById('lookerLoading');
+            
+            // Show loading
+            loading.style.display = 'flex';
+            frame.src = '';
+            
+            // Load iframe
+            frame.onload = function() {
+                loading.style.display = 'none';
+            };
+            
+            frame.onerror = function() {
+                loading.innerHTML = `
+                    <div style="text-align: center; color: #ef4444;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                        <p>ไม่สามารถโหลด Looker Studio ได้</p>
+                        <button class="btn btn-secondary" onclick="closeLookerPreviewModal()" style="margin-top: 1rem;">ปิด</button>
+                    </div>
+                `;
+            };
+            
+            frame.src = url;
+            modal.classList.add('show');
+        }
+
+        function closeLookerPreviewModal() {
+            const modal = document.getElementById('lookerPreviewModal');
+            const frame = document.getElementById('lookerFrame');
+            modal.classList.remove('show');
+            frame.src = '';
+        }
+
+        function printLookerReport() {
+            if (currentLookerUrl) {
+                // Open in new window for printing
+                const printWindow = window.open(currentLookerUrl, '_blank', 'width=1200,height=800');
+                if (printWindow) {
+                    printWindow.onload = function() {
+                        setTimeout(() => {
+                            printWindow.print();
+                        }, 2000);
+                    };
+                    showToast('เปิดหน้าต่างใหม่สำหรับพิมพ์แล้ว 🖨️', 'success');
+                } else {
+                    showToast('ไม่สามารถเปิดหน้าต่างพิมพ์ได้ กรุณาอนุญาต popup', 'error');
+                }
+            }
+        }
+
+        function openLookerInNewTab() {
+            if (currentLookerUrl) {
+                window.open(currentLookerUrl, '_blank');
+                showToast('เปิด Looker Studio ในแท็บใหม่แล้ว', 'success');
+            }
+        }
+
+        // Custom Report Functions
+        function showCustomReportModal() {
+            document.getElementById('customReportModal').classList.add('show');
+        }
+
+        function closeCustomReportModal() {
+            document.getElementById('customReportModal').classList.remove('show');
+            document.getElementById('customReportForm').reset();
+        }
+
+        document.getElementById('customReportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const filters = {
+                dateFrom: document.getElementById('customDateFrom').value,
+                dateTo: document.getElementById('customDateTo').value,
+                status: document.getElementById('customStatus').value,
+                requestId: document.getElementById('customRequestId').value.trim()
+            };
+            
+            // Remove empty filters
+            Object.keys(filters).forEach(key => {
+                if (!filters[key]) delete filters[key];
+            });
+            
+            closeCustomReportModal();
+            
+            try {
+                const response = await window.AuthUtils.apiCall(`/api/admin/looker-studio/embed-url?filters=${encodeURIComponent(JSON.stringify(filters))}`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data.embedUrl) {
+                    currentLookerUrl = data.data.embedUrl;
+                    currentReportType = 'custom';
+                    
+                    document.getElementById('lookerModalTitle').textContent = '🎯 รายงานกำหนดเอง';
+                    showLookerPreviewModal(currentLookerUrl);
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถสร้างรายงานได้');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        });
+
+        // Export Functions
+        function showExportModal() {
+            document.getElementById('exportModal').classList.add('show');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('show');
+        }
+
+        async function exportToPDF() {
+            try {
+                showToast('กำลังสร้าง PDF...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/reports/repair-requests/pdf', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        templateOptions: {
+                            title: `รายงานระบบแจ้งซ่อมไฟฟ้า - ${new Date().toLocaleDateString('th-TH')}`,
+                            headerColor: '#fbbf24',
+                            showDate: true
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `รายงานแจ้งซ่อมไฟฟ้า_${new Date().toISOString().split('T')[0]}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showToast('ส่งออก PDF สำเร็จ! 📄', 'success');
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || 'ไม่สามารถสร้าง PDF ได้');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+            closeExportModal();
+        }
+
+        function exportToExcel() {
+            showToast('ฟีเจอร์ส่งออก Excel จะพัฒนาในเวอร์ชันถัดไป', 'info');
+            closeExportModal();
+        }
+
+        async function sendToTelegram() {
+            try {
+                showToast('กำลังส่งรายงานผ่าน Telegram...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/notifications/send-report', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        reportType: 'summary',
+                        filters: {}
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('ส่งรายงานผ่าน Telegram สำเร็จ! 📱', 'success');
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถส่งผ่าน Telegram ได้');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+            closeExportModal();
+        }
+
+        function refreshDashboardData() {
+            showToast('กำลังรีเฟรชข้อมูล...', 'info');
+            loadDashboardData().then(() => {
+                showToast('รีเฟรชข้อมูลสำเร็จ! 🔄', 'success');
+            });
+        }
+
+        // 📊 Looker Studio Functions
+        async function openLookerReport(type, forceNew = false) {
+            try {
+                showToast('กำลังโหลด Looker Studio Dashboard...', 'info');
+                
+                // Get Looker Studio URL from backend
+                const response = await window.AuthUtils.apiCall(`/api/admin/looker-studio/embed-url?filters=${encodeURIComponent(JSON.stringify({ type }))}`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data.embedUrl) {
+                    currentLookerUrl = data.data.embedUrl;
+                    currentReportType = type;
+                    
+                    const reportTitles = {
+                        general: 'รายงานทั่วไป - ภาพรวมระบบ',
+                        today: 'รายงานประจำวัน',
+                        thisWeek: 'รายงานประจำสัปดาห์',
+                        thisMonth: 'รายงานประจำเดือน',
+                        pending: 'รายการรอดำเนินการ',
+                        inProgress: 'รายการกำลังดำเนินการ',
+                        completed: 'รายการเสร็จสิ้น'
+                    };
+                    
+                    document.getElementById('lookerModalTitle').textContent = 
+                        `📊 ${reportTitles[type] || 'Looker Studio Dashboard'}`;
+                    
+                    showLookerPreviewModal(currentLookerUrl);
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลด Looker Studio ได้');
+                }
+            } catch (error) {
+                console.error('Error opening Looker report:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        function showLookerPreviewModal(url) {
+            const modal = document.getElementById('lookerPreviewModal');
+            const frame = document.getElementById('lookerFrame');
+            const loading = document.getElementById('lookerLoading');
+            
+            // Show loading
+            loading.style.display = 'flex';
+            frame.src = '';
+            
+            // Load iframe
+            frame.onload = function() {
+                loading.style.display = 'none';
+            };
+            
+            frame.onerror = function() {
+                loading.innerHTML = `
+                    <div style="text-align: center; color: #ef4444;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                        <p>ไม่สามารถโหลด Looker Studio ได้</p>
+                        <button class="btn btn-secondary" onclick="closeLookerPreviewModal()" style="margin-top: 1rem;">ปิด</button>
+                    </div>
+                `;
+            };
+            
+            frame.src = url;
+            modal.classList.add('show');
+        }
+
+        function closeLookerPreviewModal() {
+            const modal = document.getElementById('lookerPreviewModal');
+            const frame = document.getElementById('lookerFrame');
+            modal.classList.remove('show');
+            frame.src = '';
+        }
+
+        function printLookerReport() {
+            if (currentLookerUrl) {
+                // Open in new window for printing
+                const printWindow = window.open(currentLookerUrl, '_blank', 'width=1200,height=800');
+                if (printWindow) {
+                    printWindow.onload = function() {
+                        setTimeout(() => {
+                            printWindow.print();
+                        }, 2000);
+                    };
+                    showToast('เปิดหน้าต่างใหม่สำหรับพิมพ์แล้ว 🖨️', 'success');
+                } else {
+                    showToast('ไม่สามารถเปิดหน้าต่างพิมพ์ได้ กรุณาอนุญาต popup', 'error');
+                }
+            }
+        }
+
+        function openLookerInNewTab() {
+            if (currentLookerUrl) {
+                window.open(currentLookerUrl, '_blank');
+                showToast('เปิด Looker Studio ในแท็บใหม่แล้ว', 'success');
+            }
+        }
+
+        // Custom Report Functions
+        function showCustomReportModal() {
+            document.getElementById('customReportModal').classList.add('show');
+        }
+
+        function closeCustomReportModal() {
+            document.getElementById('customReportModal').classList.remove('show');
+            document.getElementById('customReportForm').reset();
+        }
+
+        document.getElementById('customReportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const filters = {
+                dateFrom: document.getElementById('customDateFrom').value,
+                dateTo: document.getElementById('customDateTo').value,
+                status: document.getElementById('customStatus').value,
+                requestId: document.getElementById('customRequestId').value.trim()
+            };
+            
+            // Remove empty filters
+            Object.keys(filters).forEach(key => {
+                if (!filters[key]) delete filters[key];
+            });
+            
+            closeCustomReportModal();
+            
+            try {
+                const response = await window.AuthUtils.apiCall(`/api/admin/looker-studio/embed-url?filters=${encodeURIComponent(JSON.stringify(filters))}`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data.embedUrl) {
+                    currentLookerUrl = data.data.embedUrl;
+                    currentReportType = 'custom';
+                    
+                    document.getElementById('lookerModalTitle').textContent = '🎯 รายงานกำหนดเอง';
+                    showLookerPreviewModal(currentLookerUrl);
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถสร้างรายงานได้');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        });
+
+        // Export Functions
+        function showExportModal() {
+            document.getElementById('exportModal').classList.add('show');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('show');
+        }
+
+        async function exportToPDF() {
+            try {
+                showToast('กำลังสร้าง PDF...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/reports/repair-requests/pdf', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        templateOptions: {
+                            title: `รายงานระบบแจ้งซ่อมไฟฟ้า - ${new Date().toLocaleDateString('th-TH')}`,
+                            headerColor: '#fbbf24',
+                            showDate: true
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `รายงานแจ้งซ่อมไฟฟ้า_${new Date().toISOString().split('T')[0]}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showToast('ส่งออก PDF สำเร็จ! 📄', 'success');
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || 'ไม่สามารถสร้าง PDF ได้');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+            closeExportModal();
+        }
+
+        function exportToExcel() {
+            showToast('ฟีเจอร์ส่งออก Excel จะพัฒนาในเวอร์ชันถัดไป', 'info');
+            closeExportModal();
+        }
+
+        async function sendToTelegram() {
+            try {
+                showToast('กำลังส่งรายงานผ่าน Telegram...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/notifications/send-report', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        reportType: 'summary',
+                        filters: {}
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('ส่งรายงานผ่าน Telegram สำเร็จ! 📱', 'success');
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถส่งผ่าน Telegram ได้');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+            closeExportModal();
+        }
+
+        function refreshDashboardData() {
+            showToast('กำลังรีเฟรชข้อมูล...', 'info');
+            loadDashboardData().then(() => {
+                showToast('รีเฟรชข้อมูลสำเร็จ! 🔄', 'success');
+            });
+        }
+
+        // ✅ เพิ่มฟังก์ชันสำหรับ Looker Studio Service ที่ต้องอัปเดต
+        async function updateLookerStudioService() {
+            try {
+                // เพิ่มฟังก์ชันการพิมพ์ Looker Studio Report ใน lookerStudioService.js
+                const response = await window.AuthUtils.apiCall('/api/admin/looker-studio/health');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data.isEnabled) {
+                    showToast('เชื่อมต่อ Looker Studio สำเร็จ ✅', 'success');
+                } else {
+                    showToast('Looker Studio ยังไม่ได้เปิดใช้งาน ⚠️', 'warning');
+                }
+            } catch (error) {
+                console.error('Looker Studio connection error:', error);
+                showToast('ไม่สามารถเชื่อมต่อ Looker Studio ได้', 'error');
+            }
+        }
+
+        // Telegram Settings
+        async function loadTelegramSettings() {
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/telegram-config');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data) {
+                    document.getElementById('botToken').value = data.data.botToken || '';
+                    document.getElementById('chatId').value = data.data.chatId || '';
+                    document.getElementById('enableNotifications').checked = data.data.isEnabled || false;
+                }
+            } catch (error) {
+                console.error('Error loading Telegram settings:', error);
+            }
+        }
+
+        async function testTelegram() {
+            const botToken = document.getElementById('botToken').value.trim();
+            const chatId = document.getElementById('chatId').value.trim();
+            
+            if (!botToken || !chatId) {
+                showToast('กรุณากรอก Bot Token และ Chat ID', 'error');
+                return;
+            }
+            
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/telegram-test', {
+                    method: 'POST',
+                    body: JSON.stringify({ botToken, chatId })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('ทดสอบ Telegram สำเร็จ! 📱', 'success');
+                } else {
+                    showToast('การทดสอบล้มเหลว: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาดในการทดสอบ', 'error');
+            }
+        }
+
+        document.getElementById('telegramForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const botToken = document.getElementById('botToken').value.trim();
+            const chatId = document.getElementById('chatId').value.trim();
+            const isEnabled = document.getElementById('enableNotifications').checked;
+            
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/telegram-config', {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        botToken, 
+                        chatId, 
+                        isEnabled,
+                        testMessage: isEnabled
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('บันทึกการตั้งค่า Telegram สำเร็จ! ⚡', 'success');
+                } else {
+                    showToast('ไม่สามารถบันทึกได้: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
+            }
+        });
+
+        // Modal Functions
+        function showProfileModal() {
+            document.getElementById('profileModal').classList.add('show');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('show');
+        }
+
+        function showChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.add('show');
+            closeProfileModal();
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.remove('show');
+            document.getElementById('changePasswordForm').reset();
+        }
+
+        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                showToast('รหัสผ่านใหม่และการยืนยันไม่ตรงกัน', 'error');
+                return;
+            }
+            
+            showToast('ฟีเจอร์เปลี่ยนรหัสผ่านจะพัฒนาในเวอร์ชันถัดไป', 'info');
+            closeChangePasswordModal();
+        });
+
+        function logout() {
+            if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+                if (window.AuthUtils && typeof window.AuthUtils.logout === 'function') {
+                    window.AuthUtils.logout();
+                } else {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('authUser');
+                    window.location.href = '/admin/smart-login.html';
+                }
+            }
+        }
+
+        // Utility Functions
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                info: '#3b82f6',
+                warning: '#f59e0b'
+            };
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; 
+                top: 2rem; 
+                right: 2rem; 
+                background: ${colors[type]}; 
+                color: white; 
+                padding: 1rem 1.5rem; 
+                border-radius: 0.75rem; 
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+                z-index: 1000; 
+                max-width: 400px; 
+                font-size: 0.9rem;
+                font-weight: 500;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, 4000);
+        }
+
+        // Auto refresh data when page becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && currentUser) {
+                loadDashboardData();
+            }
+        });
+
+        // Click outside modals to close
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+            }
+        });
+
+        // Initialize Looker Studio connection on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                updateLookerStudioService();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

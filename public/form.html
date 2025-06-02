@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฟอร์มข้อมูลผู้แจ้ง - อบต.ข่าใหญ่</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        :root {
+            /* NT Color Scheme - Yellow/Gold Theme */
+            --primary-color: #FFB300; /* NT Main Yellow */
+            --primary-dark: #E6A100; /* Darker Yellow for hover */
+            --primary-light: #FFC74D; /* Lighter Yellow for accents */
+            --accent-color: #FF9800; /* Orange accent */
+            --success-color: #4CAF50; 
+            --error-color: #F44336;   
+            --warning-color: #FF9800; 
+            --text-dark: #2E2E2E;    
+            --text-light: #FFFFFF;   
+            --text-muted: #757575;   
+            --border-color: #E0E0E0; 
+            --input-bg: #FFFEF7; /* Very light yellow tint */
+            --body-bg: #FFF8E1; /* Light yellow background */
+            --card-bg: #FFFFFF;
+
+            --font-sans: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --radius-md: 0.5rem; 
+            --radius-lg: 0.75rem;  
+            --shadow-md: 0 4px 12px rgba(255, 179, 0, 0.15);
+            --shadow-lg: 0 8px 25px rgba(255, 179, 0, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: linear-gradient(135deg, var(--body-bg) 0%, #FFF3C4 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 550px; 
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: form-appear 0.6s ease-out;
+            border: 2px solid rgba(255, 179, 0, 0.1);
+        }
+        @keyframes form-appear {
+            from { opacity:0; transform: translateY(30px) scale(0.95); }
+            to { opacity:1; transform: translateY(0) scale(1); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: var(--text-light);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='rgba(255,255,255,0.05)' fill-rule='evenodd'%3E%3Cpath d='m0 40l40-40h-40z'/%3E%3C/g%3E%3C/svg%3E");
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+         .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-container {
+            padding: 2rem;
+        }
+        
+        .notice {
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+            border: 2px solid var(--primary-color);
+            color: #E65100; 
+            padding: 1.25rem;
+            margin-bottom: 1.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: flex-start;
+            box-shadow: 0 2px 8px rgba(255, 179, 0, 0.15);
+        }
+        .notice svg {
+            width: 22px;
+            height: 22px;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+            color: var(--primary-color);
+            margin-top: 2px;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(255, 179, 0, 0.2);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+        .required {
+            color: var(--error-color);
+            margin-left: 2px;
+        }
+        
+        .input-wrapper { 
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 1rem; 
+            color: var(--primary-color);
+            pointer-events: none; 
+            width: 1.25rem; 
+            height: 1.25rem;
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 1rem 1.25rem; 
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--input-bg);
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            height: 3rem;
+            font-weight: 500;
+        }
+        .input-wrapper .form-input,
+        .input-wrapper .form-select {
+             padding-left: 3rem;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 179, 0, 0.15);
+            background-color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23FFB300' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.5em;
+            padding-right: 3rem;
+        }
+         .input-wrapper .form-select {
+            padding-left: 3rem;
+            padding-right: 3rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: var(--text-light);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            height: 3.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .submit-btn:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 179, 0, 0.3);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        .submit-btn:disabled {
+            background: linear-gradient(135deg, #BDBDBD 0%, #9E9E9E 100%);
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .loading-spinner {
+            width: 22px; height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            display: none; 
+            margin-left: 0.5rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-text { 
+            color: var(--error-color);
+            font-size: 0.8rem; 
+            margin-top: 0.5rem;
+            display: none; 
+            font-weight: 500;
+        }
+        .form-group.error .error-text { display: block; }
+        .form-group.error .form-input,
+        .form-group.error .form-select {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 4px rgba(244, 67, 54, 0.15); 
+        }
+
+        .footer {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #F5F5F5 0%, #EEEEEE 100%);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 640px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .form-row .form-group {
+                margin-bottom: 1.25rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>📝 ฟอร์มข้อมูลผู้แจ้ง</h1>
+            <p>องค์การบริหารส่วนตำบลข่าใหญ่</p>
+        </header>
+
+        <div class="form-container">
+            <div class="notice" id="formNotice">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+                <div>
+                    <strong>หมายเหตุ:</strong> กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง 
+                    เพื่อให้เจ้าหน้าที่สามารถติดต่อกลับและดำเนินการได้อย่างรวดเร็ว
+                </div>
+            </div>
+
+            <form id="userInfoForm" novalidate>
+                <input type="hidden" name="lineUserId" id="lineUserIdInput">
+
+                <!-- ข้อมูลส่วนตัว -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        ข้อมูลส่วนตัว
+                    </div>
+
+                    <div class="form-group">
+                        <label for="titlePrefixInput" class="form-label">คำนำหน้าชื่อ <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                             <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                            <select name="titlePrefix" id="titlePrefixInput" class="form-select" required>
+                                <option value="">-- โปรดเลือก --</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                                <option value="เด็กชาย">เด็กชาย</option>
+                                <option value="เด็กหญิง">เด็กหญิง</option>
+                                <option value="อื่นๆ">อื่นๆ</option>
+                            </select>
+                        </div>
+                        <div class="error-text">กรุณาเลือกคำนำหน้าชื่อ</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstNameInput" class="form-label">ชื่อ <span class="required">*</span></label>
+                             <div class="input-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                                <input type="text" name="firstName" id="firstNameInput" class="form-input" placeholder="ชื่อจริง" required minlength="2" maxlength="50">
+                            </div>
+                            <div class="error-text">กรุณากรอกชื่อ (อย่างน้อย 2 ตัวอักษร)</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastNameInput" class="form-label">นามสกุล <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                                <input type="text" name="lastName" id="lastNameInput" class="form-input" placeholder="นามสกุลจริง" required minlength="2" maxlength="50">
+                            </div>
+                            <div class="error-text">กรุณากรอกนามสกุล (อย่างน้อย 2 ตัวอักษร)</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ageInput" class="form-label">อายุ <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.87c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m15-3.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 12.75m15 4.5v1.5a.75.75 0 01-.75.75H4.5a.75.75 0 01-.75-.75V16.5M4.5 12.75V11.25A2.25 2.25 0 016.75 9h10.5A2.25 2.25 0 0119.5 11.25v1.5M4.5 12.75v1.5m15-1.5v1.5" /></svg>
+                                <input type="number" name="age" id="ageInput" class="form-input" placeholder="เช่น 25" required min="1" max="120">
+                            </div>
+                            <div class="error-text">กรุณากรอกอายุ (1-120 ปี)</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneInput" class="form-label">เบอร์โทรศัพท์ <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+                                <input type="tel" name="phone" id="phoneInput" class="form-input" placeholder="0812345678" required pattern="[0-9]{9,10}" maxlength="10">
+                            </div>
+                            <div class="error-text">กรุณากรอกเบอร์โทรศัพท์ 9-10 หลัก</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ethnicityInput" class="form-label">เชื้อชาติ <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3s-4.5 4.03-4.5 9 2.015 9 4.5 9z" /></svg>
+                                <select name="ethnicity" id="ethnicityInput" class="form-select" required>
+                                    <option value="">-- โปรดเลือก --</option>
+                                    <option value="ไทย">ไทย</option>
+                                    <option value="จีน">จีน</option>
+                                    <option value="มอญ">มอญ</option>
+                                    <option value="ลาว">ลาว</option>
+                                    <option value="เขมร">เขมร</option>
+                                    <option value="มลายู">มลายู</option>
+                                    <option value="ยะไข่">ยะไข่</option>
+                                    <option value="อื่นๆ">อื่นๆ</option>
+                                </select>
+                            </div>
+                            <div class="error-text">กรุณาเลือกเชื้อชาติ</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nationalityInput" class="form-label">สัญชาติ <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" /></svg>
+                                <select name="nationality" id="nationalityInput" class="form-select" required>
+                                    <option value="">-- โปรดเลือก --</option>
+                                    <option value="ไทย">ไทย</option>
+                                    <option value="ลาว">ลาว</option>
+                                    <option value="เมียนมา">เมียนมา</option>
+                                    <option value="กัมพูชา">กัมพูชา</option>
+                                    <option value="เวียดนาม">เวียดนาม</option>
+                                    <option value="จีน">จีน</option>
+                                    <option value="อื่นๆ">อื่นๆ</option>
+                                </select>
+                            </div>
+                            <div class="error-text">กรุณาเลือกสัญชาติ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ข้อมูลที่อยู่ -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" />
+                        </svg>
+                        ข้อมูลที่อยู่
+                    </div>
+
+                    <div class="form-group">
+                        <label for="houseNoInput" class="form-label">บ้านเลขที่ <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" /></svg>
+                            <input type="text" name="houseNo" id="houseNoInput" class="form-input" placeholder="เช่น 123, 45/6 หมู่ 1" required maxlength="30">
+                        </div>
+                        <div class="error-text">กรุณากรอกบ้านเลขที่</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mooInput" class="form-label">หมู่บ้าน <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                            <select name="moo" id="mooInput" class="form-select" required>
+                                <option value="">-- โปรดเลือกหมู่บ้าน --</option>
+                                <option value="หมู่ 2 บ้านดอนเข็มเหนือ">หมู่ 2 บ้านดอนเข็มเหนือ</option>
+                                <option value="หมู่ 3 บ้านข่าใหญ่">หมู่ 3 บ้านข่าใหญ่</option>
+                                <option value="หมู่ 6 บ้านดินทรายอ่อนใต้">หมู่ 6 บ้านดินทรายอ่อนใต้</option>
+                                <option value="หมู่ 7 บ้านนาล้อม">หมู่ 7 บ้านนาล้อม</option>
+                                <option value="หมู่ 8 บ้านหนองแสงใต้">หมู่ 8 บ้านหนองแสงใต้</option>
+                                <option value="หมู่ 10 บ้านดอนหัน">หมู่ 10 บ้านดอนหัน</option>
+                                <option value="หมู่ 11 บ้านข่าน้อย">หมู่ 11 บ้านข่าน้อย</option>
+                                <option value="หมู่ 12 บ้านดินทรายอ่อนเหนือ">หมู่ 12 บ้านดินทรายอ่อนเหนือ</option>
+                                <option value="หมู่ 14 บ้านหนองแสงเหนือ">หมู่ 14 บ้านหนองแสงเหนือ</option>
+                                <option value="หมู่ 15 บ้านดอนเข็มใต้">หมู่ 15 บ้านดอนเข็มใต้</option>
+                                <option value="หมู่ 16 บ้านทรายทอง">หมู่ 16 บ้านทรายทอง</option>
+                                <option value="อื่นๆ/ไม่ระบุ">อื่นๆ/ไม่ระบุ</option>
+                            </select>
+                        </div>
+                        <div class="error-text">กรุณาเลือกหมู่บ้าน</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitButton">
+                    <div class="btn-content">
+                        <span id="buttonText">💾 บันทึกข้อมูล</span>
+                        <div class="loading-spinner" id="loadingSpinner"></div>
+                    </div>
+                </button>
+            </form>
+            </div>
+
+        <footer class="footer">
+            <p>&copy; <span id="currentYear"></span> องค์การบริหารส่วนตำบลข่าใหญ่</p>
+        </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // CONFIGURATION
+        const API_ENDPOINT = '/api/form-submit'; 
+        const COUNTDOWN_SECONDS = 5; 
+
+        // DOM ELEMENTS
+        const userInfoForm = document.getElementById('userInfoForm');
+        const lineUserIdInput = document.getElementById('lineUserIdInput');
+        const submitButton = document.getElementById('submitButton');
+        const buttonText = document.getElementById('buttonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const formNotice = document.getElementById('formNotice');
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // INITIALIZATION
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Form script loaded. NT Yellow Theme with Enhanced Fields.');
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userId');
+
+            if (userId) {
+                lineUserIdInput.value = userId;
+                console.log('User ID set from URL:', userId);
+            } else {
+                console.warn('No userId found in URL parameters.');
+                Swal.fire({
+                    title: 'ข้อมูลไม่สมบูรณ์',
+                    html: 'ไม่พบ User ID ในระบบ<br>กรุณาเปิดฟอร์มนี้ผ่านทาง LINE อีกครั้ง หรือติดต่อเจ้าหน้าที่',
+                    icon: 'error',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#FFB300'
+                });
+                if(submitButton) submitButton.disabled = true;
+                if(userInfoForm) userInfoForm.style.display = 'none';
+                if(formNotice) formNotice.style.display = 'none';
+            }
+
+            setupFormValidation();
+            if(userInfoForm) userInfoForm.addEventListener('submit', handleFormSubmit);
+        });
+
+        // FORM VALIDATION
+        function setupFormValidation() {
+            if(!userInfoForm) return;
+            const requiredInputs = userInfoForm.querySelectorAll('input[required], select[required]');
+            requiredInputs.forEach(input => {
+                input.addEventListener('blur', () => validateField(input));
+                input.addEventListener('input', () => clearFieldError(input));
+                
+                if (input.name === 'phone') {
+                    input.addEventListener('input', (e) => {
+                        e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                    });
+                }
+                
+                if (input.name === 'age') {
+                    input.addEventListener('input', (e) => {
+                        const value = parseInt(e.target.value);
+                        if (value < 1) e.target.value = '';
+                        if (value > 120) e.target.value = '120';
+                    });
+                }
+            });
+        }
+
+        function validateField(field) {
+            const formGroup = field.closest('.form-group');
+            if (!formGroup) return true; 
+
+            let isValid = true;
+            const errorTextElement = formGroup.querySelector('.error-text');
+            formGroup.classList.remove('error');
+            if(errorTextElement) errorTextElement.style.display = 'none';
+
+            if (field.required && (!field.value || field.value.trim() === '')) {
+                isValid = false;
+            } else {
+                if (field.name === 'firstName' || field.name === 'lastName') {
+                    if (field.value.trim().length < 2) isValid = false;
+                } else if (field.name === 'phone') {
+                    if (!/^[0-9]{9,10}$/.test(field.value)) isValid = false;
+                } else if (field.name === 'age') {
+                    const age = parseInt(field.value);
+                    if (isNaN(age) || age < 1 || age > 120) isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                formGroup.classList.add('error');
+                if(errorTextElement) errorTextElement.style.display = 'block';
+            }
+            return isValid;
+        }
+
+        function clearFieldError(field) {
+            const formGroup = field.closest('.form-group');
+            if (formGroup) {
+                formGroup.classList.remove('error');
+                const errorTextElement = formGroup.querySelector('.error-text');
+                if(errorTextElement) errorTextElement.style.display = 'none';
+            }
+        }
+
+        function validateAllFields() {
+            if(!userInfoForm) return false;
+            let isFormValid = true;
+            userInfoForm.querySelectorAll('input[required], select[required]').forEach(input => {
+                if (!validateField(input)) isFormValid = false;
+            });
+            return isFormValid;
+        }
+
+        // FORM SUBMISSION
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            console.log('Form submission initiated.');
+
+            if (!validateAllFields()) {
+                 Swal.fire({
+                    title: 'ข้อมูลไม่ครบถ้วน',
+                    html: 'กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้องทุกช่องที่มีเครื่องหมาย <span style="color: #F44336;">*</span> นะคะ',
+                    icon: 'warning',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#FFB300'
+                });
+                const firstErrorField = userInfoForm.querySelector('.form-group.error .form-input, .form-group.error .form-select');
+                if (firstErrorField) {
+                    firstErrorField.focus();
+                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+            if (!lineUserIdInput.value) {
+                Swal.fire({
+                    title: 'ข้อผิดพลาด',
+                    text: 'ไม่พบ User ID กรุณาเปิดฟอร์มผ่าน LINE อีกครั้ง หรือติดต่อเจ้าหน้าที่',
+                    icon: 'error',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#FFB300'
+                });
+                return;
+            }
+
+            setLoadingState(true);
+            const formData = new FormData(userInfoForm);
+            const data = Object.fromEntries(formData.entries());
+            console.log('Submitting data:', data);
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                console.log('Server response:', result);
+
+                if (response.ok && result.status === 'success') {
+                    if(userInfoForm) userInfoForm.style.display = 'none'; 
+                    if(formNotice) formNotice.style.display = 'none';
+                    
+                    Swal.fire({
+                        title: 'บันทึกข้อมูลสำเร็จ! 🎉',
+                        html: `${result.message || 'ระบบกำลังดำเนินการต่อใน LINE'}<br>กรุณากลับไปที่แอปพลิเคชัน LINE ค่ะ<br><br>หน้านี้จะพยายามปิดใน <b id="swalCountdown">${COUNTDOWN_SECONDS}</b> วินาที...`,
+                        icon: 'success',
+                        timer: COUNTDOWN_SECONDS * 1000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        background: '#FFF8E1',
+                        didOpen: () => {
+                            const countdownElement = document.getElementById('swalCountdown');
+                            if(countdownElement){
+                                let timer = COUNTDOWN_SECONDS;
+                                Swal.getTimerLeft(); // Initialize timer
+                                const interval = setInterval(() => {
+                                    timer--;
+                                    countdownElement.textContent = timer;
+                                    if (timer <= 0) {
+                                        clearInterval(interval);
+                                    }
+                                }, 1000);
+                            }
+                        },
+                        willClose: () => {
+                            attemptToCloseWindow();
+                        }
+                    });
+                } else {
+                    throw new Error(result.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูลจากเซิร์ฟเวอร์');
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                 Swal.fire({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: error.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง',
+                    icon: 'error',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#FFB300'
+                });
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        // UI HELPER FUNCTIONS
+        function setLoadingState(isLoading) {
+            if(!submitButton || !buttonText || !loadingSpinner) return;
+            submitButton.disabled = isLoading;
+            buttonText.textContent = isLoading ? 'กำลังบันทึก...' : '💾 บันทึกข้อมูล';
+            loadingSpinner.style.display = isLoading ? 'inline-block' : 'none';
+        }
+        
+        function attemptToCloseWindow() {
+            console.log('Attempting to close window...');
+            window.close(); 
+            setTimeout(() => {
+                if (!window.closed) {
+                    console.log('Window was not closed automatically.');
+                } else {
+                     console.log('Window closed successfully.');
+                }
+            }, 700); 
+        }
+
+        // GLOBAL ERROR HANDLING
+        window.addEventListener('error', (e) => {
+            console.error('Global script error:', e.message, 'at', e.filename, ':', e.lineno);
+        });
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection:', e.reason);
+        });
+    </script>
+</body>
+</html>

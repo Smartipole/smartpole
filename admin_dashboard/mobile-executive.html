@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ ระบบผู้บริหาร - อบต.ข่าใหญ่</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-icon {
+            font-size: 2.5rem;
+            color: #0f172a;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.1); filter: brightness(1.2); }
+        }
+
+        .header-title {
+            color: #0f172a;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header-subtitle {
+            color: #374151;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: rgba(15, 23, 42, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .header-user:hover {
+            background: rgba(15, 23, 42, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            color: #374151;
+            font-size: 0.8rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            padding-bottom: 6rem;
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+        }
+
+        .card:hover::before {
+            animation: shine 0.6s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .stat-content h3 {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .stat-content p {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fbbf24;
+            line-height: 1;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            font-size: 1.8rem;
+            color: #f59e0b;
+        }
+
+        /* Quick Action Card */
+        .quick-action-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #f8fafc;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.6);
+        }
+
+        .quick-action-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .quick-action-icon {
+            font-size: 2.5rem;
+            color: #10b981;
+        }
+
+        .quick-action-text h3 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #f8fafc;
+        }
+
+        .quick-action-text p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .quick-action-stats {
+            text-align: right;
+        }
+
+        .quick-action-stats p:first-child {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .quick-action-stats p:last-child {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        /* Request Cards */
+        .request-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .request-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .request-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .request-id {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fbbf24;
+        }
+
+        .request-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .request-info-icon {
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-right: 0.75rem;
+            color: #fbbf24;
+        }
+
+        .request-reason {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 0.5rem;
+            border-left: 4px solid #fbbf24;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .status-approved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .search-box {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            background: rgba(15, 23, 42, 0.5);
+            color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .search-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem;
+            color: #fbbf24;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .filter-btn:not(.active) {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .filter-btn:not(.active):hover {
+            background: rgba(148, 163, 184, 0.3);
+            color: #f8fafc;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Back Button */
+        .back-btn {
+            background: none;
+            border: none;
+            color: #fbbf24;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(251, 191, 36, 0.1);
+            transform: translateX(-4px);
+        }
+
+        /* Signature Section */
+        .signature-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .signature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fbbf24;
+            margin-bottom: 1rem;
+        }
+
+        .signature-canvas-container {
+            border: 2px dashed rgba(251, 191, 36, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        .signature-canvas {
+            width: 100%;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.25rem;
+            background: white;
+            touch-action: none;
+        }
+
+        .clear-signature-btn {
+            margin-top: 0.75rem;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .clear-signature-btn:hover {
+            color: #f8fafc;
+            background: rgba(148, 163, 184, 0.1);
+        }
+
+        /* Detail View */
+        .detail-section {
+            margin-bottom: 1rem;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #fbbf24;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            color: #f8fafc;
+            font-size: 1rem;
+            padding: 0.5rem 0;
+        }
+
+        /* Profile Page Styles */
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .profile-info-item {
+            background: rgba(15, 23, 42, 0.3);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .profile-info-item strong {
+            color: #fbbf24;
+        }
+
+        @media (min-width: 640px) {
+            .profile-info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal:not(.hidden) .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .modal-close:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(251, 191, 36, 0.3);
+            padding: 1rem 0.5rem;
+            display: flex;
+            justify-content: space-around;
+            z-index: 90;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .nav-item.active {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-item:hover:not(.active) {
+            color: #f8fafc;
+            background: rgba(248, 250, 252, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #94a3b8;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #64748b;
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-bottom: 6rem;
+            }
+            
+            .stats-grid {
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .header-title {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bottom-nav {
+                padding: 0.75rem 0.25rem;
+            }
+            
+            .nav-item {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.7rem;
+                min-width: 60px;
+            }
+            
+            .nav-icon {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="header-icon">⚡</div>
+                <div>
+                    <h1 class="header-title" id="pageTitle">ระบบผู้บริหาร</h1>
+                    <p class="header-subtitle">สวัสดี คุณ<span id="userDisplay">Loading...</span> - ส่องสว่างทุกมุมเมือง</p>
+                </div>
+            </div>
+            <div class="header-user" onclick="showProfilePage()">
+                <div class="user-avatar" id="userAvatar">E</div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="user-role" id="userRole">ผู้บริหาร</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage">
+                <!-- Stats Section -->
+                <section class="stats-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">📊</span>
+                        สถิติคำขอแจ้งซ่อม
+                    </h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>รวมทั้งหมด</h3>
+                                <p id="totalCount">-</p>
+                            </div>
+                            <div class="stat-icon">📋</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>รอการอนุมัติ</h3>
+                                <p id="pendingCount" style="color: #fbbf24;">-</p>
+                            </div>
+                            <div class="stat-icon">⏰</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>อนุมัติแล้ว</h3>
+                                <p id="approvedCount" style="color: #10b981;">-</p>
+                            </div>
+                            <div class="stat-icon">✅</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>ปฏิเสธ</h3>
+                                <p id="rejectedCount" style="color: #ef4444;">-</p>
+                            </div>
+                            <div class="stat-icon">❌</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Actions -->
+                <section class="quick-actions-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">⚡</span>
+                        การดำเนินการ
+                    </h2>
+                    
+                    <div class="quick-action-card" onclick="showRequestsPage()">
+                        <div class="quick-action-content">
+                            <div class="quick-action-icon">📋</div>
+                            <div class="quick-action-text">
+                                <h3>ดูรายการคำขอทั้งหมด</h3>
+                                <p>จัดการและอนุมัติคำขอแจ้งซ่อมไฟฟ้า</p>
+                            </div>
+                        </div>
+                        <div class="quick-action-stats">
+                            <p id="quickActionCount">-</p>
+                            <p>รายการ</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent Requests -->
+                <section class="recent-requests-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">⏰</span>
+                        คำขอล่าสุด
+                    </h2>
+                    <div id="recentRequests">
+                        <div class="loading">
+                            <span style="font-size: 2rem; margin-right: 1rem;">⚡</span>
+                            กำลังโหลดข้อมูล...
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Requests Page -->
+            <div id="requestsPage" class="hidden">
+                <button class="back-btn" onclick="showDashboard()">← กลับสู่แดชบอร์ด</button>
+
+                <div class="filter-section">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" class="search-input" placeholder="🔍 ค้นหาด้วยเลขที่คำขอหรือชื่อ...">
+                        <button class="search-btn" onclick="filterRequests()">🔍</button>
+                    </div>
+                    
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-status="all" onclick="setStatusFilter('all')">ทั้งหมด</button>
+                        <button class="filter-btn" data-status="pending" onclick="setStatusFilter('pending')">รอการอนุมัติ</button>
+                        <button class="filter-btn" data-status="approved" onclick="setStatusFilter('approved')">อนุมัติแล้ว</button>
+                        <button class="filter-btn" data-status="rejected" onclick="setStatusFilter('rejected')">ปฏิเสธ</button>
+                    </div>
+                </div>
+
+                <div id="requestsList">
+                    <div class="loading">
+                        <span style="font-size: 2rem; margin-right: 1rem;">📋</span>
+                        กำลังโหลดข้อมูล...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Page -->
+            <div id="detailPage" class="hidden">
+                <button class="back-btn" onclick="showRequestsPage()">← กลับสู่รายการคำขอ</button>
+
+                <div class="card" id="requestDetails"></div>
+
+                <div class="signature-section" id="signatureSection">
+                    <h3 class="signature-title">📝 ลายเซ็นผู้อนุมัติ</h3>
+                    <div class="signature-canvas-container">
+                        <canvas id="signatureCanvas" class="signature-canvas" width="300" height="150"></canvas>
+                        <button class="clear-signature-btn" onclick="clearSignature()">🗑️ ล้างลายเซ็น</button>
+                    </div>
+                </div>
+
+                <div class="action-buttons" id="actionButtons">
+                    <button class="action-btn btn-success" onclick="approveRequest()">
+                        ✅ อนุมัติคำขอ
+                    </button>
+                    <button class="action-btn btn-danger" onclick="rejectRequest()">
+                        ❌ ปฏิเสธคำขอ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profilePage" class="hidden">
+                <button class="back-btn" onclick="showDashboard()">← กลับสู่แดชบอร์ด</button>
+                
+                <div class="card">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                        <div class="user-avatar" id="profilePageAvatar" style="width: 4rem; height: 4rem; font-size: 2rem;">E</div>
+                        <div>
+                            <h2 id="profilePageUsername" style="font-size: 1.25rem; font-weight: 600; color: #fbbf24;">Username</h2>
+                            <p id="profilePageRole" style="color: #94a3b8;">Role</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-grid">
+                        <div class="profile-info-item">
+                            <strong>ชื่อเต็ม:</strong> <span id="profilePageFullName">-</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <strong>อีเมล:</strong> <span id="profilePageEmail">-</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <strong>เข้าใช้ล่าสุด:</strong> <span id="profilePageLastLogin">-</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <strong>สถานะ:</strong> <span id="profilePageStatus">-</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button class="btn btn-secondary w-full" onclick="showChangePasswordModal()">🔑 เปลี่ยนรหัสผ่าน</button>
+                        <button class="btn btn-danger w-full" onclick="handleLogout()">🚪 ออกจากระบบ</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="showDashboard()">
+                <div class="nav-icon">🏠</div>
+                <div>หน้าหลัก</div>
+            </div>
+            <div class="nav-item" onclick="showRequestsPage()">
+                <div class="nav-icon">📋</div>
+                <div>คำขอ</div>
+            </div>
+            <div class="nav-item" onclick="showProfilePage()">
+                <div class="nav-icon">👤</div>
+                <div>โปรไฟล์</div>
+            </div>
+        </nav>
+
+        <!-- Change Password Modal -->
+        <div id="changePasswordModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">🔑 เปลี่ยนรหัสผ่าน</h3>
+                    <button class="modal-close" onclick="closeChangePasswordModal()">×</button>
+                </div>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label class="form-label">รหัสผ่านปัจจุบัน</label>
+                        <input type="password" id="currentPassword" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">รหัสผ่านใหม่</label>
+                        <input type="password" id="newPasswordChange" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
+                        <input type="password" id="confirmNewPassword" class="form-input" required>
+                    </div>
+                    <div class="action-buttons" style="margin-top: 1.5rem; flex-direction: row;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">✅ ยืนยัน</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/auth-utils.js"></script>
+    
+    <script>
+        // Global variables
+        let currentUser = null;
+        let allRequests = [];
+        let currentFilters = { status: 'all', search: '' };
+        let selectedRequest = null;
+        let signatureData = '';
+        let isDrawing = false;
+
+        // Page identifiers
+        const PAGES = ['dashboard', 'requests', 'detail', 'profile'];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        async function initializeApp() {
+            // Protect this page (require executive or admin role)
+            if (!window.AuthUtils.protectPage(['executive', 'admin'])) {
+                return;
+            }
+
+            const authUser = window.AuthUtils.getCurrentUser();
+            if (authUser && authUser.user) {
+                try {
+                    const userDetailsResponse = await window.AuthUtils.apiCall(`/api/admin/users/${encodeURIComponent(authUser.user.username)}`);
+                    const userDetailsData = await userDetailsResponse.json();
+
+                    if (userDetailsData.status === 'success' && userDetailsData.data) {
+                        currentUser = {
+                            username: userDetailsData.data.USERNAME,
+                            role: userDetailsData.data.ROLE,
+                            fullName: userDetailsData.data.FULL_NAME,
+                            email: userDetailsData.data.EMAIL,
+                            lastLogin: userDetailsData.data.LAST_LOGIN,
+                            isActive: userDetailsData.data.IS_ACTIVE === 'TRUE',
+                            token: authUser.token
+                        };
+                    } else {
+                        currentUser = {
+                            username: authUser.user.username,
+                            role: authUser.user.role,
+                            token: authUser.token,
+                            fullName: authUser.user.username,
+                            email: '-',
+                            lastLogin: '-',
+                            isActive: true
+                        };
+                    }
+                } catch (error) {
+                    console.error("Error fetching user details:", error);
+                    currentUser = {
+                        username: authUser.user.username,
+                        role: authUser.user.role,
+                        token: authUser.token,
+                        fullName: authUser.user.username,
+                        email: '-',
+                        lastLogin: '-',
+                        isActive: true
+                    };
+                }
+                
+                updateUserDisplay();
+                setupEventListeners();
+                loadData();
+                showDashboard();
+                showToast('ยินดีต้อนรับสู่ระบบผู้บริหารแจ้งซ่อมไฟฟ้า! ⚡', 'success');
+            } else {
+                window.AuthUtils.forceLogout('ไม่พบข้อมูลผู้ใช้');
+            }
+        }
+
+        function updateUserDisplay() {
+            if (currentUser) {
+                document.getElementById('userDisplay').textContent = currentUser.username;
+                document.getElementById('userName').textContent = currentUser.username;
+                document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
+                const avatar = document.getElementById('userAvatar');
+                avatar.textContent = currentUser.username.charAt(0).toUpperCase();
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', filterRequests);
+            setupSignatureCanvas();
+            document.getElementById('changePasswordForm').addEventListener('submit', handleChangePassword);
+        }
+
+        function setupSignatureCanvas() {
+            const canvas = document.getElementById('signatureCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            canvas.addEventListener('touchstart', startDrawing, { passive: false });
+            canvas.addEventListener('touchmove', draw, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing);
+            
+            function startDrawing(e) {
+                e.preventDefault();
+                isDrawing = true;
+                ctx.beginPath();
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                ctx.moveTo(x, y);
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+            
+            function stopDrawing() {
+                if (isDrawing) {
+                    isDrawing = false;
+                    signatureData = canvas.toDataURL();
+                }
+            }
+        }
+
+        function clearSignature() {
+            const canvas = document.getElementById('signatureCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            signatureData = '';
+        }
+        
+        function setActivePage(pageId, title) {
+            document.getElementById('pageTitle').textContent = title;
+            PAGES.forEach(page => {
+                const pageElement = document.getElementById(page + 'Page');
+                if (pageElement) pageElement.classList.add('hidden');
+            });
+            const activePageElement = document.getElementById(pageId + 'Page');
+            if (activePageElement) activePageElement.classList.remove('hidden');
+
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach((item, index) => {
+                item.classList.remove('active');
+                if ((pageId === 'dashboard' && index === 0) ||
+                    (pageId === 'requests' && index === 1) ||
+                    (pageId === 'profile' && index === 2)) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        function showDashboard() {
+            setActivePage('dashboard', 'ระบบผู้บริหาร');
+        }
+
+        function showRequestsPage() {
+            setActivePage('requests', 'รายการคำขอ');
+            renderRequestsList();
+        }
+
+        function showDetailPage(request) {
+            selectedRequest = request;
+            setActivePage('detail', 'รายละเอียดคำขอ');
+            renderRequestDetail();
+        }
+
+        function showProfilePage() {
+            setActivePage('profile', 'ข้อมูลส่วนตัว');
+            populateProfilePage();
+        }
+
+        function populateProfilePage() {
+            if (!currentUser) return;
+
+            document.getElementById('profilePageAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('profilePageUsername').textContent = currentUser.username;
+            document.getElementById('profilePageRole').textContent = getRoleDisplayName(currentUser.role);
+            document.getElementById('profilePageFullName').textContent = currentUser.fullName || '-';
+            document.getElementById('profilePageEmail').textContent = currentUser.email || '-';
+            document.getElementById('profilePageLastLogin').textContent = currentUser.lastLogin ? new Date(currentUser.lastLogin).toLocaleString('th-TH') : 'ยังไม่เคยเข้าใช้';
+            document.getElementById('profilePageStatus').textContent = currentUser.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+        }
+
+        async function loadData() {
+            await Promise.all([loadRequests(), loadSummary()]);
+        }
+
+        async function loadRequests() {
+            try {
+                setLoadingState('pendingCount', true);
+                setLoadingState('approvedCount', true);
+                setLoadingState('rejectedCount', true);
+                setLoadingState('quickActionCount', true);
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/repair-requests?limit=100');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    allRequests = data.data || [];
+                    updateDashboardStats();
+                    renderRecentRequests();
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลดข้อมูลคำขอได้');
+                }
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                showToast('ไม่สามารถโหลดข้อมูลคำขอได้: ' + error.message, 'error');
+                setAllStatsError();
+            }
+        }
+
+        async function loadSummary() {
+            try {
+                setLoadingState('totalCount', true);
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/dashboard-summary');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    updateSummaryDisplay(data.summary);
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลดข้อมูลสรุปได้');
+                }
+            } catch (error) {
+                console.error('Error loading summary:', error);
+                setLoadingState('totalCount', false, 'Error');
+            }
+        }
+
+        function setLoadingState(elementId, isLoading, errorText = null) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            if (isLoading) {
+                element.textContent = '...';
+                element.classList.add('loading');
+            } else {
+                element.classList.remove('loading');
+                if (errorText) {
+                    element.textContent = errorText;
+                    element.style.color = '#ef4444';
+                }
+            }
+        }
+
+        function setAllStatsError() {
+            ['pendingCount', 'approvedCount', 'rejectedCount', 'quickActionCount'].forEach(id => {
+                setLoadingState(id, false, 'Error');
+            });
+        }
+
+        function updateDashboardStats() {
+            const pendingCount = allRequests.filter(r => r.STATUS === 'รอดำเนินการ').length;
+            const approvedCount = allRequests.filter(r => r.STATUS === 'อนุมัติแล้วรอช่าง').length;
+            const rejectedCount = allRequests.filter(r => r.STATUS === 'ไม่อนุมัติโดยผู้บริหาร').length;
+            
+            document.getElementById('pendingCount').textContent = pendingCount;
+            document.getElementById('approvedCount').textContent = approvedCount;
+            document.getElementById('rejectedCount').textContent = rejectedCount;
+            document.getElementById('quickActionCount').textContent = allRequests.length;
+        }
+
+        function updateSummaryDisplay(summary) {
+            const el = document.getElementById('totalCount');
+            if (el) el.textContent = summary.total || 0;
+        }
+
+        function renderRecentRequests() {
+            const container = document.getElementById('recentRequests');
+            if (!container) return;
+            const recent = allRequests.slice(0, 5);
+            
+            if (recent.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💡</div>
+                        <p>ไม่มีรายการคำขอ</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = recent.map(request => `
+                <div class="request-card" onclick='showDetailPage(${JSON.stringify(request).replace(/'/g, "&apos;")})'>
+                    <div class="request-header">
+                        <span class="request-id">🎫 ${request.REQUEST_ID}</span>
+                        <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
+                    </div>
+                    <div class="request-info">
+                        <span class="request-info-icon">👤</span>
+                        <span style="color: #f8fafc;">${request.FIRST_NAME} ${request.LAST_NAME}</span>
+                    </div>
+                    <p class="request-reason">
+                        <strong style="color: #fbbf24;">ปัญหา:</strong> ${request.REASON}
+                    </p>
+                    <p style="color: #10b981; font-size: 0.9rem; font-weight: 500; margin-top: 1rem; text-align: right;">
+                        ดูรายละเอียด →
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function renderRequestsList() {
+            const container = document.getElementById('requestsList');
+            if (!container) return;
+            const filtered = getFilteredRequests();
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <p>ไม่พบรายการคำขอที่ค้นหา</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filtered.map(request => `
+                <div class="request-card" onclick='showDetailPage(${JSON.stringify(request).replace(/'/g, "&apos;")})'>
+                    <div class="request-header">
+                        <span class="request-id">🎫 ${request.REQUEST_ID}</span>
+                        <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
+                    </div>
+                    
+                    <div class="request-info">
+                        <span class="request-info-icon">👤</span>
+                        <span>${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</span>
+                    </div>
+                    
+                    <div class="request-info">
+                        <span class="request-info-icon">📞</span>
+                        <span>${request.PHONE}</span>
+                    </div>
+                    
+                    <div class="request-info">
+                        <span class="request-info-icon">📍</span>
+                        <span>บ้านเลขที่ ${request.HOUSE_NO}, ${request.MOO}</span>
+                    </div>
+                    
+                    <div class="request-info">
+                        <span class="request-info-icon">📅</span>
+                        <span>${new Date(request.DATE_REPORTED).toLocaleDateString('th-TH')}</span>
+                    </div>
+                    
+                    <p class="request-reason">
+                        <strong>ปัญหา:</strong> ${request.REASON}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function renderRequestDetail() {
+            const request = selectedRequest;
+            const detailsContainer = document.getElementById('requestDetails');
+            const signatureSection = document.getElementById('signatureSection');
+            const actionButtonsContainer = document.getElementById('actionButtons');
+            if (!detailsContainer || !signatureSection || !actionButtonsContainer) return;
+
+            detailsContainer.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.3rem; font-weight: 600; color: #fbbf24;">🎫 ${request.REQUEST_ID}</h2>
+                    <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
+                </div>
+                
+                <div style="display: grid; gap: 1.5rem;">
+                    <div class="detail-section">
+                        <div class="detail-label">👤 ผู้แจ้ง</div>
+                        <div class="detail-value">${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">📞 เบอร์โทรติดต่อ</div>
+                        <div class="detail-value">${request.PHONE}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">📍 ที่อยู่</div>
+                        <div class="detail-value">บ้านเลขที่ ${request.HOUSE_NO}, ${request.MOO}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">⚡ รหัสเสาไฟฟ้า</div>
+                        <div class="detail-value">${request.POLE_ID || 'ไม่ระบุ'}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">🔧 สาเหตุการชำรุด</div>
+                        <div class="detail-value">${request.REASON}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">📅 วันที่แจ้ง</div>
+                        <div class="detail-value">${new Date(request.DATE_REPORTED).toLocaleDateString('th-TH')}</div>
+                    </div>
+                    ${request.TECHNICIAN_NOTES ? `
+                        <div class="detail-section">
+                            <div class="detail-label">📝 หมายเหตุจากช่าง</div>
+                            <div class="detail-value">${request.TECHNICIAN_NOTES}</div>
+                        </div>
+                    ` : ''}
+                    ${request.APPROVED_BY ? `
+                        <div class="detail-section">
+                            <div class="detail-label">👑 ผู้อนุมัติ</div>
+                            <div class="detail-value">${request.APPROVED_BY}</div>
+                        </div>
+                    ` : ''}
+                    ${request.APPROVAL_TIMESTAMP ? `
+                        <div class="detail-section">
+                            <div class="detail-label">⏰ วันที่อนุมัติ</div>
+                            <div class="detail-value">${new Date(request.APPROVAL_TIMESTAMP).toLocaleString('th-TH')}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            if (request.STATUS === 'รอดำเนินการ') {
+                signatureSection.classList.remove('hidden');
+                actionButtonsContainer.classList.remove('hidden');
+                clearSignature(); 
+            } else {
+                signatureSection.classList.add('hidden');
+                actionButtonsContainer.classList.add('hidden');
+            }
+        }
+
+        function getFilteredRequests() {
+            return allRequests.filter(request => {
+                const statusMatch = currentFilters.status === 'all' || 
+                    (currentFilters.status === 'pending' && request.STATUS === 'รอดำเนินการ') ||
+                    (currentFilters.status === 'approved' && request.STATUS === 'อนุมัติแล้วรอช่าง') ||
+                    (currentFilters.status === 'rejected' && request.STATUS === 'ไม่อนุมัติโดยผู้บริหาร');
+                
+                const searchTerm = currentFilters.search.toLowerCase();
+                const searchMatch = !searchTerm || 
+                    request.REQUEST_ID?.toLowerCase().includes(searchTerm) ||
+                    request.FIRST_NAME?.toLowerCase().includes(searchTerm) ||
+                    request.LAST_NAME?.toLowerCase().includes(searchTerm);
+                
+                return statusMatch && searchMatch;
+            });
+        }
+
+        function setStatusFilter(status) {
+            currentFilters.status = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.status === status) {
+                    btn.classList.add('active');
+                }
+            });
+            renderRequestsList();
+        }
+
+        function filterRequests() {
+            currentFilters.search = document.getElementById('searchInput').value.trim();
+            renderRequestsList();
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = {
+                'admin': 'ผู้ดูแลระบบ',
+                'executive': 'ผู้บริหาร',
+                'technician': 'ช่างเทคนิค'
+            };
+            return roles[role] || role;
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'รอดำเนินการ': return 'status-pending';
+                case 'อนุมัติแล้วรอช่าง': return 'status-approved';
+                case 'ไม่อนุมัติโดยผู้บริหาร': return 'status-rejected';
+                default: return 'status-pending';
+            }
+        }
+
+        async function approveRequest() {
+            if (!signatureData) {
+                showToast('กรุณาลงลายเซ็นก่อนอนุมัติคำขอ', 'error');
+                return;
+            }
+            showConfirm('คุณแน่ใจหรือไม่ที่จะอนุมัติคำขอนี้?', async () => {
+                await updateRequestStatus('อนุมัติแล้วรอช่าง', '');
+            });
+        }
+
+        async function rejectRequest() {
+            showConfirm('คุณแน่ใจหรือไม่ที่จะปฏิเสธคำขอนี้?', async () => {
+                await updateRequestStatus('ไม่อนุมัติโดยผู้บริหาร', 'ปฏิเสธโดยผู้บริหาร');
+            });
+        }
+
+        async function updateRequestStatus(newStatus, notes) {
+            const requestId = selectedRequest.REQUEST_ID;
+            const actionButtons = document.querySelectorAll('#actionButtons .action-btn');
+            
+            try {
+                actionButtons.forEach(btn => { btn.disabled = true; btn.textContent = 'กำลังประมวลผล...'; });
+                
+                let signatureUrl = '';
+                if (signatureData && newStatus === 'อนุมัติแล้วรอช่าง') {
+                    const uploadResponse = await window.AuthUtils.apiCall('/api/admin/upload-signature', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            imageDataUrl: signatureData,
+                            fileNamePrefix: `approval_${requestId}`
+                        })
+                    });
+                    const uploadData = await uploadResponse.json();
+                    if (uploadData.status === 'success') {
+                        signatureUrl = uploadData.signatureUrl;
+                    }
+                }
+                
+                const response = await window.AuthUtils.apiCall(`/api/admin/repair-request/${requestId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        newStatus: newStatus,
+                        technicianNotes: notes,
+                        signatureUrl: signatureUrl,
+                        approvalTimestampClient: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showToast('อัปเดตสถานะสำเร็จ! ✅', 'success');
+                    clearSignature();
+                    await loadData(); 
+                    showDashboard(); 
+                } else {
+                    throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                }
+            } catch (error) {
+                console.error('Error updating request status:', error);
+                showToast('เกิดข้อผิดพลาดในการอัปเดตสถานะ: ' + error.message, 'error');
+            } finally {
+                actionButtons.forEach(btn => { btn.disabled = false; });
+                const approveBtn = document.querySelector('#actionButtons .btn-success');
+                if (approveBtn) approveBtn.innerHTML = '✅ อนุมัติคำขอ';
+                const rejectBtn = document.querySelector('#actionButtons .btn-danger');
+                if (rejectBtn) rejectBtn.innerHTML = '❌ ปฏิเสธคำขอ';
+            }
+        }
+
+        // Change Password Modal
+        function showChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.add('hidden');
+            document.getElementById('changePasswordForm').reset();
+        }
+
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPasswordChange').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                showToast('รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน', 'error');
+                return;
+            }
+            if (newPassword.length < 6) { 
+                showToast('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร', 'error');
+                return;
+            }
+
+            try {
+                const response = await window.AuthUtils.apiCall('/api/user/change-password', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showToast('เปลี่ยนรหัสผ่านสำเร็จแล้ว! 🔑', 'success');
+                    closeChangePasswordModal();
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถเปลี่ยนรหัสผ่านได้');
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showToast('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน: ' + error.message, 'error');
+            }
+        }
+        
+        function handleLogout() {
+            showConfirm('คุณต้องการออกจากระบบใช่หรือไม่?', () => {
+                if (window.AuthUtils && typeof window.AuthUtils.logout === 'function') {
+                    window.AuthUtils.logout();
+                } else if (window.AuthUtils && typeof window.AuthUtils.forceLogout === 'function') {
+                    window.AuthUtils.forceLogout();
+                } else {
+                    localStorage.removeItem('authToken'); 
+                    localStorage.removeItem('authUser'); 
+                    window.location.href = '/login.html'; 
+                }
+            });
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                info: '#3b82f6',
+                warning: '#f59e0b'
+            };
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; 
+                top: 2rem; 
+                right: 2rem; 
+                background: ${colors[type]}; 
+                color: white; 
+                padding: 1rem 1.5rem; 
+                border-radius: 0.75rem; 
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+                z-index: 1000; 
+                max-width: 400px; 
+                font-size: 0.9rem;
+                font-weight: 500;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, 4000);
+        }
+
+        // Custom Confirm Dialog
+        function showConfirm(message, onConfirm, onCancel) {
+            const confirmModal = document.createElement('div');
+            confirmModal.classList.add('modal');
+            confirmModal.style.zIndex = '1001';
+            confirmModal.style.opacity = '1';
+            confirmModal.style.visibility = 'visible';
+
+            confirmModal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px; transform: scale(1) translateY(0);">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">❓</div>
+                        <p style="font-size: 1rem; color: #f8fafc; line-height: 1.5;">${message}</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="confirmBtnModalExe" class="btn btn-primary" style="flex: 1;">✅ ยืนยัน</button>
+                        <button id="cancelBtnModalExe" class="btn btn-secondary" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmModal);
+
+            document.getElementById('confirmBtnModalExe').onclick = () => {
+                if (onConfirm) onConfirm();
+                document.body.removeChild(confirmModal);
+            };
+            document.getElementById('cancelBtnModalExe').onclick = () => {
+                if (onCancel) onCancel();
+                document.body.removeChild(confirmModal);
+            };
+        }
+
+        // Auto refresh data when page becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && window.AuthUtils && typeof window.AuthUtils.isAuthenticated === 'function' && window.AuthUtils.isAuthenticated()) {
+                loadData();
+                if (currentUser) { 
+                    initializeApp();
+                }
+            }
+        });
+
+        // Click outside modals to close
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

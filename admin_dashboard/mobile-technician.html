@@ -1,0 +1,3440 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ ระบบช่างเทคนิค - อบต.ข่าใหญ่</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-icon {
+            font-size: 2.5rem;
+            color: #0f172a;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.1); filter: brightness(1.2); }
+        }
+
+        .header-title {
+            color: #0f172a;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header-subtitle {
+            color: #374151;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: rgba(15, 23, 42, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .header-user:hover {
+            background: rgba(15, 23, 42, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            color: #374151;
+            font-size: 0.8rem;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(251, 191, 36, 0.3);
+            padding: 1rem 0.5rem;
+            display: flex;
+            justify-content: space-around;
+            z-index: 90;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem 0.8rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .nav-item.active {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-item:hover:not(.active) {
+            color: #f8fafc;
+            background: rgba(248, 250, 252, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            padding-bottom: 6rem;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            font-size: 2rem;
+            color: #f59e0b;
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+        }
+
+        .card:hover::before {
+            animation: shine 0.6s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .section-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .section-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+        }
+
+        .section-content {
+            padding: 1.5rem 2rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .stat-content h3 {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .stat-content p {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fbbf24;
+            line-height: 1;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .status-approved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-in-progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .status-completed {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        /* Request Cards */
+        .request-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .request-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .request-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .request-id {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fbbf24;
+        }
+
+        .request-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .request-info-icon {
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-right: 0.75rem;
+            color: #fbbf24;
+        }
+
+        /* Inventory Styles */
+        .inventory-item {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .inventory-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .inventory-name {
+            font-weight: 600;
+            color: #f8fafc;
+            font-size: 1rem;
+        }
+
+        .inventory-stock {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .stock-badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .stock-low {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .stock-normal {
+            background: rgba(16, 185, 129, 0.2);
+            color: #86efac;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .quantity-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #fbbf24;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+            border-color: #fbbf24;
+            transform: scale(1.1);
+        }
+
+        /* Reports Actions */
+        .reports-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border-radius: 1rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.3);
+            border-color: rgba(251, 191, 36, 0.6);
+        }
+
+        .action-card.reports {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.1));
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .action-card.print {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .action-card.export {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .action-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .action-card.reports .action-icon { color: #8b5cf6; }
+        .action-card.print .action-icon { color: #10b981; }
+        .action-card.export .action-icon { color: #3b82f6; }
+
+        .action-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-description {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .modal-close:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Print Preview */
+        .print-preview {
+            background: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+        }
+
+        .print-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #fbbf24;
+        }
+
+        .print-logo {
+            font-size: 2rem;
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+        }
+
+        .print-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .print-subtitle {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .print-content {
+            margin-bottom: 2rem;
+        }
+
+        .print-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .print-section-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .print-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .print-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .print-info-label {
+            font-weight: 500;
+            color: #6b7280;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .print-info-value {
+            color: #1f2937;
+            font-size: 0.9rem;
+        }
+
+        .print-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .action-buttons-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-buttons-row .btn {
+            flex: 1;
+        }
+
+        /* Navigation Button */
+        .navigation-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .navigation-btn:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Back Button */
+        .back-btn {
+            background: none;
+            border: none;
+            color: #fbbf24;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(251, 191, 36, 0.1);
+            transform: translateX(-4px);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: #64748b;
+        }
+
+        /* Detail View */
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            color: #f8fafc;
+            font-size: 1rem;
+            padding: 0.5rem 0;
+        }
+
+        /* GPS Info */
+        .gps-info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #93c5fd;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .gps-icon {
+            font-size: 1.2rem;
+        }
+
+        /* Profile Page Styles */
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .profile-info-item {
+            background: rgba(15, 23, 42, 0.3);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .profile-info-item strong {
+            color: #fbbf24;
+        }
+
+        @media (min-width: 640px) {
+            .profile-info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        /* Loading Animation */
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-bottom: 6rem;
+            }
+            
+            .stats-grid {
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .action-buttons-row {
+                flex-direction: column;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+            
+            .header-title {
+                font-size: 1.2rem;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reports-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bottom-nav {
+                padding: 0.75rem 0.25rem;
+            }
+            
+            .nav-item {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.7rem;
+                min-width: 60px;
+            }
+            
+            .nav-icon {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="header-icon">⚡</div>
+                <div>
+                    <h1 class="header-title" id="pageTitle">ระบบช่างเทคนิค</h1>
+                    <p class="header-subtitle">สวัสดี ช่าง<span id="userDisplay">Loading...</span> - ส่องสว่างทุกมุมเมือง</p>
+                </div>
+            </div>
+            <div class="header-user" onclick="showProfilePage()">
+                <div class="user-avatar" id="userAvatar">T</div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="user-role" id="userRole">ช่างเทคนิค</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage">
+                <!-- Stats Section -->
+                <section class="stats-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">📊</span>
+                        สถิติงานซ่อม
+                    </h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>รายการทั้งหมด</h3>
+                                <p id="totalCount">-</p>
+                            </div>
+                            <div class="stat-icon">📋</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>กำลังดำเนินการ</h3>
+                                <p id="inProgressCount" style="color: #3b82f6;">-</p>
+                            </div>
+                            <div class="stat-icon">⚙️</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>เสร็จสิ้นแล้ว</h3>
+                                <p id="completedCount" style="color: #10b981;">-</p>
+                            </div>
+                            <div class="stat-icon">✅</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>อุปกรณ์ต่ำ</h3>
+                                <p id="inventoryCount" style="color: #f59e0b;">-</p>
+                            </div>
+                            <div class="stat-icon">📦</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Approved Requests Section -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            ✅ รายการที่อนุมัติแล้ว
+                        </div>
+                        <span id="approvedBadge" class="status-badge status-approved">0 รายการ</span>
+                    </div>
+                    <div class="section-content">
+                        <div id="approvedRequests"></div>
+                    </div>
+                </div>
+
+                <!-- Pending Requests Section -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            ⏰ รายการรอการอนุมัติ
+                        </div>
+                        <span id="pendingBadge" class="status-badge status-pending">0 รายการ</span>
+                    </div>
+                    <div class="section-content">
+                        <div id="pendingRequests"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reportsPage" class="hidden">
+                <section>
+                    <h2 class="section-title">
+                        <span class="section-icon">📊</span>
+                        รายงานและการพิมพ์
+                    </h2>
+                    
+                    <!-- Quick Reports -->
+                    <div class="reports-actions">
+                        <div class="action-card reports" onclick="showMyWorkReport()">
+                            <span class="action-icon">📊</span>
+                            <h3 class="action-title">รายงานงานของฉัน</h3>
+                            <p class="action-description">ดูสถิติและรายงานงานซ่อมที่ดำเนินการโดยคุณ</p>
+                        </div>
+                        
+                        <div class="action-card print" onclick="showPrintReportModal()">
+                            <span class="action-icon">🖨️</span>
+                            <h3 class="action-title">พิมพ์รายงาน PDF</h3>
+                            <p class="action-description">สร้างและพิมพ์รายงานสรุปงานซ่อม</p>
+                        </div>
+                        
+                        <div class="action-card export" onclick="showExportModal()">
+                            <span class="action-icon">📤</span>
+                            <h3 class="action-title">ส่งออกข้อมูล</h3>
+                            <p class="action-description">ส่งออกข้อมูลเป็น PDF หรือส่งผ่าน Telegram</p>
+                        </div>
+                    </div>
+
+                    <!-- Filter Controls -->
+                    <div class="filter-controls">
+                        <h3 style="color: #fbbf24; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            🔍 กรองข้อมูล
+                        </h3>
+                        <div class="filter-grid">
+                            <div class="form-group" style="margin: 0;">
+                                <label class="form-label">📅 ตั้งแต่วันที่</label>
+                                <input type="date" id="filterDateFrom" class="form-input">
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label class="form-label">📅 ถึงวันที่</label>
+                                <input type="date" id="filterDateTo" class="form-input">
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label class="form-label">📋 สถานะ</label>
+                                <select id="filterStatus" class="form-select">
+                                    <option value="">ทุกสถานะ</option>
+                                    <option value="อนุมัติแล้วรอช่าง">อนุมัติแล้วรอช่าง</option>
+                                    <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
+                                    <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0; display: flex; align-items: end;">
+                                <button class="btn btn-primary w-full" onclick="applyFilters()">
+                                    🔍 กรองข้อมูล
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtered Results -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                📋 รายการงานซ่อม
+                            </div>
+                            <span id="filteredResultsBadge" class="status-badge status-approved">0 รายการ</span>
+                        </div>
+                        <div class="section-content">
+                            <div id="filteredResults"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Inventory Page -->
+            <div id="inventoryPage" class="hidden">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: #fbbf24; display: flex; align-items: center; gap: 0.75rem;">
+                            📦 จัดการคลังอุปกรณ์
+                        </h2>
+                        <button class="btn btn-primary" onclick="showAddInventoryModal()">
+                            ➕ เพิ่มอุปกรณ์
+                        </button>
+                    </div>
+                    <div id="inventoryList"></div>
+                </div>
+            </div>
+
+            <!-- Poles Page -->
+            <div id="polesPage" class="hidden">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: #fbbf24; display: flex; align-items: center; gap: 0.75rem;">
+                            🗼 จัดการเสาไฟฟ้า
+                        </h2>
+                        <button class="btn btn-primary" onclick="showAddPoleModal()">
+                            ➕ เพิ่มเสาไฟฟ้า
+                        </button>
+                    </div>
+                    
+                    <!-- Search and Filter Controls -->
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                            <input type="text" id="poleSearchInput" class="form-input" placeholder="🔍 ค้นหารหัสเสา..." style="flex: 1;">
+                            <button class="btn btn-secondary" onclick="searchPoles()">🔍</button>
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.5rem;">
+                            <label style="font-weight: 600; color: #fbbf24;">📍 หมู่บ้าน:</label>
+                            <select id="villageFilter" class="form-input" style="flex: 1;" onchange="filterByVillage()">
+                                <option value="">ทั้งหมด</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Summary -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1)); padding: 1rem; border-radius: 0.75rem; text-align: center; border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #3b82f6;" id="totalPolesCount">0</div>
+                            <div style="font-size: 0.8rem; color: #93c5fd;">เสาทั้งหมด</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1)); padding: 1rem; border-radius: 0.75rem; text-align: center; border: 1px solid rgba(16, 185, 129, 0.3);">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;" id="villageCount">0</div>
+                            <div style="font-size: 0.8rem; color: #86efac;">หมู่บ้าน</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1)); padding: 1rem; border-radius: 0.75rem; text-align: center; border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #f59e0b;" id="filteredCount">0</div>
+                            <div style="font-size: 0.8rem; color: #fcd34d;">แสดงผล</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="polesList"></div>
+                
+                <div class="card" id="polesPagination" style="text-align: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <button class="btn btn-secondary" id="prevPageBtn" onclick="changePage(-1)" disabled>
+                            ⬅️ ก่อนหน้า
+                        </button>
+                        <span id="paginationInfo" style="font-size: 0.9rem; color: #94a3b8;">
+                            หน้า 1 จาก 1
+                        </span>
+                        <button class="btn btn-secondary" id="nextPageBtn" onclick="changePage(1)" disabled>
+                            ถัดไป ➡️
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Page -->
+            <div id="detailPage" class="hidden">
+                <button class="back-btn" onclick="showDashboard()">← กลับหน้าหลัก</button>
+                <div class="card" id="requestDetails"></div>
+                <div class="action-buttons" id="actionButtons"></div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profilePage" class="hidden">
+                <button class="back-btn" onclick="showDashboard()">← กลับหน้าหลัก</button>
+                
+                <div class="card">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                        <div class="user-avatar" id="profilePageAvatar" style="width: 4rem; height: 4rem; font-size: 2rem;">T</div>
+                        <div>
+                            <h2 id="profilePageUsername" style="font-size: 1.25rem; font-weight: 600; color: #fbbf24;">Username</h2>
+                            <p id="profilePageRole" style="color: #94a3b8;">Role</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-grid">
+                        <div class="profile-info-item">
+                            <strong>ชื่อเต็ม:</strong> <span id="profilePageFullName">-</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <strong>อีเมล:</strong> <span id="profilePageEmail">-</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <strong>เข้าใช้ล่าสุด:</strong> <span id="profilePageLastLogin">-</span>
+                        </div>
+                        <div class="profile-info-item">
+                            <strong>สถานะ:</strong> <span id="profilePageStatus">-</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button class="btn btn-secondary w-full" onclick="showChangePasswordModal()">🔑 เปลี่ยนรหัสผ่าน</button>
+                        <button class="btn btn-danger w-full" onclick="handleLogout()">🚪 ออกจากระบบ</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="showDashboard()">
+                <div class="nav-icon">🏠</div>
+                <div>หน้าหลัก</div>
+            </div>
+            <div class="nav-item" onclick="showReportsPage()">
+                <div class="nav-icon">📊</div>
+                <div>รายงาน</div>
+            </div>
+            <div class="nav-item" onclick="showInventoryPage()">
+                <div class="nav-icon">📦</div>
+                <div>คลัง</div>
+            </div>
+            <div class="nav-item" onclick="showPolesPage()">
+                <div class="nav-icon">🗼</div>
+                <div>เสาไฟฟ้า</div>
+            </div>
+            <div class="nav-item" onclick="showProfilePage()">
+                <div class="nav-icon">👤</div>
+                <div>โปรไฟล์</div>
+            </div>
+        </nav>
+
+        <!-- Modals -->
+        <!-- Print Report Modal -->
+        <div id="printReportModal" class="modal">
+            <div class="modal-content" style="max-width: 900px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">🖨️ พิมพ์รายงานงานซ่อม</h3>
+                    <button class="modal-close" onclick="closePrintReportModal()">×</button>
+                </div>
+                
+                <!-- Report Options -->
+                <div class="form-group">
+                    <label class="form-label">📋 ประเภทรายงาน</label>
+                    <select id="reportType" class="form-select" onchange="updatePrintPreview()">
+                        <option value="summary">รายงานสรุป</option>
+                        <option value="detailed">รายงานละเอียด</option>
+                        <option value="completed">รายการเสร็จสิ้น</option>
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label">📅 ตั้งแต่วันที่</label>
+                        <input type="date" id="printDateFrom" class="form-input" onchange="updatePrintPreview()">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label">📅 ถึงวันที่</label>
+                        <input type="date" id="printDateTo" class="form-input" onchange="updatePrintPreview()">
+                    </div>
+                </div>
+
+                <!-- Print Preview -->
+                <div class="form-group">
+                    <label class="form-label">👁️ ตัวอย่างรายงาน</label>
+                    <div class="print-preview" id="printPreview">
+                        <div class="print-header">
+                            <div class="print-logo">⚡</div>
+                            <div class="print-title">รายงานงานซ่อมไฟฟ้า</div>
+                            <div class="print-subtitle">องค์การบริหารส่วนตำบลข่าใหญ่</div>
+                        </div>
+                        <div class="print-content" id="printContent">
+                            <p style="text-align: center; color: #6b7280; padding: 2rem;">
+                                เลือกข้อมูลเพื่อแสดงตัวอย่างรายงาน
+                            </p>
+                        </div>
+                        <div class="print-footer">
+                            <p>พิมพ์เมื่อ: <span id="printDate"></span> | ช่างเทคนิค: <span id="printTechnician"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons-row" style="margin-top: 2rem;">
+                    <button class="btn btn-success" onclick="generatePDF()" id="generatePDFBtn">
+                        📄 สร้าง PDF
+                    </button>
+                    <button class="btn btn-info" onclick="printReport()">
+                        🖨️ พิมพ์
+                    </button>
+                    <button class="btn btn-secondary" onclick="closePrintReportModal()">
+                        ❌ ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Modal -->
+        <div id="exportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">📤 ส่งออกข้อมูล</h3>
+                    <button class="modal-close" onclick="closeExportModal()">×</button>
+                </div>
+                <div style="display: grid; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="exportToPDF()">
+                        📄 ส่งออกเป็น PDF
+                    </button>
+                    <button class="btn btn-success" onclick="sendToTelegram()" id="telegramBtn">
+                        📱 ส่งรายงานผ่าน Telegram
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeExportModal()">
+                        ❌ ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Print Request Detail Modal -->
+        <div id="printRequestDetailModal" class="modal">
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">🖨️ พิมพ์รายละเอียดงานซ่อม</h3>
+                    <button class="modal-close" onclick="closePrintRequestDetailModal()">×</button>
+                </div>
+                
+                <!-- Detail Preview -->
+                <div class="form-group">
+                    <label class="form-label">👁️ ตัวอย่างเอกสาร</label>
+                    <div class="print-preview" id="requestDetailPreview">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="action-buttons-row" style="margin-top: 2rem;">
+                    <button class="btn btn-success" onclick="generateRequestPDF()">
+                        📄 สร้าง PDF
+                    </button>
+                    <button class="btn btn-info" onclick="printRequestDetail()">
+                        🖨️ พิมพ์
+                    </button>
+                    <button class="btn btn-secondary" onclick="closePrintRequestDetailModal()">
+                        ❌ ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Inventory Modal -->
+        <div id="addInventoryModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">➕ เพิ่มอุปกรณ์ใหม่</h3>
+                    <button class="modal-close" onclick="closeAddInventoryModal()">×</button>
+                </div>
+                <form id="addInventoryForm">
+                    <div class="form-group">
+                        <label class="form-label">📦 ชื่ออุปกรณ์</label>
+                        <input type="text" id="itemName" class="form-input" required placeholder="เช่น หลอดไฟ LED">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📏 หน่วย</label>
+                        <input type="text" id="itemUnit" class="form-input" required placeholder="เช่น ชิ้น, หลอด">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">💰 ราคาต่อหน่วย</label>
+                        <input type="number" id="itemPrice" class="form-input" step="0.01" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📊 จำนวนเริ่มต้น</label>
+                        <input type="number" id="itemStock" class="form-input" required placeholder="0">
+                    </div>
+                    <div class="action-buttons" style="flex-direction: row;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">✅ เพิ่มอุปกรณ์</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeAddInventoryModal()" style="flex:1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Pole Modal -->
+        <div id="addPoleModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">🗼 เพิ่มเสาไฟฟ้าใหม่</h3>
+                    <button class="modal-close" onclick="closeAddPoleModal()">×</button>
+                </div>
+                <form id="addPoleForm">
+                    <div class="form-group">
+                        <label class="form-label">🏷️ รหัสเสาไฟฟ้า</label>
+                        <input type="text" id="poleId" class="form-input" required placeholder="เช่น P001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🏘️ หมู่บ้าน</label>
+                        <input type="text" id="poleVillage" class="form-input" required placeholder="เช่น หมู่ 1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🏗️ ประเภทเสา</label>
+                        <select id="poleType" class="form-input">
+                            <option value="">เลือกประเภท</option>
+                            <option value="เสาคอนกรีต">เสาคอนกรีต</option>
+                            <option value="เสาเหล็ก">เสาเหล็ก</option>
+                            <option value="เสาไฟเบอร์">เสาไฟเบอร์</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔧 ชนิดเสา</label>
+                        <input type="text" id="poleSubtype" class="form-input" placeholder="เช่น เสาคอนกรีต 9 เมตร">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📍 พิกัด GPS</label>
+                        <div style="display: flex; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <button type="button" class="btn btn-info" onclick="getCurrentLocation('add')" id="getLocationBtn">
+                                📍 ดึงตำแหน่งปัจจุบัน
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <div style="flex: 1;">
+                                <label class="form-label" style="margin-bottom: 0.25rem;">Latitude</label>
+                                <input type="number" id="poleLatitude" class="form-input" step="any" placeholder="เช่น 14.123456">
+                            </div>
+                            <div style="flex: 1;">
+                                <label class="form-label" style="margin-bottom: 0.25rem;">Longitude</label>
+                                <input type="number" id="poleLongitude" class="form-input" step="any" placeholder="เช่น 101.123456">
+                            </div>
+                        </div>
+                        <div id="locationStatus" style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; display: none;">
+                            🔄 กำลังดึงตำแหน่ง...
+                        </div>
+                        <div class="gps-info">
+                            <span class="gps-icon">💡</span>
+                            <strong>เคล็ดลับ:</strong> สำหรับความแม่นยำสูงสุด ให้ใช้งานกลางแจ้งและรอให้ GPS ล็อกสัญญาณ
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">💡 ชนิดหลอด</label>
+                        <input type="text" id="poleLampType" class="form-input" placeholder="เช่น LED, Sodium">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">⚡ ขนาดวัตต์</label>
+                        <input type="number" id="poleWattage" class="form-input" placeholder="150">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📅 วันที่ติดตั้ง</label>
+                        <input type="date" id="poleInstallDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🏢 บริษัทผู้ติดตั้ง</label>
+                        <input type="text" id="poleInstallCompany" class="form-input" placeholder="ชื่อบริษัท">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📝 หมายเหตุ</label>
+                        <textarea id="poleNotes" class="form-textarea" rows="3" placeholder="หมายเหตุเพิ่มเติม..."></textarea>
+                    </div>
+                    <div class="action-buttons" style="flex-direction: row;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">✅ เพิ่มเสาไฟฟ้า</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeAddPoleModal()" style="flex:1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Pole Modal -->
+        <div id="editPoleModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">✏️ แก้ไขข้อมูลเสาไฟฟ้า</h3>
+                    <button class="modal-close" onclick="closeEditPoleModal()">×</button>
+                </div>
+                <form id="editPoleForm">
+                    <input type="hidden" id="editPoleOriginalId">
+                    <div class="form-group">
+                        <label class="form-label">🏷️ รหัสเสาไฟฟ้า</label>
+                        <input type="text" id="editPoleId" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🏘️ หมู่บ้าน</label>
+                        <input type="text" id="editPoleVillage" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🏗️ ประเภทเสา</label>
+                        <select id="editPoleType" class="form-input">
+                            <option value="">เลือกประเภท</option>
+                            <option value="เสาคอนกรีต">เสาคอนกรีต</option>
+                            <option value="เสาเหล็ก">เสาเหล็ก</option>
+                            <option value="เสาไฟเบอร์">เสาไฟเบอร์</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔧 ชนิดเสา</label>
+                        <input type="text" id="editPoleSubtype" class="form-input" placeholder="เช่น เสาคอนกรีต 9 เมตร">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📍 พิกัด GPS</label>
+                        <div style="display: flex; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <button type="button" class="btn btn-info" onclick="getCurrentLocation('edit')" id="editGetLocationBtn">
+                                📍 ดึงตำแหน่งปัจจุบัน
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <div style="flex: 1;">
+                                <label class="form-label" style="margin-bottom: 0.25rem;">Latitude</label>
+                                <input type="number" id="editPoleLatitude" class="form-input" step="any" placeholder="เช่น 14.123456">
+                            </div>
+                            <div style="flex: 1;">
+                                <label class="form-label" style="margin-bottom: 0.25rem;">Longitude</label>
+                                <input type="number" id="editPoleLongitude" class="form-input" step="any" placeholder="เช่น 101.123456">
+                            </div>
+                        </div>
+                        <div id="editLocationStatus" style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; display: none;">
+                            🔄 กำลังดึงตำแหน่ง...
+                        </div>
+                        <div class="gps-info">
+                            <span class="gps-icon">💡</span>
+                            <strong>เคล็ดลับ:</strong> สำหรับความแม่นยำสูงสุด ให้ใช้งานกลางแจ้งและรอให้ GPS ล็อกสัญญาณ
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">💡 ชนิดหลอด</label>
+                        <input type="text" id="editPoleLampType" class="form-input" placeholder="เช่น LED, Sodium">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">⚡ ขนาดวัตต์</label>
+                        <input type="number" id="editPoleWattage" class="form-input" placeholder="150">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📅 วันที่ติดตั้ง</label>
+                        <input type="date" id="editPoleInstallDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🏢 บริษัทผู้ติดตั้ง</label>
+                        <input type="text" id="editPoleInstallCompany" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📝 หมายเหตุ</label>
+                        <textarea id="editPoleNotes" class="form-textarea" rows="3"></textarea>
+                    </div>
+                    <div class="action-buttons" style="flex-direction: row;">
+                        <button type="submit" class="btn btn-success" style="flex:1;">💾 บันทึกการแก้ไข</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditPoleModal()" style="flex:1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Adjust Inventory Modal -->
+        <div id="adjustInventoryModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">⚙️ ปรับปรุงจำนวนอุปกรณ์</h3>
+                    <button class="modal-close" onclick="closeAdjustInventoryModal()">×</button>
+                </div>
+                <div id="adjustInventoryContent">
+                    <div class="mb-4">
+                        <label class="form-label">📦 อุปกรณ์: <span id="adjustItemName"></span></label>
+                        <p class="text-sm" style="color: #94a3b8;">คงเหลือปัจจุบัน: <span id="adjustCurrentStock"></span></p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📊 ประเภทการทำรายการ</label>
+                        <select id="adjustType" class="form-input">
+                            <option value="รับเข้า">📥 รับเข้า (เพิ่มสต็อก)</option>
+                            <option value="เบิกจ่าย">📤 เบิกจ่าย (ลดสต็อก)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔢 จำนวน</label>
+                        <input type="number" id="adjustQuantity" class="form-input" min="1" required placeholder="จำนวนที่ต้องการปรับ">
+                    </div>
+                    <div class="action-buttons" style="flex-direction: row;">
+                        <button class="btn btn-primary" onclick="confirmAdjustInventory()" style="flex:1;">✅ ยืนยัน</button>
+                        <button class="btn btn-secondary" onclick="closeAdjustInventoryModal()" style="flex:1;">❌ ยกเลิก</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div id="changePasswordModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">🔑 เปลี่ยนรหัสผ่าน</h3>
+                    <button class="modal-close" onclick="closeChangePasswordModal()">×</button>
+                </div>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label class="form-label">🔒 รหัสผ่านปัจจุบัน</label>
+                        <input type="password" id="currentPassword" class="form-input" required placeholder="รหัสผ่านปัจจุบัน">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🆕 รหัสผ่านใหม่</label>
+                        <input type="password" id="newPasswordChange" class="form-input" required placeholder="รหัสผ่านใหม่">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">✅ ยืนยันรหัสผ่านใหม่</label>
+                        <input type="password" id="confirmNewPassword" class="form-input" required placeholder="ยืนยันรหัสผ่านใหม่">
+                    </div>
+                    <div class="action-buttons" style="margin-top: 1.5rem; flex-direction: row;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">✅ ยืนยัน</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/auth-utils.js"></script>
+    
+    <script>
+        // Global variables
+        let currentUser = null;
+        let allRequests = [];
+        let filteredRequests = [];
+        let allInventory = [];
+        let allPoles = [];
+        let filteredPoles = [];
+        let selectedRequest = null;
+        let selectedInventoryItem = null;
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let currentVillageFilter = '';
+        let currentSearchQuery = '';
+
+        // Page identifiers
+        const PAGES = ['dashboard', 'reports', 'inventory', 'poles', 'detail', 'profile'];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        async function initializeApp() {
+            // Protect this page (require technician or admin role)
+            if (!window.AuthUtils.protectPage(['technician', 'admin'])) {
+                return; 
+            }
+
+            const authUser = window.AuthUtils.getCurrentUser();
+            if (authUser && authUser.user) {
+                try {
+                    const userDetailsResponse = await window.AuthUtils.apiCall(`/api/admin/users/${encodeURIComponent(authUser.user.username)}`);
+                    const userDetailsData = await userDetailsResponse.json();
+
+                    if (userDetailsData.status === 'success' && userDetailsData.data) {
+                        currentUser = {
+                            username: userDetailsData.data.USERNAME,
+                            role: userDetailsData.data.ROLE,
+                            fullName: userDetailsData.data.FULL_NAME,
+                            email: userDetailsData.data.EMAIL,
+                            lastLogin: userDetailsData.data.LAST_LOGIN,
+                            isActive: userDetailsData.data.IS_ACTIVE === 'TRUE', 
+                            token: authUser.token
+                        };
+                    } else {
+                        currentUser = {
+                            username: authUser.user.username,
+                            role: authUser.user.role,
+                            token: authUser.token,
+                            fullName: authUser.user.username, 
+                            email: '-',
+                            lastLogin: '-',
+                            isActive: true 
+                        };
+                    }
+                } catch (error) {
+                    console.error("Error fetching user details:", error);
+                    currentUser = {
+                        username: authUser.user.username,
+                        role: authUser.user.role,
+                        token: authUser.token,
+                        fullName: authUser.user.username,
+                        email: '-',
+                        lastLogin: '-',
+                        isActive: true
+                    };
+                }
+                
+                updateUserDisplay();
+                setupEventListeners();
+                loadData();
+                showDashboard();
+                showToast('ยินดีต้อนรับสู่ระบบช่างเทคนิค! 🔧', 'success');
+            } else {
+                window.AuthUtils.forceLogout('ไม่พบข้อมูลผู้ใช้');
+            }
+        }
+
+        function updateUserDisplay() {
+            if (currentUser) {
+                document.getElementById('userDisplay').textContent = currentUser.username;
+                document.getElementById('userName').textContent = currentUser.username;
+                document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
+                const avatar = document.getElementById('userAvatar');
+                avatar.textContent = currentUser.username.charAt(0).toUpperCase();
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('addInventoryForm').addEventListener('submit', handleAddInventory);
+            document.getElementById('addPoleForm').addEventListener('submit', handleAddPole);
+            document.getElementById('editPoleForm').addEventListener('submit', handleEditPole);
+            document.getElementById('changePasswordForm').addEventListener('submit', handleChangePassword);
+            
+            const poleSearchInput = document.getElementById('poleSearchInput');
+            if (poleSearchInput) {
+                 poleSearchInput.addEventListener('input', function() {
+                    clearTimeout(this.searchTimeout);
+                    this.searchTimeout = setTimeout(() => {
+                        searchPoles();
+                    }, 300);
+                });
+            }
+
+            // Set default dates for filters
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            document.getElementById('filterDateFrom').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('filterDateTo').value = today.toISOString().split('T')[0];
+            document.getElementById('printDateFrom').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('printDateTo').value = today.toISOString().split('T')[0];
+        }
+
+        function showDashboard() {
+            setActivePage('dashboard', 'ระบบช่างเทคนิค', 0);
+        }
+
+        function showReportsPage() {
+            setActivePage('reports', 'รายงานและการพิมพ์', 1);
+            applyFilters(); // Load default filtered data
+        }
+
+        function showInventoryPage() {
+            setActivePage('inventory', 'จัดการคลังอุปกรณ์', 2);
+            loadInventory();
+        }
+
+        function showPolesPage() {
+            setActivePage('poles', 'จัดการเสาไฟฟ้า', 3);
+            loadPoles();
+        }
+
+        function showProfilePage() {
+            setActivePage('profile', 'ข้อมูลส่วนตัว', 4);
+            populateProfilePage();
+        }
+
+        function showDetailPage(request) {
+            selectedRequest = request;
+            setActivePage('detail', 'รายละเอียดงาน', -1);
+            renderRequestDetail();
+        }
+
+        function setActivePage(pageId, title, navIndex) {
+            document.getElementById('pageTitle').textContent = title;
+            
+            PAGES.forEach(page => {
+                const pageElement = document.getElementById(page + 'Page');
+                if (pageElement) pageElement.classList.add('hidden');
+            });
+            
+            const activePageElement = document.getElementById(pageId + 'Page');
+            if (activePageElement) activePageElement.classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach((item, index) => {
+                item.classList.remove('active');
+                if (index === navIndex) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        function populateProfilePage() {
+            if (!currentUser) return;
+
+            document.getElementById('profilePageAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('profilePageUsername').textContent = currentUser.username;
+            document.getElementById('profilePageRole').textContent = getRoleDisplayName(currentUser.role);
+            document.getElementById('profilePageFullName').textContent = currentUser.fullName || '-';
+            document.getElementById('profilePageEmail').textContent = currentUser.email || '-';
+            document.getElementById('profilePageLastLogin').textContent = currentUser.lastLogin ? new Date(currentUser.lastLogin).toLocaleString('th-TH') : 'ยังไม่เคยเข้าใช้';
+            document.getElementById('profilePageStatus').textContent = currentUser.isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+        }
+
+        async function loadData() {
+            await Promise.all([loadRequests(), loadInventory()]);
+        }
+
+        async function loadRequests() {
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/repair-requests?limit=200');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    allRequests = data.data || [];
+                    updateDashboardStats();
+                    renderRequestsSections();
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลดข้อมูลคำขอได้');
+                }
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                showToast('ไม่สามารถโหลดข้อมูลคำขอได้: ' + error.message, 'error');
+            }
+        }
+
+        async function loadInventory() {
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/inventory');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    allInventory = data.data || [];
+                    updateInventoryStats();
+                    renderInventoryList();
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลดข้อมูลคลังได้');
+                }
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+                showToast('ไม่สามารถโหลดข้อมูลคลังได้: ' + error.message, 'error');
+            }
+        }
+
+        async function loadPoles() {
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/poles');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    allPoles = data.data || [];
+                    filteredPoles = [...allPoles]; 
+                    currentPage = 1; 
+                    applyFiltersAndRenderPoles(); 
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถโหลดข้อมูลเสาไฟฟ้าได้');
+                }
+            } catch (error) {
+                console.error('Error loading poles:', error);
+                showToast('ไม่สามารถโหลดข้อมูลเสาไฟฟ้าได้: ' + error.message, 'error');
+            }
+        }
+
+        function updateDashboardStats() {
+            const approvedRequests = allRequests.filter(r => r.STATUS === 'อนุมัติแล้วรอช่าง');
+            const inProgressRequests = allRequests.filter(r => r.STATUS === 'กำลังดำเนินการ');
+            const completedRequests = allRequests.filter(r => r.STATUS === 'เสร็จสิ้น');
+            
+            const totalEl = document.getElementById('totalCount');
+            if (totalEl) totalEl.textContent = allRequests.length;
+            const inProgEl = document.getElementById('inProgressCount');
+            if (inProgEl) inProgEl.textContent = inProgressRequests.length;
+            const compEl = document.getElementById('completedCount');
+            if (compEl) compEl.textContent = completedRequests.length;
+        }
+
+        function updateInventoryStats() {
+            const lowStockCount = allInventory.filter(item => item.CURRENT_STOCK < 10).length;
+            const invCountEl = document.getElementById('inventoryCount');
+            if (invCountEl) invCountEl.textContent = lowStockCount;
+        }
+
+        function renderRequestsSections() {
+            const approvedRequests = allRequests.filter(r => r.STATUS === 'อนุมัติแล้วรอช่าง' || r.STATUS === 'กำลังดำเนินการ');
+            const pendingRequests = allRequests.filter(r => r.STATUS === 'รอดำเนินการ');
+            
+            const approvedBadgeEl = document.getElementById('approvedBadge');
+            if (approvedBadgeEl) approvedBadgeEl.textContent = `${approvedRequests.length} รายการ`;
+            const pendingBadgeEl = document.getElementById('pendingBadge');
+            if (pendingBadgeEl) pendingBadgeEl.textContent = `${pendingRequests.length} รายการ`;
+            
+            const approvedContainer = document.getElementById('approvedRequests');
+            if (approvedContainer) {
+                if (approvedRequests.length === 0) {
+                    approvedContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <p>ไม่มีรายการที่อนุมัติแล้ว</p>
+                        </div>
+                    `;
+                } else {
+                    approvedContainer.innerHTML = approvedRequests.map(request => `
+                        <div class="request-card" onclick='showDetailPage(${JSON.stringify(request).replace(/'/g, "&apos;")})'>
+                            <div class="request-header">
+                                <span class="request-id">🎫 ${request.REQUEST_ID}</span>
+                                <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'อนุมัติแล้วรอช่าง'}</span>
+                            </div>
+                            <div class="request-info">
+                                <span class="request-info-icon">👤</span>
+                                <span style="color: #f8fafc;">${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</span>
+                            </div>
+                            <div class="request-info">
+                                <span class="request-info-icon">📍</span>
+                                <span>บ้านเลขที่ ${request.HOUSE_NO}, ${request.MOO}</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 1rem; padding: 1rem; background: rgba(15, 23, 42, 0.3); border-radius: 0.5rem; border-left: 4px solid #fbbf24;">
+                                <strong style="color: #fbbf24;">🔧 ปัญหา:</strong> ${request.REASON}
+                            </p>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            const pendingContainer = document.getElementById('pendingRequests');
+            if (pendingContainer) {
+                if (pendingRequests.length === 0) {
+                    pendingContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">⏰</div>
+                            <p>ไม่มีรายการรอการอนุมัติ</p>
+                        </div>
+                    `;
+                } else {
+                    pendingContainer.innerHTML = pendingRequests.map(request => `
+                        <div class="request-card" onclick='showDetailPage(${JSON.stringify(request).replace(/'/g, "&apos;")})'>
+                            <div class="request-header">
+                                <span class="request-id">🎫 ${request.REQUEST_ID}</span>
+                                <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
+                            </div>
+                            <div class="request-info">
+                                <span class="request-info-icon">👤</span>
+                                <span style="color: #f8fafc;">${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</span>
+                            </div>
+                            <div class="request-info">
+                                <span class="request-info-icon">📍</span>
+                                <span>บ้านเลขที่ ${request.HOUSE_NO}, ${request.MOO}</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 1rem; padding: 1rem; background: rgba(15, 23, 42, 0.3); border-radius: 0.5rem; border-left: 4px solid #fbbf24;">
+                                <strong style="color: #fbbf24;">🔧 ปัญหา:</strong> ${request.REASON}
+                            </p>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        // Reports Functions
+        function applyFilters() {
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+            const status = document.getElementById('filterStatus').value;
+            
+            filteredRequests = allRequests.filter(request => {
+                const requestDate = new Date(request.DATE_REPORTED);
+                const fromDate = dateFrom ? new Date(dateFrom) : null;
+                const toDate = dateTo ? new Date(dateTo + 'T23:59:59') : null;
+                
+                const dateMatch = (!fromDate || requestDate >= fromDate) && 
+                                 (!toDate || requestDate <= toDate);
+                const statusMatch = !status || request.STATUS === status;
+                
+                return dateMatch && statusMatch;
+            });
+            
+            renderFilteredResults();
+        }
+
+        function renderFilteredResults() {
+            const container = document.getElementById('filteredResults');
+            const badge = document.getElementById('filteredResultsBadge');
+            
+            if (badge) badge.textContent = `${filteredRequests.length} รายการ`;
+            
+            if (!container) return;
+            
+            if (filteredRequests.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p>ไม่พบรายการที่ตรงกับเงื่อนไขการกรอง</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredRequests.map(request => `
+                <div class="request-card" onclick='showDetailPage(${JSON.stringify(request).replace(/'/g, "&apos;")})'>
+                    <div class="request-header">
+                        <span class="request-id">🎫 ${request.REQUEST_ID}</span>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
+                            <button class="btn btn-info" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" 
+                                    onclick="event.stopPropagation(); showPrintRequestDetailModal('${request.REQUEST_ID}')">
+                                🖨️
+                            </button>
+                        </div>
+                    </div>
+                    <div class="request-info">
+                        <span class="request-info-icon">👤</span>
+                        <span style="color: #f8fafc;">${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</span>
+                    </div>
+                    <div class="request-info">
+                        <span class="request-info-icon">📅</span>
+                        <span>${new Date(request.DATE_REPORTED).toLocaleDateString('th-TH')}</span>
+                    </div>
+                    <div class="request-info">
+                        <span class="request-info-icon">📍</span>
+                        <span>บ้านเลขที่ ${request.HOUSE_NO}, ${request.MOO}</span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 1rem; padding: 1rem; background: rgba(15, 23, 42, 0.3); border-radius: 0.5rem; border-left: 4px solid #fbbf24;">
+                        <strong style="color: #fbbf24;">🔧 ปัญหา:</strong> ${request.REASON}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        // Print Functions
+        function showMyWorkReport() {
+            showToast('ฟีเจอร์รายงานงานของฉันจะพัฒนาเร็วๆ นี้ 📊', 'info');
+        }
+
+        function showPrintReportModal() {
+            document.getElementById('printReportModal').classList.add('show');
+            updatePrintPreview();
+        }
+
+        function closePrintReportModal() {
+            document.getElementById('printReportModal').classList.remove('show');
+        }
+
+        function updatePrintPreview() {
+            const reportType = document.getElementById('reportType').value;
+            const dateFrom = document.getElementById('printDateFrom').value;
+            const dateTo = document.getElementById('printDateTo').value;
+            
+            // Update print date and technician
+            document.getElementById('printDate').textContent = new Date().toLocaleDateString('th-TH');
+            document.getElementById('printTechnician').textContent = currentUser ? currentUser.username : 'Unknown';
+            
+            // Filter requests for preview
+            const previewRequests = allRequests.filter(request => {
+                const requestDate = new Date(request.DATE_REPORTED);
+                const fromDate = dateFrom ? new Date(dateFrom) : null;
+                const toDate = dateTo ? new Date(dateTo + 'T23:59:59') : null;
+                
+                return (!fromDate || requestDate >= fromDate) && 
+                       (!toDate || requestDate <= toDate);
+            });
+            
+            generatePreviewContent(reportType, previewRequests, dateFrom, dateTo);
+        }
+
+        function generatePreviewContent(reportType, requests, dateFrom, dateTo) {
+            const printContent = document.getElementById('printContent');
+            
+            let content = `
+                <div class="print-section">
+                    <div class="print-section-title">ข้อมูลรายงาน</div>
+                    <div class="print-info-grid">
+                        <div class="print-info-item">
+                            <div class="print-info-label">ประเภทรายงาน</div>
+                            <div class="print-info-value">${getReportTypeName(reportType)}</div>
+                        </div>
+                        <div class="print-info-item">
+                            <div class="print-info-label">ช่วงวันที่</div>
+                            <div class="print-info-value">${formatDateRange(dateFrom, dateTo)}</div>
+                        </div>
+                        <div class="print-info-item">
+                            <div class="print-info-label">จำนวนรายการ</div>
+                            <div class="print-info-value">${requests.length} รายการ</div>
+                        </div>
+                        <div class="print-info-item">
+                            <div class="print-info-label">ผู้สร้างรายงาน</div>
+                            <div class="print-info-value">${currentUser ? currentUser.username : 'Unknown'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (reportType === 'summary') {
+                content += generateSummaryContent(requests);
+            } else if (reportType === 'detailed') {
+                content += generateDetailedContent(requests);
+            } else if (reportType === 'completed') {
+                const completedRequests = requests.filter(r => r.STATUS === 'เสร็จสิ้น');
+                content += generateDetailedContent(completedRequests);
+            }
+            
+            printContent.innerHTML = content;
+        }
+
+        function generateSummaryContent(requests) {
+            const statusCount = {};
+            requests.forEach(request => {
+                const status = request.STATUS || 'รอดำเนินการ';
+                statusCount[status] = (statusCount[status] || 0) + 1;
+            });
+            
+            return `
+                <div class="print-section">
+                    <div class="print-section-title">สรุปตามสถานะ</div>
+                    ${Object.keys(statusCount).map(status => `
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #e5e7eb;">
+                            <span>${status}</span>
+                            <span style="font-weight: bold;">${statusCount[status]} รายการ</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function generateDetailedContent(requests) {
+            if (requests.length === 0) {
+                return `<div class="print-section"><p style="text-align: center; color: #6b7280;">ไม่มีข้อมูลในช่วงเวลาที่เลือก</p></div>`;
+            }
+            
+            return `
+                <div class="print-section">
+                    <div class="print-section-title">รายการละเอียด</div>
+                    ${requests.slice(0, 10).map((request, index) => `
+                        <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
+                            <div style="font-weight: bold; margin-bottom: 0.5rem;">${index + 1}. ${request.REQUEST_ID}</div>
+                            <div class="print-info-grid">
+                                <div class="print-info-item">
+                                    <div class="print-info-label">ผู้แจ้ง</div>
+                                    <div class="print-info-value">${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</div>
+                                </div>
+                                <div class="print-info-item">
+                                    <div class="print-info-label">เบอร์โทร</div>
+                                    <div class="print-info-value">${request.PHONE}</div>
+                                </div>
+                                <div class="print-info-item">
+                                    <div class="print-info-label">ที่อยู่</div>
+                                    <div class="print-info-value">บ้านเลขที่ ${request.HOUSE_NO}, ${request.MOO}</div>
+                                </div>
+                                <div class="print-info-item">
+                                    <div class="print-info-label">สถานะ</div>
+                                    <div class="print-info-value">${request.STATUS || 'รอดำเนินการ'}</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.5rem;">
+                                <div class="print-info-label">ปัญหา</div>
+                                <div class="print-info-value">${request.REASON}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${requests.length > 10 ? `<p style="text-align: center; margin-top: 1rem; color: #6b7280;">แสดง 10 รายการแรก จากทั้งหมด ${requests.length} รายการ</p>` : ''}
+                </div>
+            `;
+        }
+
+        function getReportTypeName(type) {
+            const types = {
+                'summary': 'รายงานสรุป',
+                'detailed': 'รายงานละเอียด',
+                'completed': 'รายการเสร็จสิ้น'
+            };
+            return types[type] || type;
+        }
+
+        function formatDateRange(dateFrom, dateTo) {
+            if (!dateFrom && !dateTo) return 'ทั้งหมด';
+            if (!dateFrom) return `ถึง ${new Date(dateTo).toLocaleDateString('th-TH')}`;
+            if (!dateTo) return `ตั้งแต่ ${new Date(dateFrom).toLocaleDateString('th-TH')}`;
+            return `${new Date(dateFrom).toLocaleDateString('th-TH')} - ${new Date(dateTo).toLocaleDateString('th-TH')}`;
+        }
+
+        function generatePDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add title
+                doc.setFontSize(20);
+                doc.text('รายงานงานซ่อมไฟฟ้า', 105, 20, { align: 'center' });
+                
+                doc.setFontSize(16);
+                doc.text('องค์การบริหารส่วนตำบลข่าใหญ่', 105, 30, { align: 'center' });
+                
+                // Add report info
+                doc.setFontSize(12);
+                const reportType = document.getElementById('reportType').value;
+                const dateFrom = document.getElementById('printDateFrom').value;
+                const dateTo = document.getElementById('printDateTo').value;
+                
+                doc.text(`ประเภทรายงาน: ${getReportTypeName(reportType)}`, 20, 50);
+                doc.text(`ช่วงวันที่: ${formatDateRange(dateFrom, dateTo)}`, 20, 60);
+                doc.text(`ผู้สร้างรายงาน: ${currentUser ? currentUser.username : 'Unknown'}`, 20, 70);
+                doc.text(`วันที่พิมพ์: ${new Date().toLocaleDateString('th-TH')}`, 20, 80);
+                
+                // Add filtered data summary
+                const previewRequests = allRequests.filter(request => {
+                    const requestDate = new Date(request.DATE_REPORTED);
+                    const fromDate = dateFrom ? new Date(dateFrom) : null;
+                    const toDate = dateTo ? new Date(dateTo + 'T23:59:59') : null;
+                    
+                    return (!fromDate || requestDate >= fromDate) && 
+                           (!toDate || requestDate <= toDate);
+                });
+                
+                doc.text(`จำนวนรายการทั้งหมด: ${previewRequests.length}`, 20, 100);
+                
+                // Save PDF
+                const fileName = `รายงานงานซ่อม_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+                
+                showToast('สร้าง PDF สำเร็จ! 📄', 'success');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                showToast('เกิดข้อผิดพลาดในการสร้าง PDF', 'error');
+            }
+        }
+
+        function printReport() {
+            const printContent = document.getElementById('printPreview').innerHTML;
+            const printWindow = window.open('', '_blank');
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>รายงานงานซ่อมไฟฟ้า</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .print-preview { background: white; color: black; }
+                        .print-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #fbbf24; }
+                        .print-logo { font-size: 2rem; color: #fbbf24; margin-bottom: 0.5rem; }
+                        .print-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.25rem; }
+                        .print-subtitle { color: #6b7280; font-size: 0.9rem; }
+                        .print-section { margin-bottom: 1.5rem; }
+                        .print-section-title { font-weight: 600; margin-bottom: 0.5rem; font-size: 1.1rem; }
+                        .print-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+                        .print-info-item { display: flex; flex-direction: column; }
+                        .print-info-label { font-weight: 500; color: #6b7280; font-size: 0.8rem; margin-bottom: 0.25rem; }
+                        .print-info-value { color: #1f2937; font-size: 0.9rem; }
+                        .print-footer { text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.8rem; }
+                        @media print { body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-preview">${printContent}</div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                showToast('เปิดหน้าต่างพิมพ์แล้ว 🖨️', 'success');
+            }, 250);
+        }
+
+        // Print Request Detail Functions
+        function showPrintRequestDetailModal(requestId) {
+            const request = allRequests.find(r => r.REQUEST_ID === requestId);
+            if (!request) {
+                showToast('ไม่พบข้อมูลรายการนี้', 'error');
+                return;
+            }
+            
+            selectedRequest = request;
+            generateRequestDetailPreview(request);
+            document.getElementById('printRequestDetailModal').classList.add('show');
+        }
+
+        function closePrintRequestDetailModal() {
+            document.getElementById('printRequestDetailModal').classList.remove('show');
+        }
+
+        function generateRequestDetailPreview(request) {
+            const preview = document.getElementById('requestDetailPreview');
+            
+            preview.innerHTML = `
+                <div class="print-header">
+                    <div class="print-logo">⚡</div>
+                    <div class="print-title">รายละเอียดงานซ่อมไฟฟ้า</div>
+                    <div class="print-subtitle">องค์การบริหารส่วนตำบลข่าใหญ่</div>
+                </div>
+                <div class="print-content">
+                    <div class="print-section">
+                        <div class="print-section-title">ข้อมูลคำขอ</div>
+                        <div class="print-info-grid">
+                            <div class="print-info-item">
+                                <div class="print-info-label">เลขที่คำขอ</div>
+                                <div class="print-info-value">${request.REQUEST_ID}</div>
+                            </div>
+                            <div class="print-info-item">
+                                <div class="print-info-label">วันที่แจ้ง</div>
+                                <div class="print-info-value">${new Date(request.DATE_REPORTED).toLocaleDateString('th-TH')}</div>
+                            </div>
+                            <div class="print-info-item">
+                                <div class="print-info-label">สถานะ</div>
+                                <div class="print-info-value">${request.STATUS || 'รอดำเนินการ'}</div>
+                            </div>
+                            <div class="print-info-item">
+                                <div class="print-info-label">รหัสเสาไฟฟ้า</div>
+                                <div class="print-info-value">${request.POLE_ID || 'ไม่ระบุ'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="print-section">
+                        <div class="print-section-title">ข้อมูลผู้แจ้ง</div>
+                        <div class="print-info-grid">
+                            <div class="print-info-item">
+                                <div class="print-info-label">ชื่อ-นามสกุล</div>
+                                <div class="print-info-value">${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</div>
+                            </div>
+                            <div class="print-info-item">
+                                <div class="print-info-label">เบอร์โทรติดต่อ</div>
+                                <div class="print-info-value">${request.PHONE}</div>
+                            </div>
+                            <div class="print-info-item">
+                                <div class="print-info-label">ที่อยู่</div>
+                                <div class="print-info-value">บ้านเลขที่ ${request.HOUSE_NO}</div>
+                            </div>
+                            <div class="print-info-item">
+                                <div class="print-info-label">หมู่บ้าน</div>
+                                <div class="print-info-value">${request.MOO}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="print-section">
+                        <div class="print-section-title">รายละเอียดปัญหา</div>
+                        <div class="print-info-item">
+                            <div class="print-info-label">สาเหตุการชำรุด</div>
+                            <div class="print-info-value">${request.REASON}</div>
+                        </div>
+                        ${request.PROBLEM_DESCRIPTION ? `
+                            <div class="print-info-item" style="margin-top: 1rem;">
+                                <div class="print-info-label">รายละเอียดเพิ่มเติม</div>
+                                <div class="print-info-value">${request.PROBLEM_DESCRIPTION}</div>
+                            </div>
+                        ` : ''}
+                        ${request.TECHNICIAN_NOTES ? `
+                            <div class="print-info-item" style="margin-top: 1rem;">
+                                <div class="print-info-label">หมายเหตุจากช่าง</div>
+                                <div class="print-info-value">${request.TECHNICIAN_NOTES}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="print-footer">
+                    <p>พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH')} | ช่างเทคนิค: ${currentUser ? currentUser.username : 'Unknown'}</p>
+                </div>
+            `;
+        }
+
+        function generateRequestPDF() {
+            if (!selectedRequest) return;
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add title
+                doc.setFontSize(20);
+                doc.text('รายละเอียดงานซ่อมไฟฟ้า', 105, 20, { align: 'center' });
+                
+                doc.setFontSize(16);
+                doc.text('องค์การบริหารส่วนตำบลข่าใหญ่', 105, 30, { align: 'center' });
+                
+                // Add request details
+                doc.setFontSize(12);
+                let yPosition = 50;
+                
+                doc.text(`เลขที่คำขอ: ${selectedRequest.REQUEST_ID}`, 20, yPosition);
+                yPosition += 10;
+                doc.text(`วันที่แจ้ง: ${new Date(selectedRequest.DATE_REPORTED).toLocaleDateString('th-TH')}`, 20, yPosition);
+                yPosition += 10;
+                doc.text(`สถานะ: ${selectedRequest.STATUS || 'รอดำเนินการ'}`, 20, yPosition);
+                yPosition += 20;
+                
+                doc.text('ข้อมูลผู้แจ้ง:', 20, yPosition);
+                yPosition += 10;
+                doc.text(`ชื่อ: ${selectedRequest.TITLE_PREFIX} ${selectedRequest.FIRST_NAME} ${selectedRequest.LAST_NAME}`, 30, yPosition);
+                yPosition += 10;
+                doc.text(`เบอร์โทร: ${selectedRequest.PHONE}`, 30, yPosition);
+                yPosition += 10;
+                doc.text(`ที่อยู่: บ้านเลขที่ ${selectedRequest.HOUSE_NO}, ${selectedRequest.MOO}`, 30, yPosition);
+                yPosition += 20;
+                
+                doc.text('รายละเอียดปัญหา:', 20, yPosition);
+                yPosition += 10;
+                doc.text(`สาเหตุ: ${selectedRequest.REASON}`, 30, yPosition);
+                
+                if (selectedRequest.TECHNICIAN_NOTES) {
+                    yPosition += 20;
+                    doc.text('หมายเหตุจากช่าง:', 20, yPosition);
+                    yPosition += 10;
+                    doc.text(selectedRequest.TECHNICIAN_NOTES, 30, yPosition);
+                }
+                
+                // Add footer
+                doc.setFontSize(10);
+                doc.text(`พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH')} | ช่างเทคนิค: ${currentUser ? currentUser.username : 'Unknown'}`, 105, 280, { align: 'center' });
+                
+                // Save PDF
+                const fileName = `รายละเอียดงาน_${selectedRequest.REQUEST_ID}.pdf`;
+                doc.save(fileName);
+                
+                showToast('สร้าง PDF สำเร็จ! 📄', 'success');
+            } catch (error) {
+                console.error('Error generating request PDF:', error);
+                showToast('เกิดข้อผิดพลาดในการสร้าง PDF', 'error');
+            }
+        }
+
+        function printRequestDetail() {
+            if (!selectedRequest) return;
+            
+            const printContent = document.getElementById('requestDetailPreview').innerHTML;
+            const printWindow = window.open('', '_blank');
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>รายละเอียดงานซ่อม - ${selectedRequest.REQUEST_ID}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .print-preview { background: white; color: black; }
+                        .print-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #fbbf24; }
+                        .print-logo { font-size: 2rem; color: #fbbf24; margin-bottom: 0.5rem; }
+                        .print-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.25rem; }
+                        .print-subtitle { color: #6b7280; font-size: 0.9rem; }
+                        .print-section { margin-bottom: 1.5rem; }
+                        .print-section-title { font-weight: 600; margin-bottom: 0.5rem; font-size: 1.1rem; }
+                        .print-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+                        .print-info-item { display: flex; flex-direction: column; }
+                        .print-info-label { font-weight: 500; color: #6b7280; font-size: 0.8rem; margin-bottom: 0.25rem; }
+                        .print-info-value { color: #1f2937; font-size: 0.9rem; }
+                        .print-footer { text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.8rem; }
+                        @media print { body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-preview">${printContent}</div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                showToast('เปิดหน้าต่างพิมพ์แล้ว 🖨️', 'success');
+            }, 250);
+        }
+
+        // Export Functions
+        function showExportModal() {
+            document.getElementById('exportModal').classList.add('show');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('show');
+        }
+
+        async function exportToPDF() {
+            try {
+                showToast('กำลังสร้าง PDF...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/reports/repair-requests/pdf', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        templateOptions: {
+                            title: `รายงานงานซ่อมไฟฟ้า - ${new Date().toLocaleDateString('th-TH')}`,
+                            headerColor: '#fbbf24',
+                            showDate: true,
+                            technician: currentUser ? currentUser.username : 'Unknown'
+                        },
+                        filterOptions: {
+                            dateFrom: document.getElementById('filterDateFrom').value,
+                            dateTo: document.getElementById('filterDateTo').value,
+                            status: document.getElementById('filterStatus').value
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `รายงานงานซ่อมไฟฟ้า_${new Date().toISOString().split('T')[0]}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showToast('ส่งออก PDF สำเร็จ! 📄', 'success');
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || 'ไม่สามารถสร้าง PDF ได้');
+                }
+            } catch (error) {
+                console.error('Error exporting PDF:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+            closeExportModal();
+        }
+
+        async function sendToTelegram() {
+            try {
+                showToast('กำลังส่งรายงานผ่าน Telegram...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/notifications/send-report', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        reportType: 'technician_summary',
+                        technician: currentUser ? currentUser.username : 'Unknown',
+                        filters: {
+                            dateFrom: document.getElementById('filterDateFrom').value,
+                            dateTo: document.getElementById('filterDateTo').value,
+                            status: document.getElementById('filterStatus').value
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('ส่งรายงานผ่าน Telegram สำเร็จ! 📱', 'success');
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถส่งผ่าน Telegram ได้');
+                }
+            } catch (error) {
+                console.error('Error sending to Telegram:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+            closeExportModal();
+        }
+
+        function renderInventoryList() {
+            const container = document.getElementById('inventoryList');
+            if (!container) return;
+            
+            if (allInventory.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📦</div>
+                        <p>ไม่มีอุปกรณ์ในคลัง</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = allInventory.map(item => `
+                <div class="inventory-item">
+                    <div class="inventory-header">
+                        <div class="inventory-name">📦 ${item.ITEM_NAME}</div>
+                        <div class="inventory-stock">
+                            <span class="stock-badge ${item.CURRENT_STOCK < 10 ? 'stock-low' : 'stock-normal'}">
+                                ${item.CURRENT_STOCK} ${item.UNIT}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.75rem;">
+                        💰 ราคา: ${item.PRICE_PER_UNIT} บาท/${item.UNIT}
+                    </div>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="showAdjustInventoryModal('${item.ITEM_NAME}', ${item.CURRENT_STOCK})">
+                            ⚙️
+                        </button>
+                        <span style="font-size: 0.9rem; color: #94a3b8;">ปรับปรุงจำนวน</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPolesList() {
+            const container = document.getElementById('polesList');
+            if (!container) return;
+            
+            if (filteredPoles.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🗼</div>
+                        <p>ไม่มีข้อมูลเสาไฟฟ้าที่ตรงกับการค้นหา</p>
+                    </div>
+                `;
+                updatePolesPagination();
+                return;
+            }
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentPagePoles = filteredPoles.slice(startIndex, endIndex);
+            const polesByVillage = groupPolesByVillage(currentPagePoles);
+            
+            let html = '';
+            Object.keys(polesByVillage).sort().forEach(village => {
+                const poles = polesByVillage[village];
+                html += `
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05)); padding: 1rem; margin: -2rem -2rem 1.5rem -2rem; border-radius: 1rem 1rem 0 0; border-bottom: 1px solid rgba(251, 191, 36, 0.2);">
+                            <h3 style="font-size: 1.1rem; font-weight: 700; color: #fbbf24; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                📍 ${village} <span style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem;">${poles.length} เสา</span>
+                            </h3>
+                        </div>
+                        <div style="display: grid; gap: 1rem;">
+                            ${poles.map(pole => `
+                                <div class="inventory-item" style="border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 0.75rem; background: linear-gradient(135deg, rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.2));">
+                                    <div class="inventory-header">
+                                        <div class="inventory-name" style="color: #fbbf24;">
+                                            🗼 รหัส: <strong>${pole.POLE_ID_HEADER}</strong>
+                                        </div>
+                                        <div class="inventory-stock">
+                                            <span class="stock-badge stock-normal" style="font-size: 0.8rem; background: rgba(16, 185, 129, 0.2); color: #86efac;">
+                                                ${pole.POLE_TYPE_HEADER || 'ไม่ระบุประเภท'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.75rem; display: grid; gap: 0.5rem;">
+                                        ${pole.POLE_SUBTYPE_HEADER ? `<div>🔧 ชนิด: ${pole.POLE_SUBTYPE_HEADER}</div>` : ''}
+                                        ${pole.LAMP_TYPE_HEADER ? `<div>💡 หลอด: ${pole.LAMP_TYPE_HEADER} ${pole.WATTAGE_HEADER ? `(${pole.WATTAGE_HEADER} วัตต์)` : ''}</div>` : ''}
+                                        ${pole.INSTALL_DATE_HEADER ? `<div>📅 ติดตั้ง: ${new Date(pole.INSTALL_DATE_HEADER).toLocaleDateString('th-TH')}</div>` : ''}
+                                        ${pole.LATITUDE_HEADER && pole.LONGITUDE_HEADER ? `
+                                            <div style="color: #10b981;">📍 พิกัด: ${parseFloat(pole.LATITUDE_HEADER).toFixed(4)}, ${parseFloat(pole.LONGITUDE_HEADER).toFixed(4)}</div>
+                                        ` : ''}
+                                        ${pole.NOTES_HEADER ? `<div>📝 หมายเหตุ: ${pole.NOTES_HEADER}</div>` : ''}
+                                    </div>
+                                    ${pole.LATITUDE_HEADER && pole.LONGITUDE_HEADER ? `
+                                        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                                            <button class="navigation-btn" onclick="navigateToPole(${pole.LATITUDE_HEADER}, ${pole.LONGITUDE_HEADER})" style="flex: 1; margin: 0; padding: 0.75rem;">
+                                                🗺️ ดูตำแหน่ง
+                                            </button>
+                                            <button class="btn btn-warning" onclick="editPole('${pole.POLE_ID_HEADER}')" style="padding: 0.75rem; font-size: 0.8rem;">
+                                                ✏️ แก้ไข
+                                            </button>
+                                        </div>
+                                    ` : `
+                                        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                                            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 0.5rem; padding: 0.75rem; flex: 1; font-size: 0.8rem; color: #fcd34d;">
+                                                ⚠️ ยังไม่มีข้อมูลพิกัด GPS
+                                            </div>
+                                            <button class="btn btn-warning" onclick="editPole('${pole.POLE_ID_HEADER}')" style="padding: 0.75rem; font-size: 0.8rem;">
+                                                ✏️ แก้ไข
+                                            </button>
+                                        </div>
+                                    `}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            updatePolesPagination();
+            updatePolesPageStats();
+        }
+
+        function groupPolesByVillage(poles) {
+            const grouped = {};
+            poles.forEach(pole => {
+                const village = pole.VILLAGE_HEADER || 'ไม่ระบุหมู่บ้าน';
+                if (!grouped[village]) grouped[village] = [];
+                grouped[village].push(pole);
+            });
+            return grouped;
+        }
+
+        function updatePolesPageStats() {
+            const villages = [...new Set(allPoles.map(pole => pole.VILLAGE_HEADER).filter(Boolean))];
+            
+            const totalPolesEl = document.getElementById('totalPolesCount');
+            if (totalPolesEl) totalPolesEl.textContent = allPoles.length;
+            const villageCountEl = document.getElementById('villageCount');
+            if (villageCountEl) villageCountEl.textContent = villages.length;
+            const filteredCountEl = document.getElementById('filteredCount');
+            if (filteredCountEl) filteredCountEl.textContent = filteredPoles.length;
+            
+            const villageFilter = document.getElementById('villageFilter');
+            if (villageFilter) {
+                const currentVal = villageFilter.value;
+                villageFilter.innerHTML = '<option value="">ทั้งหมด</option>';
+                villages.sort().forEach(village => {
+                    const option = document.createElement('option');
+                    option.value = village;
+                    option.textContent = village;
+                    villageFilter.appendChild(option);
+                });
+                villageFilter.value = currentVal;
+            }
+        }
+
+        function updatePolesPagination() {
+            const totalPages = Math.ceil(filteredPoles.length / itemsPerPage);
+            const prevBtn = document.getElementById('prevPageBtn');
+            const nextBtn = document.getElementById('nextPageBtn');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const paginationElement = document.getElementById('polesPagination');
+
+            if (!prevBtn || !nextBtn || !paginationInfo || !paginationElement) return;
+            
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+            
+            if (totalPages > 0) {
+                const startItem = (currentPage - 1) * itemsPerPage + 1;
+                const endItem = Math.min(currentPage * itemsPerPage, filteredPoles.length);
+                paginationInfo.textContent = `แสดง ${startItem}-${endItem} จาก ${filteredPoles.length} รายการ (หน้า ${currentPage}/${totalPages})`;
+            } else {
+                paginationInfo.textContent = 'ไม่มีข้อมูล';
+            }
+            paginationElement.style.display = totalPages <= 1 ? 'none' : 'block';
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredPoles.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderPolesList();
+            }
+        }
+
+        function filterByVillage() {
+            const villageFilterEl = document.getElementById('villageFilter');
+            if (villageFilterEl) currentVillageFilter = villageFilterEl.value;
+            currentPage = 1; 
+            applyFiltersAndRenderPoles();
+        }
+
+        function searchPoles() {
+            const poleSearchInputEl = document.getElementById('poleSearchInput');
+            if (poleSearchInputEl) currentSearchQuery = poleSearchInputEl.value.toLowerCase().trim();
+            currentPage = 1; 
+            applyFiltersAndRenderPoles();
+        }
+
+        function applyFiltersAndRenderPoles() {
+            filteredPoles = allPoles.filter(pole => {
+                const villageMatch = !currentVillageFilter || pole.VILLAGE_HEADER === currentVillageFilter;
+                const searchMatch = !currentSearchQuery || 
+                    (pole.POLE_ID_HEADER && pole.POLE_ID_HEADER.toLowerCase().includes(currentSearchQuery)) ||
+                    (pole.VILLAGE_HEADER && pole.VILLAGE_HEADER.toLowerCase().includes(currentSearchQuery)) ||
+                    (pole.POLE_TYPE_HEADER && pole.POLE_TYPE_HEADER.toLowerCase().includes(currentSearchQuery)) ||
+                    (pole.NOTES_HEADER && pole.NOTES_HEADER.toLowerCase().includes(currentSearchQuery));
+                return villageMatch && searchMatch;
+            });
+            renderPolesList();
+        }
+
+        function renderRequestDetail() {
+            const request = selectedRequest;
+            const detailsContainer = document.getElementById('requestDetails');
+            const actionButtonsContainer = document.getElementById('actionButtons');
+            if (!detailsContainer || !actionButtonsContainer) return;
+
+            detailsContainer.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.3rem; font-weight: 700; color: #fbbf24;">🎫 ${request.REQUEST_ID}</h2>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
+                        <button class="btn btn-info" style="padding: 0.5rem 0.75rem; font-size: 0.8rem;" 
+                                onclick="showPrintRequestDetailModal('${request.REQUEST_ID}')">
+                            🖨️ พิมพ์
+                        </button>
+                    </div>
+                </div>
+                <div style="display: grid; gap: 1.5rem;">
+                    <div class="detail-section">
+                        <div class="detail-label">👤 ผู้แจ้ง</div>
+                        <div class="detail-value">${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">📞 เบอร์โทรติดต่อ</div>
+                        <div class="detail-value">
+                            <a href="tel:${request.PHONE}" style="color: #10b981; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                                📞 ${request.PHONE}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">📍 ที่อยู่</div>
+                        <div class="detail-value">บ้านเลขที่ ${request.HOUSE_NO}, ${request.MOO}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">⚡ รหัสเสาไฟฟ้า</div>
+                        <div class="detail-value" style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span>${request.POLE_ID || 'ไม่ระบุ'}</span>
+                            ${request.POLE_ID && request.POLE_ID !== 'ไม่ระบุ' ? `
+                                <button class="btn btn-info" style="padding: 0.5rem 0.75rem; font-size: 0.8rem;" onclick="navigateToRequestPole('${request.POLE_ID}')">
+                                    🗺️ ดูตำแหน่ง
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">🔧 สาเหตุการชำรุด</div>
+                        <div class="detail-value">${request.REASON}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">📅 วันที่แจ้ง</div>
+                        <div class="detail-value">${new Date(request.DATE_REPORTED).toLocaleDateString('th-TH')}</div>
+                    </div>
+                    ${request.TECHNICIAN_NOTES ? `
+                        <div class="detail-section">
+                            <div class="detail-label">📝 หมายเหตุจากช่าง</div>
+                            <div class="detail-value">${request.TECHNICIAN_NOTES}</div>
+                        </div>
+                    ` : ''}
+                    ${request.APPROVED_BY ? `
+                        <div class="detail-section">
+                            <div class="detail-label">👑 ผู้อนุมัติ</div>
+                            <div class="detail-value">${request.APPROVED_BY}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            let buttonsHTML = '';
+            if (request.STATUS === 'อนุมัติแล้วรอช่าง') {
+                buttonsHTML = `<button class="btn btn-warning w-full" onclick="startWork('${request.REQUEST_ID}')">⚙️ เริ่มดำเนินการซ่อม</button>`;
+            } else if (request.STATUS === 'กำลังดำเนินการ') {
+                buttonsHTML = `
+                    <div class="action-buttons-row">
+                        <button class="btn btn-success" onclick="completeWork('${request.REQUEST_ID}')">✅ จบงาน</button>
+                        <button class="btn btn-secondary" onclick="addNote('${request.REQUEST_ID}')">📝 เพิ่มหมายเหตุ</button>
+                    </div>`;
+            } else if (request.STATUS === 'รอดำเนินการ') {
+                buttonsHTML = `<div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 0.75rem; padding: 1.5rem; color: #fcd34d; text-align: center;">⏰ รายการนี้ยังรอการอนุมัติจากผู้บริหาร</div>`;
+            } else if (request.STATUS === 'เสร็จสิ้น') {
+                buttonsHTML = `<div style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(21, 128, 61, 0.1)); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 0.75rem; padding: 1.5rem; color: #86efac; text-align: center;">✅ งานนี้ดำเนินการเสร็จสิ้นแล้ว</div>`;
+            }
+            actionButtonsContainer.innerHTML = buttonsHTML;
+        }
+
+        async function navigateToRequestPole(poleId) {
+            try {
+                const response = await window.AuthUtils.apiCall(`/api/admin/poles/${encodeURIComponent(poleId)}`);
+                const data = await response.json();
+                if (data.status === 'success' && data.data) {
+                    const pole = data.data;
+                    if (pole.LATITUDE_HEADER && pole.LONGITUDE_HEADER) {
+                        navigateToPole(pole.LATITUDE_HEADER, pole.LONGITUDE_HEADER);
+                    } else {
+                        showToast('ไม่พบข้อมูลพิกัดของเสาไฟฟ้านี้', 'error');
+                    }
+                } else {
+                    showToast('ไม่พบข้อมูลเสาไฟฟ้า', 'error');
+                }
+            } catch (error) {
+                console.error('Error fetching pole data:', error);
+                showToast('เกิดข้อผิดพลาดในการดึงข้อมูลเสาไฟฟ้า', 'error');
+            }
+        }
+
+        function navigateToPole(latitude, longitude) {
+            const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            window.open(url, '_blank');
+        }
+
+        async function startWork(requestId) {
+            showConfirm('คุณต้องการเริ่มดำเนินการซ่อมรายการนี้หรือไม่?', async () => {
+                await updateRequestStatus(requestId, 'กำลังดำเนินการ', 'เริ่มดำเนินการโดยช่าง');
+            });
+        }
+
+        async function completeWork(requestId) {
+            showPrompt('กรุณากรอกหมายเหตุการซ่อม (ถ้ามี):', '', async (notes) => {
+                 if (notes === null) return;
+                 const finalNotes = notes.trim() || 'ดำเนินการเสร็จสิ้น';
+                 await updateRequestStatus(requestId, 'เสร็จสิ้น', finalNotes);
+            });
+        }
+
+        async function addNote(requestId) {
+             showPrompt('กรุณากรอกหมายเหตุ:', '', async (notes) => {
+                if (notes === null || !notes.trim()) return;
+                await updateRequestStatus(requestId, null, notes.trim());
+            });
+        }
+
+        async function updateRequestStatus(requestId, newStatus, notes) {
+            try {
+                const response = await window.AuthUtils.apiCall(`/api/admin/repair-request/${requestId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        newStatus: newStatus,
+                        technicianNotes: notes
+                    })
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('อัปเดตสำเร็จ! ⚡', 'success');
+                    await loadData();
+                    if (newStatus) {
+                        showDashboard();
+                    } else {
+                        const updatedRequest = allRequests.find(r => r.REQUEST_ID === requestId);
+                        if (updatedRequest) {
+                            selectedRequest = updatedRequest;
+                            renderRequestDetail();
+                        } else {
+                             showDashboard();
+                        }
+                    }
+                } else {
+                    throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                }
+            } catch (error) {
+                console.error('Error updating request status:', error);
+                showToast('เกิดข้อผิดพลาดในการอัปเดตสถานะ: ' + error.message, 'error');
+            }
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = {
+                'admin': 'ผู้ดูแลระบบ',
+                'executive': 'ผู้บริหาร',
+                'technician': 'ช่างเทคนิค'
+            };
+            return roles[role] || role;
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'รอดำเนินการ': return 'status-pending';
+                case 'อนุมัติแล้วรอช่าง': return 'status-approved';
+                case 'กำลังดำเนินการ': return 'status-in-progress';
+                case 'เสร็จสิ้น': return 'status-completed';
+                default: return 'status-pending';
+            }
+        }
+
+        // Inventory Management Functions
+        function showAddInventoryModal() {
+            document.getElementById('addInventoryModal').classList.add('show');
+        }
+        function closeAddInventoryModal() {
+            document.getElementById('addInventoryModal').classList.remove('show');
+            document.getElementById('addInventoryForm').reset();
+        }
+        async function handleAddInventory(e) {
+            e.preventDefault();
+            const itemData = {
+                itemName: document.getElementById('itemName').value.trim(),
+                unit: document.getElementById('itemUnit').value.trim(),
+                pricePerUnit: parseFloat(document.getElementById('itemPrice').value),
+                currentStock: parseInt(document.getElementById('itemStock').value)
+            };
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/inventory', {
+                    method: 'POST',
+                    body: JSON.stringify(itemData)
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('เพิ่มอุปกรณ์สำเร็จ! 📦', 'success');
+                    closeAddInventoryModal();
+                    loadInventory();
+                } else { throw new Error(data.message || 'เกิดข้อผิดพลาด'); }
+            } catch (error) {
+                console.error('Error adding inventory:', error);
+                showToast('เกิดข้อผิดพลาดในการเพิ่มอุปกรณ์: ' + error.message, 'error');
+            }
+        }
+        function showAdjustInventoryModal(itemName, currentStock) {
+            selectedInventoryItem = { name: itemName, stock: currentStock };
+            document.getElementById('adjustItemName').textContent = itemName;
+            document.getElementById('adjustCurrentStock').textContent = currentStock;
+            document.getElementById('adjustInventoryModal').classList.add('show');
+        }
+        function closeAdjustInventoryModal() {
+            document.getElementById('adjustInventoryModal').classList.remove('show');
+            document.getElementById('adjustQuantity').value = '';
+            selectedInventoryItem = null;
+        }
+        async function confirmAdjustInventory() {
+            const adjustType = document.getElementById('adjustType').value;
+            const quantity = parseInt(document.getElementById('adjustQuantity').value);
+            if (!quantity || quantity <= 0) {
+                showToast('กรุณากรอกจำนวนที่ถูกต้อง', 'error');
+                return;
+            }
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/inventory/adjust', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        itemName: selectedInventoryItem.name,
+                        quantityChange: quantity,
+                        transactionType: adjustType
+                    })
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('ปรับปรุงจำนวนสำเร็จ! ⚙️', 'success');
+                    closeAdjustInventoryModal();
+                    loadInventory();
+                } else { throw new Error(data.message || 'เกิดข้อผิดพลาด'); }
+            } catch (error) {
+                console.error('Error adjusting inventory:', error);
+                showToast('เกิดข้อผิดพลาดในการปรับปรุงจำนวน: ' + error.message, 'error');
+            }
+        }
+
+        // Geolocation Functions
+        function getCurrentLocation(mode) {
+            if (!navigator.geolocation) {
+                showToast('อุปกรณ์ของคุณไม่รองรับการดึงตำแหน่ง GPS', 'error');
+                return;
+            }
+            const btn = mode === 'add' ? document.getElementById('getLocationBtn') : document.getElementById('editGetLocationBtn');
+            const statusDiv = mode === 'add' ? document.getElementById('locationStatus') : document.getElementById('editLocationStatus');
+            const latInput = mode === 'add' ? document.getElementById('poleLatitude') : document.getElementById('editPoleLatitude');
+            const lngInput = mode === 'add' ? document.getElementById('poleLongitude') : document.getElementById('editPoleLongitude');
+
+            btn.disabled = true;
+            btn.innerHTML = '🔄 กำลังดึงตำแหน่ง...';
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = '🔄 กำลังดึงตำแหน่ง GPS...';
+            statusDiv.style.color = '#3b82f6';
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    latInput.value = position.coords.latitude.toFixed(6);
+                    lngInput.value = position.coords.longitude.toFixed(6);
+                    statusDiv.innerHTML = `✅ ดึงตำแหน่งสำเร็จ! ความแม่นยำ: ±${Math.round(position.coords.accuracy)} เมตร`;
+                    statusDiv.style.color = '#10b981';
+                    btn.disabled = false;
+                    btn.innerHTML = '📍 ดึงตำแหน่งอีกครั้ง';
+                    setTimeout(() => { statusDiv.style.display = 'none'; btn.innerHTML = '📍 ดึงตำแหน่งปัจจุบัน'; }, 5000);
+                },
+                function(error) {
+                    let errMsg = '❌ เกิดข้อผิดพลาด: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED: errMsg += 'การเข้าถึงตำแหน่งถูกปฏิเสธ'; break;
+                        case error.POSITION_UNAVAILABLE: errMsg += 'ไม่สามารถดึงตำแหน่งได้'; break;
+                        case error.TIMEOUT: errMsg += 'หมดเวลาในการดึงตำแหน่ง'; break;
+                        default: errMsg += 'ไม่ทราบสาเหตุ'; break;
+                    }
+                    statusDiv.innerHTML = errMsg;
+                    statusDiv.style.color = '#ef4444';
+                    btn.disabled = false;
+                    btn.innerHTML = '📍 ลองดึงตำแหน่งอีกครั้ง';
+                    setTimeout(() => { statusDiv.style.display = 'none'; btn.innerHTML = '📍 ดึงตำแหน่งปัจจุบัน'; }, 8000);
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+            );
+        }
+
+        function showAddPoleModal() { document.getElementById('addPoleModal').classList.add('show'); }
+        function closeAddPoleModal() { document.getElementById('addPoleModal').classList.remove('show'); document.getElementById('addPoleForm').reset(); }
+        function showEditPoleModal() { document.getElementById('editPoleModal').classList.add('show'); }
+        function closeEditPoleModal() { document.getElementById('editPoleModal').classList.remove('show'); document.getElementById('editPoleForm').reset(); }
+
+        async function editPole(poleId) {
+            try {
+                const response = await window.AuthUtils.apiCall(`/api/admin/poles/${encodeURIComponent(poleId)}`);
+                const data = await response.json();
+                if (data.status === 'success' && data.data) {
+                    const pole = data.data;
+                    document.getElementById('editPoleOriginalId').value = pole.POLE_ID_HEADER || '';
+                    document.getElementById('editPoleId').value = pole.POLE_ID_HEADER || '';
+                    document.getElementById('editPoleVillage').value = pole.VILLAGE_HEADER || '';
+                    document.getElementById('editPoleType').value = pole.POLE_TYPE_HEADER || '';
+                    document.getElementById('editPoleSubtype').value = pole.POLE_SUBTYPE_HEADER || '';
+                    document.getElementById('editPoleLatitude').value = pole.LATITUDE_HEADER || '';
+                    document.getElementById('editPoleLongitude').value = pole.LONGITUDE_HEADER || '';
+                    document.getElementById('editPoleLampType').value = pole.LAMP_TYPE_HEADER || '';
+                    document.getElementById('editPoleWattage').value = pole.WATTAGE_HEADER || '';
+                    document.getElementById('editPoleInstallDate').value = pole.INSTALL_DATE_HEADER ? pole.INSTALL_DATE_HEADER.split('T')[0] : '';
+                    document.getElementById('editPoleInstallCompany').value = pole.INSTALL_COMPANY_HEADER || '';
+                    document.getElementById('editPoleNotes').value = pole.NOTES_HEADER || '';
+                    showEditPoleModal();
+                } else { showToast('ไม่พบข้อมูลเสาไฟฟ้า', 'error'); }
+            } catch (error) {
+                console.error('Error loading pole data:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลเสาไฟฟ้า: ' + error.message, 'error');
+            }
+        }
+
+        async function handleAddPole(e) {
+            e.preventDefault();
+            const poleData = {
+                poleId: document.getElementById('poleId').value.trim(),
+                village: document.getElementById('poleVillage').value.trim(),
+                poleType: document.getElementById('poleType').value,
+                poleSubtype: document.getElementById('poleSubtype').value.trim(),
+                latitude: document.getElementById('poleLatitude').value,
+                longitude: document.getElementById('poleLongitude').value,
+                lampType: document.getElementById('poleLampType').value.trim(),
+                wattage: document.getElementById('poleWattage').value,
+                installDate: document.getElementById('poleInstallDate').value,
+                installCompany: document.getElementById('poleInstallCompany').value.trim(),
+                notes: document.getElementById('poleNotes').value.trim()
+            };
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/poles', {
+                    method: 'POST',
+                    body: JSON.stringify(poleData)
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('เพิ่มเสาไฟฟ้าสำเร็จ! 🗼', 'success');
+                    closeAddPoleModal();
+                    await loadPoles();
+                } else { throw new Error(data.message || 'เกิดข้อผิดพลาด'); }
+            } catch (error) {
+                console.error('Error adding pole:', error);
+                showToast('เกิดข้อผิดพลาดในการเพิ่มเสาไฟฟ้า: ' + error.message, 'error');
+            }
+        }
+
+        async function handleEditPole(e) {
+            e.preventDefault();
+            const originalPoleId = document.getElementById('editPoleOriginalId').value;
+            const poleData = {
+                poleId: document.getElementById('editPoleId').value.trim(),
+                village: document.getElementById('editPoleVillage').value.trim(),
+                poleType: document.getElementById('editPoleType').value,
+                poleSubtype: document.getElementById('editPoleSubtype').value.trim(),
+                latitude: document.getElementById('editPoleLatitude').value,
+                longitude: document.getElementById('editPoleLongitude').value,
+                lampType: document.getElementById('editPoleLampType').value.trim(),
+                wattage: document.getElementById('editPoleWattage').value,
+                installDate: document.getElementById('editPoleInstallDate').value,
+                installCompany: document.getElementById('editPoleInstallCompany').value.trim(),
+                notes: document.getElementById('editPoleNotes').value.trim()
+            };
+            try {
+                const response = await window.AuthUtils.apiCall(`/api/admin/poles/${encodeURIComponent(originalPoleId)}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(poleData)
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('แก้ไขเสาไฟฟ้าสำเร็จ! ✏️', 'success');
+                    closeEditPoleModal();
+                    await loadPoles();
+                } else { throw new Error(data.message || 'เกิดข้อผิดพลาด'); }
+            } catch (error) {
+                console.error('Error updating pole:', error);
+                showToast('เกิดข้อผิดพลาดในการแก้ไขเสาไฟฟ้า: ' + error.message, 'error');
+            }
+        }
+
+        // Change Password Modal
+        function showChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.add('show');
+        }
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.remove('show');
+            document.getElementById('changePasswordForm').reset();
+        }
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPasswordChange').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                showToast('รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน', 'error');
+                return;
+            }
+             if (newPassword.length < 6) { 
+                showToast('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร', 'error');
+                return;
+            }
+            try {
+                const response = await window.AuthUtils.apiCall('/api/user/change-password', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('เปลี่ยนรหัสผ่านสำเร็จแล้ว! 🔑', 'success');
+                    closeChangePasswordModal();
+                } else { throw new Error(data.message || 'ไม่สามารถเปลี่ยนรหัสผ่านได้'); }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showToast('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน: ' + error.message, 'error');
+            }
+        }
+        
+        function handleLogout() {
+            showConfirm('คุณต้องการออกจากระบบใช่หรือไม่?', () => {
+                if (window.AuthUtils && typeof window.AuthUtils.logout === 'function') {
+                    window.AuthUtils.logout();
+                } else if (window.AuthUtils && typeof window.AuthUtils.forceLogout === 'function') {
+                    window.AuthUtils.forceLogout();
+                } else {
+                    localStorage.removeItem('authToken'); 
+                    localStorage.removeItem('authUser'); 
+                    window.location.href = '/login.html'; 
+                }
+            });
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                info: '#3b82f6',
+                warning: '#f59e0b'
+            };
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; 
+                top: 2rem; 
+                right: 2rem; 
+                background: ${colors[type]}; 
+                color: white; 
+                padding: 1rem 1.5rem; 
+                border-radius: 0.75rem; 
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+                z-index: 1000; 
+                max-width: 400px; 
+                font-size: 0.9rem;
+                font-weight: 500;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, 4000);
+        }
+
+        // Custom Confirm Dialog
+        function showConfirm(message, onConfirm, onCancel) {
+            const confirmModal = document.createElement('div');
+            confirmModal.classList.add('modal');
+            confirmModal.style.zIndex = '1001';
+            confirmModal.style.opacity = '1';
+            confirmModal.style.visibility = 'visible';
+
+            confirmModal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px; transform: scale(1) translateY(0);">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">❓</div>
+                        <p style="font-size: 1rem; color: #f8fafc; line-height: 1.5;">${message}</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="confirmBtnModalTech" class="btn btn-primary" style="flex: 1;">✅ ยืนยัน</button>
+                        <button id="cancelBtnModalTech" class="btn btn-secondary" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmModal);
+
+            document.getElementById('confirmBtnModalTech').onclick = () => {
+                if (onConfirm) onConfirm();
+                document.body.removeChild(confirmModal);
+            };
+            document.getElementById('cancelBtnModalTech').onclick = () => {
+                if (onCancel) onCancel();
+                document.body.removeChild(confirmModal);
+            };
+        }
+        
+        // Custom Prompt Dialog
+        function showPrompt(message, defaultValue = '', callback) {
+            const promptModal = document.createElement('div');
+            promptModal.classList.add('modal');
+            promptModal.style.zIndex = '1001';
+            promptModal.style.opacity = '1';
+            promptModal.style.visibility = 'visible';
+
+            promptModal.innerHTML = `
+                <div class="modal-content" style="max-width: 450px; transform: scale(1) translateY(0);">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📝</div>
+                        <p style="font-size: 1rem; color: #f8fafc; margin-bottom: 1rem;">${message}</p>
+                    </div>
+                    <textarea id="promptInputModal" class="form-input" rows="3" style="margin-bottom: 1.5rem;">${defaultValue}</textarea>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="promptConfirmBtnModal" class="btn btn-primary" style="flex: 1;">✅ ยืนยัน</button>
+                        <button id="promptCancelBtnModal" class="btn btn-secondary" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(promptModal);
+            const inputElement = document.getElementById('promptInputModal');
+            inputElement.focus();
+
+            document.getElementById('promptConfirmBtnModal').onclick = () => {
+                callback(inputElement.value);
+                document.body.removeChild(promptModal);
+            };
+            document.getElementById('promptCancelBtnModal').onclick = () => {
+                callback(null);
+                document.body.removeChild(promptModal);
+            };
+        }
+
+        // Auto refresh data when page becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && window.AuthUtils && typeof window.AuthUtils.isAuthenticated === 'function' && window.AuthUtils.isAuthenticated()) {
+                loadData();
+                 if (currentUser) { 
+                    initializeApp();
+                }
+            }
+        });
+
+        // Click outside modals to close
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
