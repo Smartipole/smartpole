@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ เข้าสู่ระบบ - อบต.ข่าใหญ่</title>
+    <!-- SweetAlert2 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -21,6 +23,99 @@
             padding: 1rem;
             color: #f8fafc;
             overflow-x: hidden;
+        }
+
+        /* Custom SweetAlert2 Styles */
+        .swal2-popup {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95)) !important;
+            border: 2px solid rgba(251, 191, 36, 0.3) !important;
+            border-radius: 1rem !important;
+            color: #f8fafc !important;
+            backdrop-filter: blur(10px) !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .swal2-title {
+            color: #fbbf24 !important;
+            font-weight: 700 !important;
+        }
+
+        .swal2-content {
+            color: #f8fafc !important;
+        }
+
+        .swal2-confirm {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+            color: #0f172a !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+            font-size: 1rem !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .swal2-confirm:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .swal2-cancel {
+            background: rgba(148, 163, 184, 0.2) !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(148, 163, 184, 0.3) !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+            font-size: 1rem !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .swal2-cancel:hover {
+            background: rgba(148, 163, 184, 0.3) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .swal2-input, .swal2-textarea {
+            background: rgba(15, 23, 42, 0.5) !important;
+            border: 1px solid rgba(251, 191, 36, 0.3) !important;
+            border-radius: 0.5rem !important;
+            color: #f8fafc !important;
+            padding: 0.75rem 1rem !important;
+        }
+
+        .swal2-input:focus, .swal2-textarea:focus {
+            border-color: #fbbf24 !important;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2) !important;
+            outline: none !important;
+        }
+
+        .swal2-icon.swal2-success .swal2-success-ring {
+            border-color: #10b981 !important;
+        }
+
+        .swal2-icon.swal2-success .swal2-success-fix {
+            background-color: #10b981 !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #f59e0b !important;
+            color: #f59e0b !important;
+        }
+
+        .swal2-icon.swal2-info {
+            border-color: #3b82f6 !important;
+            color: #3b82f6 !important;
+        }
+
+        .swal2-icon.swal2-question {
+            border-color: #fbbf24 !important;
+            color: #fbbf24 !important;
         }
 
         /* Animated background elements */
@@ -1154,6 +1249,14 @@
             document.getElementById('errorText').innerHTML = message;
             document.getElementById('errorMessage').classList.remove('hidden');
             
+            // Also use SweetAlert2 for important errors
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: message.replace(/❌|⚠️|🚫/g, '').trim(),
+                confirmButtonText: 'ตกลง'
+            });
+            
             // Haptic feedback for error
             if (navigator.vibrate) {
                 navigator.vibrate([100, 50, 100]);
@@ -1169,6 +1272,17 @@
             hideMessages();
             document.getElementById('successText').innerHTML = message;
             document.getElementById('successMessage').classList.remove('hidden');
+
+            // Also use SweetAlert2 toast for success
+            Swal.fire({
+                icon: 'success',
+                title: message.replace(/🎉|✅/g, '').trim(),
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
 
             // Haptic feedback for success
             if (navigator.vibrate) {
@@ -1245,49 +1359,28 @@
             }, 1000);
         });
 
-        // Toast notification system
+        // SweetAlert2 Toast notification system
         function showToast(message, type = 'info') {
-            const colors = {
-                success: '#10b981',
-                error: '#ef4444',
-                info: '#3b82f6',
-                warning: '#f59e0b'
+            const iconMap = {
+                'success': 'success',
+                'error': 'error',
+                'warning': 'warning', 
+                'info': 'info'
             };
 
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed; 
-                top: 2rem; 
-                right: 2rem; 
-                background: ${colors[type]}; 
-                color: white; 
-                padding: 1rem 1.5rem; 
-                border-radius: 0.75rem; 
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
-                z-index: 1000; 
-                max-width: 350px; 
-                font-size: 0.9rem;
-                font-weight: 500;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-                backdrop-filter: blur(10px);
-            `;
-            toast.innerHTML = message;
-            
-            document.body.appendChild(toast);
-            
-            // Animate in
-            setTimeout(() => {
-                toast.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // Animate out and remove
-            setTimeout(() => {
-                toast.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (toast.parentNode) toast.parentNode.removeChild(toast);
-                }, 300);
-            }, 4000);
+            Swal.fire({
+                icon: iconMap[type] || 'info',
+                title: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
         }
     </script>
 </body>

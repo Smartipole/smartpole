@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ ระบบผู้ดูแลแจ้งซ่อมไฟฟ้า - อบต.ข่าใหญ่</title>
+    
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
@@ -580,6 +584,71 @@
         .btn-success:hover {
             background: linear-gradient(135deg, #059669, #047857);
             transform: translateY(-2px);
+        }
+
+        /* SweetAlert2 Custom Styling */
+        .swal2-popup {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95)) !important;
+            border: 1px solid rgba(251, 191, 36, 0.3) !important;
+            border-radius: 1rem !important;
+            color: #f8fafc !important;
+        }
+
+        .swal2-title {
+            color: #fbbf24 !important;
+            font-weight: 700 !important;
+        }
+
+        .swal2-content {
+            color: #f8fafc !important;
+        }
+
+        .swal2-confirm {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+        }
+
+        .swal2-cancel {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+        }
+
+        .swal2-deny {
+            background: rgba(148, 163, 184, 0.3) !important;
+            border: 1px solid rgba(148, 163, 184, 0.3) !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+            color: #f8fafc !important;
+        }
+
+        .swal2-icon.swal2-success .swal2-success-ring {
+            border-color: #10b981 !important;
+        }
+
+        .swal2-icon.swal2-success .swal2-success-fix,
+        .swal2-icon.swal2-success [class^=swal2-success-line] {
+            background-color: #10b981 !important;
+        }
+
+        .swal2-icon.swal2-error .swal2-error-x-mark .swal2-error-line {
+            background-color: #ef4444 !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #fbbf24 !important;
+            color: #fbbf24 !important;
+        }
+
+        .swal2-icon.swal2-info {
+            border-color: #3b82f6 !important;
+            color: #3b82f6 !important;
         }
 
         /* Utilities */
@@ -1330,6 +1399,8 @@
         </div>
     </div>
 
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.js"></script>
     <script src="/auth-utils.js"></script>
     <script>
         let currentUser = null;
@@ -2082,228 +2153,6 @@
             });
         }
 
-        // 📊 Looker Studio Functions
-        async function openLookerReport(type, forceNew = false) {
-            try {
-                showToast('กำลังโหลด Looker Studio Dashboard...', 'info');
-                
-                // Get Looker Studio URL from backend
-                const response = await window.AuthUtils.apiCall(`/api/admin/looker-studio/embed-url?filters=${encodeURIComponent(JSON.stringify({ type }))}`);
-                const data = await response.json();
-                
-                if (data.status === 'success' && data.data.embedUrl) {
-                    currentLookerUrl = data.data.embedUrl;
-                    currentReportType = type;
-                    
-                    const reportTitles = {
-                        general: 'รายงานทั่วไป - ภาพรวมระบบ',
-                        today: 'รายงานประจำวัน',
-                        thisWeek: 'รายงานประจำสัปดาห์',
-                        thisMonth: 'รายงานประจำเดือน',
-                        pending: 'รายการรอดำเนินการ',
-                        inProgress: 'รายการกำลังดำเนินการ',
-                        completed: 'รายการเสร็จสิ้น'
-                    };
-                    
-                    document.getElementById('lookerModalTitle').textContent = 
-                        `📊 ${reportTitles[type] || 'Looker Studio Dashboard'}`;
-                    
-                    showLookerPreviewModal(currentLookerUrl);
-                } else {
-                    throw new Error(data.message || 'ไม่สามารถโหลด Looker Studio ได้');
-                }
-            } catch (error) {
-                console.error('Error opening Looker report:', error);
-                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-            }
-        }
-
-        function showLookerPreviewModal(url) {
-            const modal = document.getElementById('lookerPreviewModal');
-            const frame = document.getElementById('lookerFrame');
-            const loading = document.getElementById('lookerLoading');
-            
-            // Show loading
-            loading.style.display = 'flex';
-            frame.src = '';
-            
-            // Load iframe
-            frame.onload = function() {
-                loading.style.display = 'none';
-            };
-            
-            frame.onerror = function() {
-                loading.innerHTML = `
-                    <div style="text-align: center; color: #ef4444;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
-                        <p>ไม่สามารถโหลด Looker Studio ได้</p>
-                        <button class="btn btn-secondary" onclick="closeLookerPreviewModal()" style="margin-top: 1rem;">ปิด</button>
-                    </div>
-                `;
-            };
-            
-            frame.src = url;
-            modal.classList.add('show');
-        }
-
-        function closeLookerPreviewModal() {
-            const modal = document.getElementById('lookerPreviewModal');
-            const frame = document.getElementById('lookerFrame');
-            modal.classList.remove('show');
-            frame.src = '';
-        }
-
-        function printLookerReport() {
-            if (currentLookerUrl) {
-                // Open in new window for printing
-                const printWindow = window.open(currentLookerUrl, '_blank', 'width=1200,height=800');
-                if (printWindow) {
-                    printWindow.onload = function() {
-                        setTimeout(() => {
-                            printWindow.print();
-                        }, 2000);
-                    };
-                    showToast('เปิดหน้าต่างใหม่สำหรับพิมพ์แล้ว 🖨️', 'success');
-                } else {
-                    showToast('ไม่สามารถเปิดหน้าต่างพิมพ์ได้ กรุณาอนุญาต popup', 'error');
-                }
-            }
-        }
-
-        function openLookerInNewTab() {
-            if (currentLookerUrl) {
-                window.open(currentLookerUrl, '_blank');
-                showToast('เปิด Looker Studio ในแท็บใหม่แล้ว', 'success');
-            }
-        }
-
-        // Custom Report Functions
-        function showCustomReportModal() {
-            document.getElementById('customReportModal').classList.add('show');
-        }
-
-        function closeCustomReportModal() {
-            document.getElementById('customReportModal').classList.remove('show');
-            document.getElementById('customReportForm').reset();
-        }
-
-        document.getElementById('customReportForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const filters = {
-                dateFrom: document.getElementById('customDateFrom').value,
-                dateTo: document.getElementById('customDateTo').value,
-                status: document.getElementById('customStatus').value,
-                requestId: document.getElementById('customRequestId').value.trim()
-            };
-            
-            // Remove empty filters
-            Object.keys(filters).forEach(key => {
-                if (!filters[key]) delete filters[key];
-            });
-            
-            closeCustomReportModal();
-            
-            try {
-                const response = await window.AuthUtils.apiCall(`/api/admin/looker-studio/embed-url?filters=${encodeURIComponent(JSON.stringify(filters))}`);
-                const data = await response.json();
-                
-                if (data.status === 'success' && data.data.embedUrl) {
-                    currentLookerUrl = data.data.embedUrl;
-                    currentReportType = 'custom';
-                    
-                    document.getElementById('lookerModalTitle').textContent = '🎯 รายงานกำหนดเอง';
-                    showLookerPreviewModal(currentLookerUrl);
-                } else {
-                    throw new Error(data.message || 'ไม่สามารถสร้างรายงานได้');
-                }
-            } catch (error) {
-                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-            }
-        });
-
-        // Export Functions
-        function showExportModal() {
-            document.getElementById('exportModal').classList.add('show');
-        }
-
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.remove('show');
-        }
-
-        async function exportToPDF() {
-            try {
-                showToast('กำลังสร้าง PDF...', 'info');
-                
-                const response = await window.AuthUtils.apiCall('/api/admin/reports/repair-requests/pdf', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        templateOptions: {
-                            title: `รายงานระบบแจ้งซ่อมไฟฟ้า - ${new Date().toLocaleDateString('th-TH')}`,
-                            headerColor: '#fbbf24',
-                            showDate: true
-                        }
-                    })
-                });
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `รายงานแจ้งซ่อมไฟฟ้า_${new Date().toISOString().split('T')[0]}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    
-                    showToast('ส่งออก PDF สำเร็จ! 📄', 'success');
-                } else {
-                    const data = await response.json();
-                    throw new Error(data.message || 'ไม่สามารถสร้าง PDF ได้');
-                }
-            } catch (error) {
-                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-            }
-            closeExportModal();
-        }
-
-        function exportToExcel() {
-            showToast('ฟีเจอร์ส่งออก Excel จะพัฒนาในเวอร์ชันถัดไป', 'info');
-            closeExportModal();
-        }
-
-        async function sendToTelegram() {
-            try {
-                showToast('กำลังส่งรายงานผ่าน Telegram...', 'info');
-                
-                const response = await window.AuthUtils.apiCall('/api/admin/notifications/send-report', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        reportType: 'summary',
-                        filters: {}
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.status === 'success') {
-                    showToast('ส่งรายงานผ่าน Telegram สำเร็จ! 📱', 'success');
-                } else {
-                    throw new Error(data.message || 'ไม่สามารถส่งผ่าน Telegram ได้');
-                }
-            } catch (error) {
-                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-            }
-            closeExportModal();
-        }
-
-        function refreshDashboardData() {
-            showToast('กำลังรีเฟรชข้อมูล...', 'info');
-            loadDashboardData().then(() => {
-                showToast('รีเฟรชข้อมูลสำเร็จ! 🔄', 'success');
-            });
-        }
-
         // ✅ เพิ่มฟังก์ชันสำหรับ Looker Studio Service ที่ต้องอัปเดต
         async function updateLookerStudioService() {
             try {
@@ -2427,7 +2276,7 @@
         });
 
         function logout() {
-            if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+            showConfirm('คุณต้องการออกจากระบบใช่หรือไม่?', () => {
                 if (window.AuthUtils && typeof window.AuthUtils.logout === 'function') {
                     window.AuthUtils.logout();
                 } else {
@@ -2435,51 +2284,58 @@
                     localStorage.removeItem('authUser');
                     window.location.href = '/admin/smart-login.html';
                 }
-            }
+            });
         }
 
-        // Utility Functions
+        // SweetAlert2 Toast Notifications
         function showToast(message, type = 'info') {
-            const colors = {
-                success: '#10b981',
-                error: '#ef4444',
-                info: '#3b82f6',
-                warning: '#f59e0b'
+            const iconMap = {
+                success: 'success',
+                error: 'error',
+                warning: 'warning',
+                info: 'info'
             };
 
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed; 
-                top: 2rem; 
-                right: 2rem; 
-                background: ${colors[type]}; 
-                color: white; 
-                padding: 1rem 1.5rem; 
-                border-radius: 0.75rem; 
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
-                z-index: 1000; 
-                max-width: 400px; 
-                font-size: 0.9rem;
-                font-weight: 500;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            `;
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            
-            // Animate in
-            setTimeout(() => {
-                toast.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // Animate out and remove
-            setTimeout(() => {
-                toast.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (toast.parentNode) toast.parentNode.removeChild(toast);
-                }, 300);
-            }, 4000);
+            Swal.fire({
+                icon: iconMap[type],
+                title: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95))',
+                color: '#f8fafc',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        }
+
+        // SweetAlert2 Confirm Dialog
+        function showConfirm(message, onConfirm, onCancel) {
+            Swal.fire({
+                title: 'ยืนยันการดำเนินการ',
+                text: message,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '✅ ยืนยัน',
+                cancelButtonText: '❌ ยกเลิก',
+                reverseButtons: true,
+                focusCancel: true,
+                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95))',
+                color: '#f8fafc',
+                customClass: {
+                    popup: 'swal2-popup-custom'
+                }
+            }).then((result) => {
+                if (result.isConfirmed && onConfirm) {
+                    onConfirm();
+                } else if (result.isDismissed && onCancel) {
+                    onCancel();
+                }
+            });
         }
 
         // Auto refresh data when page becomes visible

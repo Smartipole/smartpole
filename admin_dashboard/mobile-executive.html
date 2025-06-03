@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ ระบบผู้บริหาร - อบต.ข่าใหญ่</title>
+    
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.css">
+    
     <style>
         * {
             margin: 0;
@@ -850,6 +854,71 @@
             width: 100%;
         }
 
+        /* SweetAlert2 Custom Styling */
+        .swal2-popup {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95)) !important;
+            border: 1px solid rgba(251, 191, 36, 0.3) !important;
+            border-radius: 1rem !important;
+            color: #f8fafc !important;
+        }
+
+        .swal2-title {
+            color: #fbbf24 !important;
+            font-weight: 700 !important;
+        }
+
+        .swal2-content {
+            color: #f8fafc !important;
+        }
+
+        .swal2-confirm {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+        }
+
+        .swal2-cancel {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+        }
+
+        .swal2-deny {
+            background: rgba(148, 163, 184, 0.3) !important;
+            border: 1px solid rgba(148, 163, 184, 0.3) !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+            color: #f8fafc !important;
+        }
+
+        .swal2-icon.swal2-success .swal2-success-ring {
+            border-color: #10b981 !important;
+        }
+
+        .swal2-icon.swal2-success .swal2-success-fix,
+        .swal2-icon.swal2-success [class^=swal2-success-line] {
+            background-color: #10b981 !important;
+        }
+
+        .swal2-icon.swal2-error .swal2-error-x-mark .swal2-error-line {
+            background-color: #ef4444 !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #fbbf24 !important;
+            color: #fbbf24 !important;
+        }
+
+        .swal2-icon.swal2-info {
+            border-color: #3b82f6 !important;
+            color: #3b82f6 !important;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .main-content {
@@ -1128,6 +1197,8 @@
         </div>
     </div>
 
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.js"></script>
     <script src="/auth-utils.js"></script>
     
     <script>
@@ -1737,80 +1808,55 @@
             });
         }
 
-        // Toast Notifications
+        // SweetAlert2 Toast Notifications
         function showToast(message, type = 'info') {
-            const colors = {
-                success: '#10b981',
-                error: '#ef4444',
-                info: '#3b82f6',
-                warning: '#f59e0b'
+            const iconMap = {
+                success: 'success',
+                error: 'error',
+                warning: 'warning',
+                info: 'info'
             };
 
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed; 
-                top: 2rem; 
-                right: 2rem; 
-                background: ${colors[type]}; 
-                color: white; 
-                padding: 1rem 1.5rem; 
-                border-radius: 0.75rem; 
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
-                z-index: 1000; 
-                max-width: 400px; 
-                font-size: 0.9rem;
-                font-weight: 500;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            `;
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            
-            // Animate in
-            setTimeout(() => {
-                toast.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // Animate out and remove
-            setTimeout(() => {
-                toast.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (toast.parentNode) toast.parentNode.removeChild(toast);
-                }, 300);
-            }, 4000);
+            Swal.fire({
+                icon: iconMap[type],
+                title: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95))',
+                color: '#f8fafc',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
         }
 
-        // Custom Confirm Dialog
+        // SweetAlert2 Confirm Dialog
         function showConfirm(message, onConfirm, onCancel) {
-            const confirmModal = document.createElement('div');
-            confirmModal.classList.add('modal');
-            confirmModal.style.zIndex = '1001';
-            confirmModal.style.opacity = '1';
-            confirmModal.style.visibility = 'visible';
-
-            confirmModal.innerHTML = `
-                <div class="modal-content" style="max-width: 400px; transform: scale(1) translateY(0);">
-                    <div style="text-align: center; margin-bottom: 2rem;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">❓</div>
-                        <p style="font-size: 1rem; color: #f8fafc; line-height: 1.5;">${message}</p>
-                    </div>
-                    <div style="display: flex; gap: 1rem;">
-                        <button id="confirmBtnModalExe" class="btn btn-primary" style="flex: 1;">✅ ยืนยัน</button>
-                        <button id="cancelBtnModalExe" class="btn btn-secondary" style="flex: 1;">❌ ยกเลิก</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(confirmModal);
-
-            document.getElementById('confirmBtnModalExe').onclick = () => {
-                if (onConfirm) onConfirm();
-                document.body.removeChild(confirmModal);
-            };
-            document.getElementById('cancelBtnModalExe').onclick = () => {
-                if (onCancel) onCancel();
-                document.body.removeChild(confirmModal);
-            };
+            Swal.fire({
+                title: 'ยืนยันการดำเนินการ',
+                text: message,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '✅ ยืนยัน',
+                cancelButtonText: '❌ ยกเลิก',
+                reverseButtons: true,
+                focusCancel: true,
+                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95))',
+                color: '#f8fafc',
+                customClass: {
+                    popup: 'swal2-popup-custom'
+                }
+            }).then((result) => {
+                if (result.isConfirmed && onConfirm) {
+                    onConfirm();
+                } else if (result.isDismissed && onCancel) {
+                    onCancel();
+                }
+            });
         }
 
         // Auto refresh data when page becomes visible
