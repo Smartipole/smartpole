@@ -632,11 +632,6 @@
             border-color: #10b981 !important;
         }
 
-        .swal2-icon.swal2-success .swal2-success-fix,
-        .swal2-icon.swal2-success [class^=swal2-success-line] {
-            background-color: #10b981 !important;
-        }
-
         .swal2-icon.swal2-error .swal2-error-x-mark .swal2-error-line {
             background-color: #ef4444 !important;
         }
@@ -708,6 +703,20 @@
             .nav-icon {
                 font-size: 1.2rem;
             }
+        }
+        /* ซ่อนเฉพาะเส้นขวาของ Success Icon */
+        .swal2-success-circular-line-right {
+            display: none !important;
+        }
+
+        /* ซ่อนเส้นซ้ายด้วยถ้าต้องการ (ตัวเลือก) */
+        .swal2-success-circular-line-left {
+            display: none !important;
+        }
+
+        /* ซ่อน Timer Progress Bar */
+        .swal2-timer-progress-bar {
+            display: none !important;
         }
     </style>
 </head>
@@ -2303,7 +2312,7 @@
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 4000,
-                timerProgressBar: true,
+                timerProgressBar: false, 
                 background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95))',
                 color: '#f8fafc',
                 didOpen: (toast) => {
