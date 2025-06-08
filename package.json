@@ -32,6 +32,7 @@
     "googleapis": "^130.0.0",
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
+    "line-repair-bot-simple": "file:",
     "lucide-react": "^0.511.0",
     "node-fetch": "^3.3.2",
     "node-schedule": "^2.1.1"

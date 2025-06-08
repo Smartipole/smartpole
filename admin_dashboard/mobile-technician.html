@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ ระบบช่างเทคนิค - อบต.ข่าใหญ่</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Chart.js for Reports -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
     <style>
@@ -352,9 +354,9 @@
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
@@ -1044,6 +1046,189 @@
             }
         }
 
+        /* Report Modal Styles */
+        .report-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .report-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .report-modal-content {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 1200px;
+            max-height: 95vh;
+            overflow-y: auto;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.7);
+            transform: scale(0.8) translateY(30px);
+            transition: all 0.3s ease;
+        }
+
+        .report-modal.show .report-modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem;
+            border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+        }
+
+        .report-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .report-title h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin: 0;
+        }
+
+        .report-title .report-icon {
+            font-size: 2.5rem;
+            color: #f59e0b;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .report-body {
+            padding: 2rem;
+        }
+
+        .report-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .report-stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(251, 191, 36, 0.4);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
+        }
+
+        .report-stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .report-stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-stat-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .report-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-chart-container {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            overflow: hidden !important;
+            max-height: 400px !important;
+        }
+
+        .report-chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fbbf24;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .report-table-container {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            overflow-x: auto;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .report-table th,
+        .report-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .report-table th {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .report-table td {
+            color: #f8fafc;
+            font-size: 0.9rem;
+        }
+
+        .report-table tr:hover {
+            background: rgba(251, 191, 36, 0.05);
+        }
+
         /* Utilities */
         .hidden {
             display: none !important;
@@ -1091,6 +1276,7 @@
             }
             
             .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
             }
             
@@ -1117,6 +1303,36 @@
             .reports-actions {
                 grid-template-columns: 1fr;
             }
+
+            .report-charts {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .report-modal-content {
+                margin: 0.5rem;
+                max-height: 98vh;
+            }
+            
+            .report-header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .report-body {
+                padding: 1rem;
+            }
+            
+            .report-stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .report-title h2 {
+                font-size: 1.4rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1132,6 +1348,10 @@
             
             .nav-icon {
                 font-size: 1.2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -1164,39 +1384,47 @@
                 <section class="stats-section">
                     <h2 class="section-title">
                         <span class="section-icon">📊</span>
-                        สถิติงานซ่อม
+                        สถิติงานซ่อมของฉัน
                     </h2>
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-content">
-                                <h3>รายการทั้งหมด</h3>
-                                <p id="totalCount">-</p>
+                            <span class="stat-icon electric">⚡</span>
+                            <h3 class="stat-title">งานทั้งหมด</h3>
+                            <div class="stat-value" id="totalAssigned">-</div>
+                            <div class="stat-change">
+                                <span>📋</span>
+                                <span>รายการที่ได้รับมอบหมาย</span>
                             </div>
-                            <div class="stat-icon">📋</div>
                         </div>
                         
                         <div class="stat-card">
-                            <div class="stat-content">
-                                <h3>กำลังดำเนินการ</h3>
-                                <p id="inProgressCount" style="color: #3b82f6;">-</p>
+                            <span class="stat-icon requests">⏳</span>
+                            <h3 class="stat-title">รอดำเนินการ</h3>
+                            <div class="stat-value" id="pendingWork" style="color: #f59e0b;">-</div>
+                            <div class="stat-change">
+                                <span>🔄</span>
+                                <span>รายการที่รออนุมัติ</span>
                             </div>
-                            <div class="stat-icon">⚙️</div>
                         </div>
                         
                         <div class="stat-card">
-                            <div class="stat-content">
-                                <h3>เสร็จสิ้นแล้ว</h3>
-                                <p id="completedCount" style="color: #10b981;">-</p>
+                            <span class="stat-icon users">🔧</span>
+                            <h3 class="stat-title">กำลังดำเนินการ</h3>
+                            <div class="stat-value" id="inProgressWork" style="color: #3b82f6;">-</div>
+                            <div class="stat-change">
+                                <span>⚙️</span>
+                                <span>งานที่กำลังทำอยู่</span>
                             </div>
-                            <div class="stat-icon">✅</div>
                         </div>
                         
                         <div class="stat-card">
-                            <div class="stat-content">
-                                <h3>อุปกรณ์ต่ำ</h3>
-                                <p id="inventoryCount" style="color: #f59e0b;">-</p>
+                            <span class="stat-icon inventory">✅</span>
+                            <h3 class="stat-title">เสร็จสิ้นแล้ว</h3>
+                            <div class="stat-value" id="completedWork" style="color: #10b981;">-</div>
+                            <div class="stat-change">
+                                <span>🎯</span>
+                                <span>งานที่เสร็จสมบูรณ์</span>
                             </div>
-                            <div class="stat-icon">📦</div>
                         </div>
                     </div>
                 </section>
@@ -1236,24 +1464,79 @@
                         รายงานและการพิมพ์
                     </h2>
                     
-                    <!-- Quick Reports -->
+                    <!-- Quick Reports - เพิ่มรายงานแบบ Admin -->
                     <div class="reports-actions">
-                        <div class="action-card reports" onclick="showMyWorkReport()">
+                        <div class="action-card reports" onclick="openMyWorkSummaryReport()">
                             <span class="action-icon">📊</span>
-                            <h3 class="action-title">รายงานงานของฉัน</h3>
-                            <p class="action-description">ดูสถิติและรายงานงานซ่อมที่ดำเนินการโดยคุณ</p>
+                            <h3 class="action-title">รายงานสรุปผลงาน</h3>
+                            <p class="action-description">ดูข้อมูลสรุปงานซ่อมของฉันแบบมี Charts และสถิติ</p>
                         </div>
                         
                         <div class="action-card print" onclick="showPrintReportModal()">
                             <span class="action-icon">🖨️</span>
-                            <h3 class="action-title">พิมพ์รายงาน PDF</h3>
-                            <p class="action-description">สร้างและพิมพ์รายงานสรุปงานซ่อม</p>
+                            <h3 class="action-title">พิมพ์รายงาน</h3>
+                            <p class="action-description">สร้างและพิมพ์รายงานผลงานในรูปแบบ PDF</p>
                         </div>
                         
                         <div class="action-card export" onclick="showExportModal()">
                             <span class="action-icon">📤</span>
                             <h3 class="action-title">ส่งออกข้อมูล</h3>
                             <p class="action-description">ส่งออกข้อมูลเป็น PDF หรือส่งผ่าน Telegram</p>
+                        </div>
+
+                        <div class="action-card reports" onclick="showCustomWorkReportModal()">
+                            <span class="action-icon">🎯</span>
+                            <h3 class="action-title">รายงานกำหนดเอง</h3>
+                            <p class="action-description">สร้างรายงานตามช่วงวันที่และเงื่อนไขที่ต้องการ</p>
+                        </div>
+                    </div>
+
+                    <!-- Status Reports สำหรับช่าง -->
+                    <div class="stats-section">
+                        <h3 class="section-title" style="font-size: 1.4rem;">
+                            <span class="section-icon">🔍</span>
+                            รายงานตามสถานะงาน
+                        </h3>
+                        <div class="stats-grid">
+                            <div class="stat-card" onclick="filterWorkByStatus('อนุมัติแล้วรอช่าง')" style="cursor: pointer;">
+                                <span class="stat-icon requests">⏳</span>
+                                <h3 class="stat-title">รอรับงาน</h3>
+                                <div class="stat-value" id="waitingForTechCount">-</div>
+                                <div class="stat-change">
+                                    <span>👆</span>
+                                    <span>คลิกเพื่อดูรายการ</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card" onclick="filterWorkByStatus('กำลังดำเนินการ')" style="cursor: pointer;">
+                                <span class="stat-icon electric">🔧</span>
+                                <h3 class="stat-title">กำลังซ่อม</h3>
+                                <div class="stat-value" id="currentlyWorkingCount">-</div>
+                                <div class="stat-change">
+                                    <span>👆</span>
+                                    <span>คลิกเพื่อดูรายการ</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card" onclick="filterWorkByStatus('เสร็จสิ้น')" style="cursor: pointer;">
+                                <span class="stat-icon users">✅</span>
+                                <h3 class="stat-title">งานเสร็จ</h3>
+                                <div class="stat-value" id="completedWorkCount">-</div>
+                                <div class="stat-change">
+                                    <span>👆</span>
+                                    <span>คลิกเพื่อดูรายการ</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card" onclick="showMyWorkDetailedReport()" style="cursor: pointer;">
+                                <span class="stat-icon inventory">📈</span>
+                                <h3 class="stat-title">รายงานละเอียด</h3>
+                                <div class="stat-value">📄</div>
+                                <div class="stat-change">
+                                    <span>👆</span>
+                                    <span>ดูรายงานแบบละเอียด</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1447,6 +1730,107 @@
         </nav>
 
         <!-- Modals -->
+        
+        <!-- Work Summary Report Modal (เหมือน Admin) -->
+        <div id="workSummaryReportModal" class="report-modal">
+            <div class="report-modal-content">
+                <div class="report-header">
+                    <div class="report-title">
+                        <span class="report-icon" id="workReportIcon">📊</span>
+                        <h2 id="workReportTitle">รายงานสรุปผลงานของฉัน</h2>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn btn-secondary" onclick="printWorkReport()" style="padding: 0.75rem 1rem;">
+                            🖨️ พิมพ์
+                        </button>
+                        <button class="btn btn-success" onclick="refreshWorkReport()" style="padding: 0.75rem 1rem;">
+                            🔄 รีเฟรช
+                        </button>
+                        <button class="btn btn-primary" onclick="sendWorkReportToTelegram()" style="padding: 0.75rem 1rem;">
+                            📱 ส่ง Telegram
+                        </button>
+                        <button class="modal-close" onclick="closeWorkSummaryReportModal()" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 1.2rem;">
+                            ×
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="report-body">
+                    <!-- Stats Cards -->
+                    <div class="report-stats-grid" id="workReportStatsGrid">
+                        <!-- Dynamic stats will be inserted here -->
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="report-charts">
+                        <div class="report-chart-container">
+                            <h3 class="report-chart-title">📊 สถิติตามสถานะงาน</h3>
+                            <canvas id="workStatusChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="report-chart-container">
+                            <h3 class="report-chart-title">📈 แนวโน้มการทำงานรายเดือน</h3>
+                            <canvas id="workTrendChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Table -->
+                    <div class="report-table-container">
+                        <h3 class="report-chart-title">📋 รายละเอียดงานซ่อม</h3>
+                        <div style="overflow-x: auto;">
+                            <table class="report-table" id="workReportTable">
+                                <thead id="workReportTableHead">
+                                    <!-- Dynamic table headers -->
+                                </thead>
+                                <tbody id="workReportTableBody">
+                                    <!-- Dynamic table rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Work Report Modal -->
+        <div id="customWorkReportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">🎯 สร้างรายงานงานของฉัน</h3>
+                    <button class="modal-close" onclick="closeCustomWorkReportModal()">×</button>
+                </div>
+                <form id="customWorkReportForm">
+                    <div class="form-group">
+                        <label class="form-label">ช่วงวันที่</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <input type="date" id="workDateFrom" class="form-input" placeholder="วันที่เริ่มต้น">
+                            <input type="date" id="workDateTo" class="form-input" placeholder="วันที่สิ้นสุด">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">กรองตามสถานะงาน</label>
+                        <select id="workStatus" class="form-select">
+                            <option value="">ทุกสถานะ</option>
+                            <option value="อนุมัติแล้วรอช่าง">รอรับงาน</option>
+                            <option value="กำลังดำเนินการ">กำลังซ่อม</option>
+                            <option value="เสร็จสิ้น">งานเสร็จ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ประเภทรายงาน</label>
+                        <select id="workReportType" class="form-select">
+                            <option value="summary">สรุปผลงาน</option>
+                            <option value="detailed">รายงานละเอียด</option>
+                            <option value="performance">ประสิทธิภาพการทำงาน</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">📊 สร้างรายงาน</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeCustomWorkReportModal()" style="flex: 1;">❌ ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Print Report Modal -->
         <div id="printReportModal" class="modal">
             <div class="modal-content" style="max-width: 900px;">
@@ -1834,6 +2218,10 @@
         let itemsPerPage = 10;
         let currentVillageFilter = '';
         let currentSearchQuery = '';
+        let currentWorkReportData = null;
+        let currentWorkReportType = '';
+        let workStatusChart = null;
+        let workTrendChart = null;
 
         // Page identifiers
         const PAGES = ['dashboard', 'reports', 'inventory', 'poles', 'detail', 'profile'];
@@ -1914,6 +2302,7 @@
             document.getElementById('addPoleForm').addEventListener('submit', handleAddPole);
             document.getElementById('editPoleForm').addEventListener('submit', handleEditPole);
             document.getElementById('changePasswordForm').addEventListener('submit', handleChangePassword);
+            document.getElementById('customWorkReportForm').addEventListener('submit', handleCustomWorkReport);
             
             const poleSearchInput = document.getElementById('poleSearchInput');
             if (poleSearchInput) {
@@ -2060,12 +2449,16 @@
             const inProgressRequests = allRequests.filter(r => r.STATUS === 'กำลังดำเนินการ');
             const completedRequests = allRequests.filter(r => r.STATUS === 'เสร็จสิ้น');
             
-            const totalEl = document.getElementById('totalCount');
-            if (totalEl) totalEl.textContent = allRequests.length;
-            const inProgEl = document.getElementById('inProgressCount');
-            if (inProgEl) inProgEl.textContent = inProgressRequests.length;
-            const compEl = document.getElementById('completedCount');
-            if (compEl) compEl.textContent = completedRequests.length;
+            // อัปเดต Dashboard Stats
+            document.getElementById('totalAssigned').textContent = allRequests.length;
+            document.getElementById('pendingWork').textContent = allRequests.filter(r => r.STATUS === 'รอดำเนินการ').length;
+            document.getElementById('inProgressWork').textContent = inProgressRequests.length;
+            document.getElementById('completedWork').textContent = completedRequests.length;
+            
+            // อัปเดต Reports Page Stats
+            document.getElementById('waitingForTechCount').textContent = approvedRequests.length;
+            document.getElementById('currentlyWorkingCount').textContent = inProgressRequests.length;
+            document.getElementById('completedWorkCount').textContent = completedRequests.length;
         }
 
         function updateInventoryStats() {
@@ -2148,6 +2541,552 @@
             }
         }
 
+        // Work Report Functions (เหมือน Admin)
+        async function openMyWorkSummaryReport() {
+            try {
+                showToast('กำลังโหลดรายงานสรุปผลงาน...', 'info');
+                
+                const reportData = await loadWorkReportData('summary');
+                if (reportData) {
+                    currentWorkReportData = reportData;
+                    currentWorkReportType = 'summary';
+                    
+                    showWorkReportModal('summary', reportData);
+                    showToast('โหลดรายงานสำเร็จ! 📊', 'success');
+                } else {
+                    throw new Error('ไม่สามารถโหลดข้อมูลรายงานได้');
+                }
+            } catch (error) {
+                console.error('Error opening work report:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        async function showMyWorkDetailedReport() {
+            try {
+                showToast('กำลังโหลดรายงานละเอียด...', 'info');
+                
+                const reportData = await loadWorkReportData('detailed');
+                if (reportData) {
+                    currentWorkReportData = reportData;
+                    currentWorkReportType = 'detailed';
+                    
+                    showWorkReportModal('detailed', reportData);
+                    showToast('โหลดรายงานสำเร็จ! 📄', 'success');
+                } else {
+                    throw new Error('ไม่สามารถโหลดข้อมูลรายงานได้');
+                }
+            } catch (error) {
+                console.error('Error opening detailed report:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        async function loadWorkReportData(type) {
+            try {
+                // Filter requests data for current technician
+                const myRequests = allRequests; // In real app, filter by technician
+                
+                // Filter data based on report type
+                const filteredData = filterDataByType(myRequests, type);
+                
+                // Generate statistics
+                const stats = generateWorkStatistics(filteredData);
+                
+                return {
+                    type: type,
+                    data: filteredData,
+                    stats: stats,
+                    metadata: {
+                        totalRequests: filteredData.length,
+                        generatedAt: new Date().toISOString(),
+                        technician: currentUser ? currentUser.username : 'Unknown',
+                        dateRange: getDateRangeForType(type)
+                    }
+                };
+            } catch (error) {
+                console.error('Error loading work report data:', error);
+                throw error;
+            }
+        }
+
+        function filterDataByType(requests, type) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            switch (type) {
+                case 'today':
+                    return requests.filter(r => {
+                        const reqDate = new Date(r.DATE_REPORTED);
+                        return reqDate >= today;
+                    });
+                
+                case 'thisWeek':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay());
+                    return requests.filter(r => {
+                        const reqDate = new Date(r.DATE_REPORTED);
+                        return reqDate >= weekStart;
+                    });
+                
+                case 'thisMonth':
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    return requests.filter(r => {
+                        const reqDate = new Date(r.DATE_REPORTED);
+                        return reqDate >= monthStart;
+                    });
+                
+                case 'pending':
+                    return requests.filter(r => 
+                        r.STATUS === 'รอดำเนินการ' || r.STATUS === 'อนุมัติแล้วรอช่าง'
+                    );
+                
+                case 'inProgress':
+                    return requests.filter(r => r.STATUS === 'กำลังดำเนินการ');
+                
+                case 'completed':
+                    return requests.filter(r => r.STATUS === 'เสร็จสิ้น');
+                
+                case 'summary':
+                case 'detailed':
+                default:
+                    return requests;
+            }
+        }
+
+        function generateWorkStatistics(data) {
+            const stats = {
+                total: data.length,
+                pending: data.filter(r => r.STATUS === 'รอดำเนินการ').length,
+                waitingForTech: data.filter(r => r.STATUS === 'อนุมัติแล้วรอช่าง').length,
+                inProgress: data.filter(r => r.STATUS === 'กำลังดำเนินการ').length,
+                completed: data.filter(r => r.STATUS === 'เสร็จสิ้น').length,
+                cancelled: data.filter(r => r.STATUS === 'ยกเลิก').length,
+                withPhotos: data.filter(r => r.PHOTO_BASE64).length,
+                avgResponseTime: 0 // คำนวณเพิ่มเติมถ้าต้องการ
+            };
+            
+            // Generate monthly trend data
+            const monthlyData = {};
+            data.forEach(r => {
+                const month = new Date(r.DATE_REPORTED).toISOString().substring(0, 7);
+                monthlyData[month] = (monthlyData[month] || 0) + 1;
+            });
+            
+            stats.monthlyTrend = Object.entries(monthlyData)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .slice(-6); // Last 6 months
+            
+            return stats;
+        }
+
+        function getDateRangeForType(type) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            switch (type) {
+                case 'today':
+                    return {
+                        from: today.toISOString().split('T')[0],
+                        to: today.toISOString().split('T')[0]
+                    };
+                case 'thisWeek':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay());
+                    return {
+                        from: weekStart.toISOString().split('T')[0],
+                        to: today.toISOString().split('T')[0]
+                    };
+                case 'thisMonth':
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    return {
+                        from: monthStart.toISOString().split('T')[0],
+                        to: today.toISOString().split('T')[0]
+                    };
+                default:
+                    return {
+                        from: 'ทั้งหมด',
+                        to: 'ปัจจุบัน'
+                    };
+            }
+        }
+
+        function showWorkReportModal(type, reportData) {
+            const reportConfig = {
+                summary: { title: 'รายงานสรุปผลงานของฉัน', icon: '📊' },
+                detailed: { title: 'รายงานละเอียดผลงาน', icon: '📄' },
+                today: { title: 'รายงานงานวันนี้', icon: '📈' },
+                thisWeek: { title: 'รายงานงานสัปดาห์นี้', icon: '📅' },
+                thisMonth: { title: 'รายงานงานเดือนนี้', icon: '📆' },
+                performance: { title: 'รายงานประสิทธิภาพ', icon: '🎯' }
+            };
+            
+            const config = reportConfig[type] || reportConfig.summary;
+            
+            // Set modal title and icon
+            document.getElementById('workReportTitle').textContent = config.title;
+            document.getElementById('workReportIcon').textContent = config.icon;
+            
+            // Generate stats cards
+            generateWorkStatsCards(reportData.stats);
+            
+            // Generate charts
+            generateWorkCharts(reportData.stats);
+            
+            // Generate table
+            generateWorkReportTable(reportData.data, type);
+            
+            // Show modal
+            document.getElementById('workSummaryReportModal').classList.add('show');
+        }
+
+        function generateWorkStatsCards(stats) {
+            const statsGrid = document.getElementById('workReportStatsGrid');
+            
+            const statsCards = [
+                { icon: '📋', value: stats.total, label: 'งานทั้งหมด', color: '#3b82f6' },
+                { icon: '⏳', value: stats.pending, label: 'รอดำเนินการ', color: '#fbbf24' },
+                { icon: '✅', value: stats.waitingForTech, label: 'รอรับงาน', color: '#10b981' },
+                { icon: '🔧', value: stats.inProgress, label: 'กำลังซ่อม', color: '#f59e0b' },
+                { icon: '✨', value: stats.completed, label: 'งานเสร็จ', color: '#22c55e' },
+                { icon: '📸', value: stats.withPhotos, label: 'มีรูปภาพ', color: '#8b5cf6' }
+            ];
+            
+            statsGrid.innerHTML = statsCards.map(card => `
+                <div class="report-stat-card">
+                    <span class="report-stat-icon" style="color: ${card.color};">${card.icon}</span>
+                    <div class="report-stat-value">${card.value}</div>
+                    <div class="report-stat-label">${card.label}</div>
+                </div>
+            `).join('');
+        }
+
+        function generateWorkCharts(stats) {
+            // Destroy existing charts
+            if (workStatusChart) {
+                workStatusChart.destroy();
+            }
+            if (workTrendChart) {
+                workTrendChart.destroy();
+            }
+            
+            // Status Pie Chart
+            const statusCtx = document.getElementById('workStatusChart').getContext('2d');
+            workStatusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['รอดำเนินการ', 'รอรับงาน', 'กำลังซ่อม', 'งานเสร็จ'],
+                    datasets: [{
+                        data: [stats.pending, stats.waitingForTech, stats.inProgress, stats.completed],
+                        backgroundColor: ['#fbbf24', '#10b981', '#f59e0b', '#22c55e'],
+                        borderColor: ['#f59e0b', '#059669', '#d97706', '#16a34a'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#f8fafc',
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Trend Line Chart
+            const trendCtx = document.getElementById('workTrendChart').getContext('2d');
+            const trendLabels = stats.monthlyTrend.map(([month]) => {
+                const date = new Date(month + '-01');
+                return date.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' });
+            });
+            const trendData = stats.monthlyTrend.map(([, count]) => count);
+            
+            workTrendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'จำนวนงานซ่อม',
+                        data: trendData,
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f8fafc',
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateWorkReportTable(data, type) {
+            const tableHead = document.getElementById('workReportTableHead');
+            const tableBody = document.getElementById('workReportTableBody');
+            
+            // Table headers
+            tableHead.innerHTML = `
+                <tr>
+                    <th>🎫 เลขที่คำขอ</th>
+                    <th>👤 ผู้แจ้ง</th>
+                    <th>📍 รายละเอียด</th>
+                    <th>📊 สถานะ</th>
+                    <th>📅 วันที่แจ้ง</th>
+                    <th>📱 เบอร์โทร</th>
+                </tr>
+            `;
+            
+            // Table rows
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">📋</div>
+                            <p>ไม่มีข้อมูลในรายงานนี้</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = data.slice(0, 50).map(request => { // Show max 50 rows
+                const fullName = `${request.FIRST_NAME || ''} ${request.LAST_NAME || ''}`.trim() || 'ไม่ระบุ';
+                const statusClass = getWorkStatusBadgeClass(request.STATUS);
+                const dateReported = new Date(request.DATE_REPORTED).toLocaleDateString('th-TH');
+                
+                return `
+                    <tr>
+                        <td style="font-weight: 600; color: #fbbf24;">${request.REQUEST_ID}</td>
+                        <td>${fullName}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            🗼 ${request.POLE_ID || 'ไม่ระบุ'}<br>
+                            <small style="color: #94a3b8;">${request.PROBLEM_DESCRIPTION || request.REASON || 'ไม่มีรายละเอียด'}</small>
+                        </td>
+                        <td>
+                            <span class="status-badge ${statusClass}">${request.STATUS || 'ไม่ระบุ'}</span>
+                        </td>
+                        <td>${dateReported}</td>
+                        <td>${request.PHONE || 'ไม่ระบุ'}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Add "show more" message if data is truncated
+            if (data.length > 50) {
+                tableBody.innerHTML += `
+                    <tr style="background: rgba(251, 191, 36, 0.1);">
+                        <td colspan="6" style="text-align: center; padding: 1.5rem; color: #fbbf24; font-weight: 600;">
+                            📄 แสดง 50 รายการแรก จากทั้งหมด ${data.length} รายการ
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function getWorkStatusBadgeClass(status) {
+            switch (status) {
+                case 'รอดำเนินการ': 
+                    return 'status-pending';
+                case 'อนุมัติแล้วรอช่าง':
+                    return 'status-approved';
+                case 'กำลังดำเนินการ': 
+                    return 'status-in-progress';
+                case 'เสร็จสิ้น': 
+                    return 'status-completed';
+                case 'ยกเลิก':
+                case 'ไม่อนุมัติโดยผู้บริหาร':
+                    return 'status-cancelled';
+                default: 
+                    return 'status-pending';
+            }
+        }
+
+        function closeWorkSummaryReportModal() {
+            document.getElementById('workSummaryReportModal').classList.remove('show');
+            
+            // Destroy charts when closing
+            if (workStatusChart) {
+                workStatusChart.destroy();
+                workStatusChart = null;
+            }
+            if (workTrendChart) {
+                workTrendChart.destroy();
+                workTrendChart = null;
+            }
+        }
+
+        function printWorkReport() {
+            window.print();
+            showToast('เริ่มการพิมพ์รายงาน 🖨️', 'success');
+        }
+
+        function refreshWorkReport() {
+            if (currentWorkReportType) {
+                closeWorkSummaryReportModal();
+                setTimeout(() => {
+                    if (currentWorkReportType === 'summary') {
+                        openMyWorkSummaryReport();
+                    } else if (currentWorkReportType === 'detailed') {
+                        showMyWorkDetailedReport();
+                    }
+                }, 300);
+            }
+        }
+
+        async function sendWorkReportToTelegram() {
+            if (!currentWorkReportData) {
+                showToast('ไม่มีข้อมูลรายงานสำหรับส่ง', 'error');
+                return;
+            }
+            
+            try {
+                showToast('กำลังส่งรายงานผ่าน Telegram...', 'info');
+                
+                const reportSummary = {
+                    type: currentWorkReportType,
+                    technician: currentUser ? currentUser.username : 'Unknown',
+                    stats: currentWorkReportData.stats,
+                    metadata: currentWorkReportData.metadata
+                };
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/notifications/send-report', {
+                    method: 'POST',
+                    body: JSON.stringify(reportSummary)
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('ส่งรายงานผ่าน Telegram สำเร็จ! 📱', 'success');
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถส่งผ่าน Telegram ได้');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาดในการส่ง: ' + error.message, 'error');
+            }
+        }
+
+        // Custom Work Report Functions
+        function showCustomWorkReportModal() {
+            document.getElementById('customWorkReportModal').classList.add('show');
+        }
+
+        function closeCustomWorkReportModal() {
+            document.getElementById('customWorkReportModal').classList.remove('show');
+            document.getElementById('customWorkReportForm').reset();
+        }
+
+        async function handleCustomWorkReport(e) {
+            e.preventDefault();
+            
+            const filters = {
+                technician: currentUser.username,
+                dateFrom: document.getElementById('workDateFrom').value,
+                dateTo: document.getElementById('workDateTo').value,
+                status: document.getElementById('workStatus').value,
+                reportType: document.getElementById('workReportType').value
+            };
+            
+            closeCustomWorkReportModal();
+            
+            try {
+                showToast('กำลังสร้างรายงานกำหนดเอง...', 'info');
+                
+                // Load and filter data for custom report
+                const reportData = await loadCustomWorkReportData(filters);
+                if (reportData) {
+                    currentWorkReportData = reportData;
+                    currentWorkReportType = 'custom';
+                    
+                    showWorkReportModal('custom', reportData);
+                    showToast('สร้างรายงานกำหนดเองสำเร็จ! 🎯', 'success');
+                } else {
+                    throw new Error('ไม่สามารถสร้างรายงานได้');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        async function loadCustomWorkReportData(filters) {
+            try {
+                let filteredData = [...allRequests];
+                
+                // Apply custom filters
+                if (filters.dateFrom) {
+                    const fromDate = new Date(filters.dateFrom);
+                    filteredData = filteredData.filter(r => {
+                        const reqDate = new Date(r.DATE_REPORTED);
+                        return reqDate >= fromDate;
+                    });
+                }
+                
+                if (filters.dateTo) {
+                    const toDate = new Date(filters.dateTo);
+                    toDate.setHours(23, 59, 59, 999); // End of day
+                    filteredData = filteredData.filter(r => {
+                        const reqDate = new Date(r.DATE_REPORTED);
+                        return reqDate <= toDate;
+                    });
+                }
+                
+                if (filters.status) {
+                    filteredData = filteredData.filter(r => r.STATUS === filters.status);
+                }
+                
+                const stats = generateWorkStatistics(filteredData);
+                
+                return {
+                    type: 'custom',
+                    data: filteredData,
+                    stats: stats,
+                    metadata: {
+                        totalRequests: filteredData.length,
+                        generatedAt: new Date().toISOString(),
+                        technician: currentUser ? currentUser.username : 'Unknown',
+                        filters: filters,
+                        dateRange: {
+                            from: filters.dateFrom || 'ไม่ระบุ',
+                            to: filters.dateTo || 'ไม่ระบุ'
+                        }
+                    }
+                };
+            } catch (error) {
+                console.error('Error loading custom work report data:', error);
+                throw error;
+            }
+        }
+
+        function filterWorkByStatus(status) {
+            document.getElementById('filterStatus').value = status;
+            applyFilters();
+            showToast(`กรองงานสถานะ: ${status}`, 'info');
+        }
+
         // Reports Functions
         function applyFilters() {
             const dateFrom = document.getElementById('filterDateFrom').value;
@@ -2194,7 +3133,8 @@
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
                             <button class="btn btn-info" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" 
-                                    onclick="event.stopPropagation(); showPrintRequestDetailModal('${request.REQUEST_ID}')">
+                                    onclick="event.stopPropagation(); showRequestInLookerStudio('${request.REQUEST_ID}')" 
+                                    title="พิมพ์เอกสาร">
                                 🖨️
                             </button>
                         </div>
@@ -2219,10 +3159,6 @@
         }
 
         // Print Functions
-        function showMyWorkReport() {
-            showToast('ฟีเจอร์รายงานงานของฉันจะพัฒนาเร็วๆ นี้ 📊', 'info');
-        }
-
         function showPrintReportModal() {
             document.getElementById('printReportModal').classList.add('show');
             updatePrintPreview();
@@ -2455,6 +3391,89 @@
             }, 250);
         }
 
+        // Export Functions
+        function showExportModal() {
+            document.getElementById('exportModal').classList.add('show');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('show');
+        }
+
+        async function exportToPDF() {
+            try {
+                showToast('กำลังสร้าง PDF...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/reports/repair-requests/pdf', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        templateOptions: {
+                            title: `รายงานงานซ่อมไฟฟ้า - ${new Date().toLocaleDateString('th-TH')}`,
+                            headerColor: '#fbbf24',
+                            showDate: true,
+                            technician: currentUser ? currentUser.username : 'Unknown'
+                        },
+                        filterOptions: {
+                            dateFrom: document.getElementById('filterDateFrom').value,
+                            dateTo: document.getElementById('filterDateTo').value,
+                            status: document.getElementById('filterStatus').value
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `รายงานงานซ่อมไฟฟ้า_${new Date().toISOString().split('T')[0]}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showToast('ส่งออก PDF สำเร็จ! 📄', 'success');
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || 'ไม่สามารถสร้าง PDF ได้');
+                }
+            } catch (error) {
+                console.error('Error exporting PDF:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+            closeExportModal();
+        }
+
+        async function sendToTelegram() {
+            try {
+                showToast('กำลังส่งรายงานผ่าน Telegram...', 'info');
+                
+                const response = await window.AuthUtils.apiCall('/api/admin/notifications/send-report', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        reportType: 'technician_summary',
+                        technician: currentUser ? currentUser.username : 'Unknown',
+                        filters: {
+                            dateFrom: document.getElementById('filterDateFrom').value,
+                            dateTo: document.getElementById('filterDateTo').value,
+                            status: document.getElementById('filterStatus').value
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('ส่งรายงานผ่าน Telegram สำเร็จ! 📱', 'success');
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถส่งผ่าน Telegram ได้');
+                }
+            } catch (error) {
+                console.error('Error sending to Telegram:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+            closeExportModal();
+        }
+
         // Print Request Detail Functions
         function showPrintRequestDetailModal(requestId) {
             const request = allRequests.find(r => r.REQUEST_ID === requestId);
@@ -2468,6 +3487,36 @@
             document.getElementById('printRequestDetailModal').classList.add('show');
         }
 
+        async function showRequestInLookerStudio(requestId) {
+            try {
+                showToast('กำลังเปิดหน้า Looker Studio...', 'info');
+                
+                // สร้าง filters สำหรับ Looker Studio
+                const filters = {
+                    requestId: requestId,
+                    type: 'request_detail'
+                };
+                
+                // เรียก API เพื่อสร้าง Looker Dashboard URL
+                const response = await window.AuthUtils.apiCall(`/api/admin/looker-studio/dashboard-url?type=request_detail&filters=${encodeURIComponent(JSON.stringify(filters))}`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data.url) {
+                    // เปิด Looker Studio ในแท็บใหม่
+                    window.open(data.data.url, '_blank');
+                    showToast('เปิดหน้า Looker Studio สำเร็จ! 📊', 'success');
+                } else {
+                    throw new Error(data.message || 'ไม่สามารถสร้าง Looker Dashboard URL ได้');
+                }
+            } catch (error) {
+                console.error('Error opening Looker Studio:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                
+                // แสดง fallback modal พิมพ์แทน
+                showPrintRequestDetailModal(requestId);
+            }
+        }
+
         function closePrintRequestDetailModal() {
             document.getElementById('printRequestDetailModal').classList.remove('show');
         }
@@ -2476,79 +3525,354 @@
             const preview = document.getElementById('requestDetailPreview');
             
             preview.innerHTML = `
-                <div class="print-header">
-                    <div class="print-logo">⚡</div>
-                    <div class="print-title">รายละเอียดงานซ่อมไฟฟ้า</div>
-                    <div class="print-subtitle">องค์การบริหารส่วนตำบลข่าใหญ่</div>
-                </div>
-                <div class="print-content">
-                    <div class="print-section">
-                        <div class="print-section-title">ข้อมูลคำขอ</div>
-                        <div class="print-info-grid">
-                            <div class="print-info-item">
-                                <div class="print-info-label">เลขที่คำขอ</div>
-                                <div class="print-info-value">${request.REQUEST_ID}</div>
+                <div class="print-container">
+                    <div class="print-header">
+                        <div class="header-left">
+                            <div class="address-info">
+                                <div>เลขที่ 150 หมู่ที่ 3 บ้านข่าใหญ่</div>
+                                <div>หนองบัวลำภู - สร้างเสี่ยน ต.หัวนา</div>
+                                <div>อ.เมือง จ.หนองบัวลำภู 39000</div>
                             </div>
-                            <div class="print-info-item">
-                                <div class="print-info-label">วันที่แจ้ง</div>
-                                <div class="print-info-value">${new Date(request.DATE_REPORTED).toLocaleDateString('th-TH')}</div>
-                            </div>
-                            <div class="print-info-item">
-                                <div class="print-info-label">สถานะ</div>
-                                <div class="print-info-value">${request.STATUS || 'รอดำเนินการ'}</div>
-                            </div>
-                            <div class="print-info-item">
-                                <div class="print-info-label">รหัสเสาไฟฟ้า</div>
-                                <div class="print-info-value">${request.POLE_ID || 'ไม่ระบุ'}</div>
+                        </div>
+                        <div class="header-center">
+                            <img src="https://www.huana-nbp.go.th/index/add_file/P0D284NMon35557.png" 
+                                alt="โลโก้ อบต.ข่าใหญ่" class="print-logo" 
+                                onerror="this.style.display='none';">
+                        </div>
+                        <div class="header-right">
+                            <div class="date-info">
+                                วันที่/เดือน/พ.ศ. ${new Date(request.DATE_REPORTED || new Date()).toLocaleDateString('th-TH')}
                             </div>
                         </div>
                     </div>
                     
-                    <div class="print-section">
-                        <div class="print-section-title">ข้อมูลผู้แจ้ง</div>
-                        <div class="print-info-grid">
-                            <div class="print-info-item">
-                                <div class="print-info-label">ชื่อ-นามสกุล</div>
-                                <div class="print-info-value">${request.TITLE_PREFIX} ${request.FIRST_NAME} ${request.LAST_NAME}</div>
-                            </div>
-                            <div class="print-info-item">
-                                <div class="print-info-label">เบอร์โทรติดต่อ</div>
-                                <div class="print-info-value">${request.PHONE}</div>
-                            </div>
-                            <div class="print-info-item">
-                                <div class="print-info-label">ที่อยู่</div>
-                                <div class="print-info-value">บ้านเลขที่ ${request.HOUSE_NO}</div>
-                            </div>
-                            <div class="print-info-item">
-                                <div class="print-info-label">หมู่บ้าน</div>
-                                <div class="print-info-value">${request.MOO}</div>
-                            </div>
-                        </div>
+                    <div class="print-title-section">
+                        <div class="print-title">เรื่อง แจ้งซ่อมไฟฟ้าส่องสว่างขัดข้อง</div>
+                        <div class="print-subtitle">เรียน นายกองค์การบริหารส่วนตำบลข่าใหญ่</div>
                     </div>
                     
-                    <div class="print-section">
-                        <div class="print-section-title">รายละเอียดปัญหา</div>
-                        <div class="print-info-item">
-                            <div class="print-info-label">สาเหตุการชำรุด</div>
-                            <div class="print-info-value">${request.REASON}</div>
-                        </div>
-                        ${request.PROBLEM_DESCRIPTION ? `
-                            <div class="print-info-item" style="margin-top: 1rem;">
-                                <div class="print-info-label">รายละเอียดเพิ่มเติม</div>
-                                <div class="print-info-value">${request.PROBLEM_DESCRIPTION}</div>
+                    <div class="print-content">
+                        <div class="form-section">
+                            <div class="form-line">
+                                <span>ข้าพเจ้า</span>
+                                <span class="underline-field">${request.TITLE_PREFIX || ''} ${request.FIRST_NAME || ''} ${request.LAST_NAME || ''}</span>
+                                <span>อายุ</span>
+                                <span class="underline-field">${request.AGE || ''}</span>
+                                <span>ปี เชื้อชาติ</span>
+                                <span class="underline-field">${request.ETHNICITY || 'ไทย'}</span>
                             </div>
-                        ` : ''}
+                            
+                            <div class="form-line">
+                                <span>สัญชาติ</span>
+                                <span class="underline-field">${request.NATIONALITY || 'ไทย'}</span>
+                                <span>อยู่บ้านเลขที่</span>
+                                <span class="underline-field">${request.HOUSE_NO || ''}</span>
+                                <span>หมู่ที่</span>
+                                <span class="underline-field">${request.MOO || ''}</span>
+                            </div>
+                            
+                            <div class="form-line">
+                                <span>ตำบลข่าใหญ่ อำเภอเมือง จังหวัดหนองบัวลำภู</span>
+                            </div>
+                            
+                            <div class="form-line">
+                                <span>หมายเลขโทรศัพท์</span>
+                                <span class="underline-field">${request.PHONE || ''}</span>
+                                <span>ขอยื่นคำร้องต่อองค์การบริหารส่วนตำบลข่าใหญ่ อำเภอเมือง</span>
+                            </div>
+                            
+                            <div class="form-line">
+                                <span>แจ้งหมายเลขเสาไฟฟ้าส่องสว่างขัดข้อง</span>
+                                <span class="underline-field">${request.POLE_ID || ''}</span>
+                            </div>
+                            
+                            <div class="form-line">
+                                <span>สาเหตุไฟฟ้าส่องสว่างขัดข้องเนื่องจาก</span>
+                                <span class="underline-field wide">${request.REASON || ''}</span>
+                            </div>
+                            
+                            ${request.PROBLEM_DESCRIPTION ? `
+                            <div class="form-line">
+                                <span>รายละเอียดเพิ่มเติม</span>
+                                <span class="underline-field wide">${request.PROBLEM_DESCRIPTION}</span>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="signature-section">
+                                <div class="signature-box">
+                                    <div>(ลงชื่อ)...................................................ผู้ยื่นคำร้อง</div>
+                                    <div class="signature-name">( ${request.TITLE_PREFIX || ''} ${request.FIRST_NAME || ''} ${request.LAST_NAME || ''} )</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="approval-section">
+                            <div class="approval-row">
+                                <div class="approval-box">
+                                    <div class="approval-title">ความคิดเห็นเจ้าหน้าที่</div>
+                                    <div class="approval-content">
+                                        ${request.STAFF_NOTES || '................................................\n................................................'}
+                                    </div>
+                                    <div class="approval-signature">
+                                        <div>(ลงชื่อ)..................................................</div>
+                                        <div>(.................................................)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="approval-box">
+                                    <div class="approval-title">ความคิดเห็นผู้อำนวยการกองช่าง</div>
+                                    <div class="approval-content">
+                                        ${request.ENGINEER_DIRECTOR_NOTES || '................................................\n................................................'}
+                                    </div>
+                                    <div class="approval-signature">
+                                        <div>(ลงชื่อ)..................................................</div>
+                                        <div>(.................................................)</div>
+                                        <div>ผู้อำนวยการกองช่าง</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="approval-row">
+                                <div class="approval-box">
+                                    <div class="approval-title">ความคิดเห็นปลัด อบต.ข่าใหญ่</div>
+                                    <div class="approval-content">
+                                        ${request.DEPUTY_NOTES || '................................................\n................................................'}
+                                    </div>
+                                    <div class="approval-signature">
+                                        <div>(ลงชื่อ)..................................................</div>
+                                        <div>(.................................................)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="approval-box">
+                                    <div class="approval-title">ความคิดเห็นนายก อบต.ข่าใหญ่</div>
+                                    <div class="approval-content">
+                                        ${request.MAYOR_NOTES || '................................................\n................................................'}
+                                    </div>
+                                    <div class="approval-signature">
+                                        <div>(ลงชื่อ)..................................................</div>
+                                        <div>(.................................................)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         ${request.TECHNICIAN_NOTES ? `
-                            <div class="print-info-item" style="margin-top: 1rem;">
-                                <div class="print-info-label">หมายเหตุจากช่าง</div>
-                                <div class="print-info-value">${request.TECHNICIAN_NOTES}</div>
-                            </div>
+                        <div class="technician-notes-section">
+                            <div class="section-title">หมายเหตุจากช่างเทคนิค</div>
+                            <div class="notes-content">${request.TECHNICIAN_NOTES}</div>
+                        </div>
                         ` : ''}
                     </div>
+                    
+                    <div class="print-footer">
+                        <div class="footer-info">
+                            <div>เลขที่คำขอ: ${request.REQUEST_ID || 'ไม่ระบุ'}</div>
+                            <div>สถานะ: ${request.STATUS || 'รอดำเนินการ'}</div>
+                            <div>พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH')} เวลา ${new Date().toLocaleTimeString('th-TH')}</div>
+                            <div>ช่างเทคนิค: ${currentUser ? currentUser.username : 'ระบบ'}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="print-footer">
-                    <p>พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH')} | ช่างเทคนิค: ${currentUser ? currentUser.username : 'Unknown'}</p>
-                </div>
+                
+                <style>
+                    .print-container {
+                        max-width: 210mm;
+                        margin: 0 auto;
+                        padding: 20mm;
+                        background: white;
+                        font-family: 'Sarabun', 'TH SarabunPSK', sans-serif;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        color: #000;
+                    }
+                    
+                    .print-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        margin-bottom: 20px;
+                        border-bottom: 1px solid #ddd;
+                        padding-bottom: 15px;
+                    }
+                    
+                    .header-left, .header-right {
+                        flex: 1;
+                    }
+                    
+                    .header-center {
+                        flex: 0 0 auto;
+                        text-align: center;
+                        margin: 0 20px;
+                    }
+                    
+                    .print-logo {
+                        max-width: 80px;
+                        max-height: 80px;
+                        object-fit: contain;
+                    }
+                    
+                    .address-info div {
+                        margin-bottom: 2px;
+                        font-size: 12px;
+                    }
+                    
+                    .date-info {
+                        text-align: right;
+                        font-size: 12px;
+                    }
+                    
+                    .print-title-section {
+                        text-align: center;
+                        margin-bottom: 30px;
+                    }
+                    
+                    .print-title {
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    
+                    .print-subtitle {
+                        font-size: 16px;
+                        margin-bottom: 20px;
+                    }
+                    
+                    .form-section {
+                        margin-bottom: 30px;
+                    }
+                    
+                    .form-line {
+                        margin-bottom: 15px;
+                        display: flex;
+                        align-items: baseline;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                    }
+                    
+                    .underline-field {
+                        border-bottom: 1px dotted #333;
+                        min-width: 100px;
+                        padding: 2px 5px;
+                        display: inline-block;
+                        font-weight: 500;
+                    }
+                    
+                    .underline-field.wide {
+                        min-width: 300px;
+                        flex: 1;
+                    }
+                    
+                    .signature-section {
+                        margin: 30px 0;
+                        text-align: right;
+                    }
+                    
+                    .signature-box {
+                        display: inline-block;
+                        text-align: center;
+                    }
+                    
+                    .signature-name {
+                        margin-top: 5px;
+                    }
+                    
+                    .approval-section {
+                        margin-top: 40px;
+                        border-top: 2px solid #333;
+                        padding-top: 20px;
+                    }
+                    
+                    .approval-row {
+                        display: flex;
+                        margin-bottom: 30px;
+                        gap: 20px;
+                    }
+                    
+                    .approval-box {
+                        flex: 1;
+                        border: 1px solid #ddd;
+                        padding: 15px;
+                        min-height: 120px;
+                    }
+                    
+                    .approval-title {
+                        font-weight: bold;
+                        text-align: center;
+                        margin-bottom: 10px;
+                        border-bottom: 1px solid #ddd;
+                        padding-bottom: 5px;
+                    }
+                    
+                    .approval-content {
+                        min-height: 60px;
+                        margin-bottom: 15px;
+                        white-space: pre-line;
+                        font-size: 13px;
+                    }
+                    
+                    .approval-signature {
+                        text-align: center;
+                        font-size: 12px;
+                    }
+                    
+                    .approval-signature div {
+                        margin-bottom: 3px;
+                    }
+                    
+                    .technician-notes-section {
+                        margin-top: 30px;
+                        border: 2px solid #333;
+                        padding: 15px;
+                        background-color: #f9f9f9;
+                    }
+                    
+                    .section-title {
+                        font-weight: bold;
+                        font-size: 16px;
+                        margin-bottom: 10px;
+                        text-align: center;
+                        background-color: #e0e0e0;
+                        padding: 8px;
+                        border-radius: 4px;
+                    }
+                    
+                    .notes-content {
+                        white-space: pre-line;
+                        line-height: 1.6;
+                    }
+                    
+                    .print-footer {
+                        margin-top: 40px;
+                        border-top: 1px solid #ddd;
+                        padding-top: 15px;
+                    }
+                    
+                    .footer-info {
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 12px;
+                        color: #666;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                    }
+                    
+                    @media print {
+                        .print-container {
+                            margin: 0;
+                            padding: 15mm;
+                            box-shadow: none;
+                        }
+                        
+                        .approval-row {
+                            page-break-inside: avoid;
+                        }
+                        
+                        .technician-notes-section {
+                            page-break-inside: avoid;
+                        }
+                    }
+                </style>
             `;
         }
 
@@ -2652,89 +3976,6 @@
                 printWindow.print();
                 showToast('เปิดหน้าต่างพิมพ์แล้ว 🖨️', 'success');
             }, 250);
-        }
-
-        // Export Functions
-        function showExportModal() {
-            document.getElementById('exportModal').classList.add('show');
-        }
-
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.remove('show');
-        }
-
-        async function exportToPDF() {
-            try {
-                showToast('กำลังสร้าง PDF...', 'info');
-                
-                const response = await window.AuthUtils.apiCall('/api/admin/reports/repair-requests/pdf', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        templateOptions: {
-                            title: `รายงานงานซ่อมไฟฟ้า - ${new Date().toLocaleDateString('th-TH')}`,
-                            headerColor: '#fbbf24',
-                            showDate: true,
-                            technician: currentUser ? currentUser.username : 'Unknown'
-                        },
-                        filterOptions: {
-                            dateFrom: document.getElementById('filterDateFrom').value,
-                            dateTo: document.getElementById('filterDateTo').value,
-                            status: document.getElementById('filterStatus').value
-                        }
-                    })
-                });
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `รายงานงานซ่อมไฟฟ้า_${new Date().toISOString().split('T')[0]}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    
-                    showToast('ส่งออก PDF สำเร็จ! 📄', 'success');
-                } else {
-                    const data = await response.json();
-                    throw new Error(data.message || 'ไม่สามารถสร้าง PDF ได้');
-                }
-            } catch (error) {
-                console.error('Error exporting PDF:', error);
-                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-            }
-            closeExportModal();
-        }
-
-        async function sendToTelegram() {
-            try {
-                showToast('กำลังส่งรายงานผ่าน Telegram...', 'info');
-                
-                const response = await window.AuthUtils.apiCall('/api/admin/notifications/send-report', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        reportType: 'technician_summary',
-                        technician: currentUser ? currentUser.username : 'Unknown',
-                        filters: {
-                            dateFrom: document.getElementById('filterDateFrom').value,
-                            dateTo: document.getElementById('filterDateTo').value,
-                            status: document.getElementById('filterStatus').value
-                        }
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.status === 'success') {
-                    showToast('ส่งรายงานผ่าน Telegram สำเร็จ! 📱', 'success');
-                } else {
-                    throw new Error(data.message || 'ไม่สามารถส่งผ่าน Telegram ได้');
-                }
-            } catch (error) {
-                console.error('Error sending to Telegram:', error);
-                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-            }
-            closeExportModal();
         }
 
         function renderInventoryList() {
@@ -2960,7 +4201,8 @@
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
                         <span class="status-badge ${getStatusClass(request.STATUS)}">${request.STATUS || 'รอดำเนินการ'}</span>
                         <button class="btn btn-info" style="padding: 0.5rem 0.75rem; font-size: 0.8rem;" 
-                                onclick="showPrintRequestDetailModal('${request.REQUEST_ID}')">
+                                onclick="showRequestInLookerStudio('${request.REQUEST_ID}')" 
+                                title="พิมพ์เอกสาร">
                             🖨️ พิมพ์
                         </button>
                     </div>
@@ -3478,6 +4720,9 @@
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal')) {
                 e.target.classList.remove('show');
+            }
+            if (e.target.classList.contains('report-modal')) {
+                closeWorkSummaryReportModal();
             }
         });
     </script>

@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Enhanced LINE Bot Flex Message Editor - อบต.ข่าใหญ่</title>
+    
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #FF8C00 0%, #FFA500 25%, #FFB347 50%, #FFF8F0 75%, #FFFFFF 100%);
+            color: #1A1A1A;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 30px;
+            height: calc(100vh - 40px);
+        }
+        
+        .editor-panel, .preview-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.9));
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(255, 140, 0, 0.2);
+            border: 2px solid rgba(255, 140, 0, 0.3);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel-header {
+            background: linear-gradient(135deg, #FF8C00 0%, #FFA500 100%);
+            color: #FFFFFF;
+            padding: 24px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(255, 140, 0, 0.3);
+            position: relative;
+        }
+
+        .panel-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .editor-content, .preview-content {
+            height: calc(100% - 80px);
+            overflow-y: auto;
+        }
+        
+        .editor-content {
+            padding: 24px;
+        }
+        
+        .message-type-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .message-type-btn {
+            padding: 16px 12px;
+            border: 2px solid rgba(255, 140, 0, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #1A1A1A;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message-type-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .message-type-btn:hover::before {
+            left: 100%;
+        }
+        
+        .message-type-btn.active {
+            background: linear-gradient(135deg, #FF8C00, #FFA500);
+            color: #FFFFFF;
+            border-color: #FF8C00;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+        }
+        
+        .message-type-btn:hover:not(.active) {
+            border-color: #FF8C00;
+            background: rgba(255, 140, 0, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 16px;
+            border-left: 4px solid #FF8C00;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.1);
+        }
+        
+        .form-section:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateX(4px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.2);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF8C00;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1A1A1A;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 140, 0, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1A1A1A;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #FF8C00;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+            background: rgba(255, 255, 255, 1);
+        }
+        
+        .color-input {
+            height: 50px;
+            border: 2px solid rgba(255, 140, 0, 0.3) !important;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .form-row-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FF8C00, #FFA500);
+            color: #FFFFFF;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8);
+            color: #1A1A1A;
+            border: 2px solid rgba(255, 140, 0, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #FFA500, #FF7F00);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 140, 0, 0.1);
+            border-color: #FF8C00;
+        }
+        
+        .preview-content {
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .phone-mockup {
+            width: 340px;
+            height: 620px;
+            background: linear-gradient(135deg, #1f2937, #374151);
+            border-radius: 30px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .phone-mockup::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: #9CA3AF;
+            border-radius: 2px;
+        }
+
+        .phone-mockup::after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 4px;
+            background: #9CA3AF;
+            border-radius: 2px;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #f9fafb;
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .flex-message {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        
+        .flex-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .flex-icon {
+            font-size: 24px;
+        }
+        
+        .flex-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .flex-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+        
+        .flex-body {
+            padding: 24px;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-instruction {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        
+        .flex-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .flex-btn {
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .flex-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-primary-flex {
+            color: white;
+        }
+        
+        .btn-secondary-flex {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .image-preview {
+            width: 100%;
+            max-height: 140px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+        
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            margin-top: 8px;
+            border: 2px solid rgba(255, 140, 0, 0.2);
+        }
+        
+        .icon-option {
+            padding: 12px;
+            text-align: center;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .icon-option:hover {
+            background: rgba(255, 140, 0, 0.1);
+            border-color: #FF8C00;
+            transform: scale(1.1);
+        }
+        
+        .icon-option.selected {
+            background: linear-gradient(135deg, #FF8C00, #FFA500);
+            color: #FFFFFF;
+        }
+        
+        .gradient-preview {
+            height: 40px;
+            border-radius: 8px;
+            margin-top: 8px;
+            border: 2px solid rgba(255, 140, 0, 0.3);
+        }
+        
+        .shadow-preview {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 8px;
+            color: #000;
+            text-align: center;
+            font-size: 13px;
+        }
+        
+        .json-display {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1A1A1A;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+            border: 2px solid rgba(255, 140, 0, 0.2);
+        }
+        
+        .loading {
+            opacity: 0.6;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .swal2-popup {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95)) !important;
+            border: 2px solid rgba(255, 140, 0, 0.3) !important;
+            border-radius: 1rem !important;
+            color: #1A1A1A !important;
+        }
+
+        .swal2-title {
+            color: #FF8C00 !important;
+            font-weight: 700 !important;
+        }
+
+        .swal2-content {
+            color: #1A1A1A !important;
+        }
+
+        .swal2-confirm {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+        }
+
+        .swal2-cancel {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #FF8C00, #FFA500);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+        }
+        
+        .collapsible {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(255, 140, 0, 0.2);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .collapsible-header {
+            padding: 15px 20px;
+            background: rgba(255, 140, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #FF8C00;
+            transition: all 0.3s ease;
+        }
+        
+        .collapsible-header:hover {
+            background: rgba(255, 140, 0, 0.2);
+        }
+        
+        .collapsible-content {
+            padding: 20px;
+            display: none;
+        }
+        
+        .collapsible.active .collapsible-content {
+            display: block;
+        }
+        
+        .collapsible.active .collapsible-header::after {
+            transform: rotate(180deg);
+        }
+        
+        .collapsible-header::after {
+            content: '▼';
+            transition: transform 0.3s ease;
+        }
+
+        .card-display {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #FF8C00;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.1);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .form-field-preview {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 8px 0;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-field-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            background: white;
+        }
+        
+        @media (max-width: 1400px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                height: auto;
+            }
+            
+            .phone-mockup {
+                width: 100%;
+                max-width: 340px;
+                height: 500px;
+            }
+            
+            .back-button {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 20px;
+                width: fit-content;
+            }
+
+            .message-type-selector {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <button class="back-button" onclick="goBack()">
+        ← กลับไปหน้าแอดมิน
+    </button>
+
+    <div class="container">
+        <!-- Editor Panel -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                🎨 Enhanced LINE Bot Flex Message Editor
+            </div>
+            <div class="editor-content">
+                
+                <!-- Message Type Selector -->
+                <div class="form-section">
+                    <div class="section-title">📱 ประเภทข้อความ</div>
+                    <div class="message-type-selector">
+                        <div class="message-type-btn active" onclick="selectMessageType('welcome')">
+                            🏠 หน้าหลัก
+                        </div>
+                        <div class="message-type-btn" onclick="selectMessageType('form')">
+                            📝 ฟอร์ม
+                        </div>
+                        <div class="message-type-btn" onclick="selectMessageType('confirm')">
+                            ✅ ยืนยัน
+                        </div>
+                        <div class="message-type-btn" onclick="selectMessageType('repair')">
+                            🔧 แจ้งซ่อม
+                        </div>
+                        <div class="message-type-btn" onclick="selectMessageType('status')">
+                            📊 สถานะ
+                        </div>
+                        <div class="message-type-btn" onclick="selectMessageType('tracking')">
+                            🔍 ติดตาม
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Message Settings -->
+                <div id="welcome-settings" class="message-settings">
+                    
+                    <!-- Colors & Theme -->
+                    <div class="collapsible active">
+                        <div class="collapsible-header">🎨 สีและธีม</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>สีหลัก (Primary Color)</label>
+                                <input type="color" class="color-input" id="welcome-primary-color" value="#FF8C00" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีรอง (Secondary Color)</label>
+                                <input type="color" class="color-input" id="welcome-secondary-color" value="#FFA500" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีเน้น (Accent Color)</label>
+                                <input type="color" class="color-input" id="welcome-accent-color" value="#FFB347" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีพื้นหลัง (Background)</label>
+                                <input type="color" class="color-input" id="welcome-bg-color" value="#FFF8F0" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีการ์ด (Card Background)</label>
+                                <input type="color" class="color-input" id="welcome-card-bg" value="#FFFFFF" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีเส้นขอบ (Border Color)</label>
+                                <input type="color" class="color-input" id="welcome-border-color" value="#FFD4A3" onchange="updateSettings()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Text Content -->
+                    <div class="collapsible active">
+                        <div class="collapsible-header">📝 เนื้อหาข้อความ</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>หัวข้อหลัก</label>
+                                <input type="text" id="welcome-title" value="⚡ ระบบแจ้งซ่อมไฟฟ้า" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>หัวข้อรอง</label>
+                                <input type="text" id="welcome-subtitle" value="องค์การบริหารส่วนตำบลข่าใหญ่" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>ข้อความต้อนรับ</label>
+                                <input type="text" id="welcome-message" value="🙏 ยินดีต้อนรับท่านครับ" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>คำแนะนำ</label>
+                                <textarea id="welcome-instruction" onchange="updateSettings()">กรุณาเลือกบริการที่ต้องการใช้งาน</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>ข้อความปุ่มแจ้งซ่อม</label>
+                                <input type="text" id="welcome-repair-btn" value="🔧 แจ้งซ่อมไฟฟ้า" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>ข้อความปุ่มติดตาม</label>
+                                <input type="text" id="welcome-track-btn" value="📊 ติดตามการซ่อม" onchange="updateSettings()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Design Settings -->
+                    <div class="collapsible">
+                        <div class="collapsible-header">🎨 การออกแบบ</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>สีข้อความหลัก</label>
+                                <input type="color" class="color-input" id="welcome-text-primary" value="#1A1A1A" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีข้อความรอง</label>
+                                <input type="color" class="color-input" id="welcome-text-secondary" value="#4A4A4A" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีปุ่มหลัก</label>
+                                <input type="color" class="color-input" id="welcome-button-color" value="#FF8C00" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีปุ่มรอง</label>
+                                <input type="color" class="color-input" id="welcome-button-hover" value="#FF7F00" onchange="updateSettings()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Message Settings -->
+                <div id="form-settings" class="message-settings" style="display: none;">
+                    <div class="collapsible active">
+                        <div class="collapsible-header">🎨 สีและธีม</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>สีหลัก</label>
+                                <input type="color" class="color-input" id="form-primary-color" value="#FF8C00" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีพื้นหลัง</label>
+                                <input type="color" class="color-input" id="form-bg-color" value="#FFFFFF" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีการ์ด</label>
+                                <input type="color" class="color-input" id="form-card-bg" value="#FFF8F0" onchange="updateSettings()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="collapsible active">
+                        <div class="collapsible-header">📝 เนื้อหา</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>หัวข้อ</label>
+                                <input type="text" id="form-title" value="📝 กรอกข้อมูลส่วนตัว" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>คำอธิบาย</label>
+                                <input type="text" id="form-description" value="ข้อมูลสำหรับการติดต่อ" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>คำแนะนำ</label>
+                                <textarea id="form-instruction" onchange="updateSettings()">กรุณากรอกข้อมูลเพื่อให้เจ้าหน้าที่สามารถติดต่อกลับได้</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirm Message Settings -->
+                <div id="confirm-settings" class="message-settings" style="display: none;">
+                    <div class="collapsible active">
+                        <div class="collapsible-header">🎨 สีและธีม</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>สีหลัก</label>
+                                <input type="color" class="color-input" id="confirm-primary-color" value="#FF8C00" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีความสำเร็จ</label>
+                                <input type="color" class="color-input" id="confirm-success-color" value="#28A745" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีพื้นหลัง</label>
+                                <input type="color" class="color-input" id="confirm-bg-color" value="#FFF8F0" onchange="updateSettings()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="collapsible active">
+                        <div class="collapsible-header">📝 เนื้อหา</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>หัวข้อ</label>
+                                <input type="text" id="confirm-title" value="✅ ยืนยันข้อมูลส่วนตัว" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>ข้อความ</label>
+                                <input type="text" id="confirm-message" value="ข้อมูลที่บันทึกไว้" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>คำแนะนำ</label>
+                                <textarea id="confirm-instruction" onchange="updateSettings()">กรุณาตรวจสอบความถูกต้อง</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repair Form Settings -->
+                <div id="repair-settings" class="message-settings" style="display: none;">
+                    <div class="collapsible active">
+                        <div class="collapsible-header">🎨 สีและธีม</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>สีหลัก</label>
+                                <input type="color" class="color-input" id="repair-primary-color" value="#FF8C00" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีพื้นหลัง</label>
+                                <input type="color" class="color-input" id="repair-bg-color" value="#FFFFFF" onchange="updateSettings()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="collapsible active">
+                        <div class="collapsible-header">📝 เนื้อหา</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>หัวข้อ</label>
+                                <input type="text" id="repair-title" value="🔧 แจ้งซ่อมไฟฟ้า" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>คำอธิบาย</label>
+                                <input type="text" id="repair-description" value="กรอกแบบฟอร์มแจ้งซ่อม" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>คำแนะนำ</label>
+                                <textarea id="repair-instruction" onchange="updateSettings()">ระบุรายละเอียดปัญหาไฟฟ้าพร้อมตำแหน่งที่ตั้ง</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Settings -->
+                <div id="status-settings" class="message-settings" style="display: none;">
+                    <div class="collapsible active">
+                        <div class="collapsible-header">🎨 สีสถานะ</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>สีรอดำเนินการ</label>
+                                <input type="color" class="color-input" id="status-pending-color" value="#FF8C00" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีอนุมัติแล้ว</label>
+                                <input type="color" class="color-input" id="status-approved-color" value="#28A745" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีกำลังดำเนินการ</label>
+                                <input type="color" class="color-input" id="status-progress-color" value="#007BFF" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีเสร็จสิ้น</label>
+                                <input type="color" class="color-input" id="status-complete-color" value="#28A745" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีไม่อนุมัติ</label>
+                                <input type="color" class="color-input" id="status-rejected-color" value="#DC3545" onchange="updateSettings()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="collapsible active">
+                        <div class="collapsible-header">📊 การตั้งค่าสถานะ</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>สถานะปัจจุบัน</label>
+                                <select id="status-current" onchange="updateSettings()">
+                                    <option value="รอดำเนินการ">รอดำเนินการ</option>
+                                    <option value="อนุมัติแล้วรอช่าง" selected>อนุมัติแล้วรอช่าง</option>
+                                    <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
+                                    <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+                                    <option value="ไม่อนุมัติโดยผู้บริหาร">ไม่อนุมัติโดยผู้บริหาร</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>เลขที่คำขอ</label>
+                                <input type="text" id="status-request-id" value="2025-001" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>หมายเหตุจากเจ้าหน้าที่</label>
+                                <textarea id="status-notes" onchange="updateSettings()">ได้รับการแจ้งซ่อมแล้ว กำลังตรวจสอบข้อมูล</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tracking Settings -->
+                <div id="tracking-settings" class="message-settings" style="display: none;">
+                    <div class="collapsible active">
+                        <div class="collapsible-header">🎨 สีและธีม</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>สีหลัก</label>
+                                <input type="color" class="color-input" id="tracking-primary-color" value="#FF8C00" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>สีปุ่ม</label>
+                                <input type="color" class="color-input" id="tracking-button-color" value="#FFA500" onchange="updateSettings()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="collapsible active">
+                        <div class="collapsible-header">📝 เนื้อหา</div>
+                        <div class="collapsible-content">
+                            <div class="form-group">
+                                <label>หัวข้อ</label>
+                                <input type="text" id="tracking-title" value="📊 ติดตามการซ่อม" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>คำอธิบาย</label>
+                                <input type="text" id="tracking-description" value="เลือกวิธีติดตาม" onchange="updateSettings()">
+                            </div>
+                            <div class="form-group">
+                                <label>คำแนะนำ</label>
+                                <textarea id="tracking-instruction" onchange="updateSettings()">กรุณาเลือกวิธีการค้นหาข้อมูลการแจ้งซ่อมของท่าน</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveSettings()">💾 บันทึก</button>
+                    <button class="btn btn-secondary" onclick="resetSettings()">🔄 รีเซ็ต</button>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="exportJSON()">📋 Export JSON</button>
+                    <button class="btn btn-secondary" onclick="copyToClipboard()">📄 Copy JSON</button>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-danger" onclick="testMessage()">🧪 ทดสอบ</button>
+                    <button class="btn btn-secondary" onclick="previewMobile()">📱 ดูบนมือถือ</button>
+                </div>
+
+                <!-- JSON Display -->
+                <div class="json-display" id="json-display"></div>
+            </div>
+        </div>
+        
+        <!-- Preview Panel -->
+        <div class="preview-panel">
+            <div class="panel-header">
+                📱 ตัวอย่าง LINE Message
+            </div>
+            <div class="preview-content">
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="flex-message" id="message-preview">
+                            <!-- Preview will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.js"></script>
+    <script>
+        // Enhanced settings object with new design
+        let flexSettings = {
+            welcome: {
+                primaryColor: '#FF8C00',
+                secondaryColor: '#FFA500',
+                accentColor: '#FFB347',
+                bgColor: '#FFF8F0',
+                cardBg: '#FFFFFF',
+                borderColor: '#FFD4A3',
+                textPrimary: '#1A1A1A',
+                textSecondary: '#4A4A4A',
+                buttonColor: '#FF8C00',
+                buttonHover: '#FF7F00',
+                title: '⚡ ระบบแจ้งซ่อมไฟฟ้า',
+                subtitle: 'องค์การบริหารส่วนตำบลข่าใหญ่',
+                message: '🙏 ยินดีต้อนรับท่านครับ',
+                instruction: 'กรุณาเลือกบริการที่ต้องการใช้งาน',
+                repairBtn: '🔧 แจ้งซ่อมไฟฟ้า',
+                trackBtn: '📊 ติดตามการซ่อม'
+            },
+            form: {
+                primaryColor: '#FF8C00',
+                bgColor: '#FFFFFF',
+                cardBg: '#FFF8F0',
+                title: '📝 กรอกข้อมูลส่วนตัว',
+                description: 'ข้อมูลสำหรับการติดต่อ',
+                instruction: 'กรุณากรอกข้อมูลเพื่อให้เจ้าหน้าที่สามารถติดต่อกลับได้'
+            },
+            confirm: {
+                primaryColor: '#FF8C00',
+                successColor: '#28A745',
+                bgColor: '#FFF8F0',
+                title: '✅ ยืนยันข้อมูลส่วนตัว',
+                message: 'ข้อมูลที่บันทึกไว้',
+                instruction: 'กรุณาตรวจสอบความถูกต้อง'
+            },
+            repair: {
+                primaryColor: '#FF8C00',
+                bgColor: '#FFFFFF',
+                title: '🔧 แจ้งซ่อมไฟฟ้า',
+                description: 'กรอกแบบฟอร์มแจ้งซ่อม',
+                instruction: 'ระบุรายละเอียดปัญหาไฟฟ้าพร้อมตำแหน่งที่ตั้ง'
+            },
+            status: {
+                pendingColor: '#FF8C00',
+                approvedColor: '#28A745',
+                progressColor: '#007BFF',
+                completeColor: '#28A745',
+                rejectedColor: '#DC3545',
+                current: 'อนุมัติแล้วรอช่าง',
+                requestId: '2025-001',
+                notes: 'ได้รับการแจ้งซ่อมแล้ว กำลังตรวจสอบข้อมูล'
+            },
+            tracking: {
+                primaryColor: '#FF8C00',
+                buttonColor: '#FFA500',
+                title: '📊 ติดตามการซ่อม',
+                description: 'เลือกวิธีติดตาม',
+                instruction: 'กรุณาเลือกวิธีการค้นหาข้อมูลการแจ้งซ่อมของท่าน'
+            }
+        };
+
+        let currentMessageType = 'welcome';
+
+        // Sample user data for demonstration
+        const sampleUserData = {
+            prefix: 'นาย',
+            firstName: 'สมชาย',
+            lastName: 'ใจดี',
+            age: 35,
+            ethnicity: 'ไทย',
+            nationality: 'ไทย',
+            phone: '0812345678',
+            houseNo: '123/4',
+            moo: 'หมู่ 2'
+        };
+
+        // Sample repair request data
+        const sampleRepairData = {
+            requestId: '2025-001',
+            poleId: 'P-001',
+            latitude: '13.7563',
+            longitude: '100.5018',
+            problemDescription: 'ไฟฟ้าส่องสว่างดับประจำ เส้นสายไฟตกขาด',
+            photoBase64: true
+        };
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupCollapsibles();
+        });
+
+        function initializeApp() {
+            loadSettingsToForm();
+            updatePreview();
+            updateJSONDisplay();
+            showToast('ยินดีต้อนรับสู่ Enhanced Flex Message Editor! 🎨', 'success');
+        }
+
+        // Setup collapsible sections
+        function setupCollapsibles() {
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const collapsible = this.parentElement;
+                    collapsible.classList.toggle('active');
+                });
+            });
+        }
+
+        // Load settings to form inputs
+        function loadSettingsToForm() {
+            const type = currentMessageType;
+            const s = flexSettings[type];
+            
+            // Load settings based on current message type
+            Object.keys(s).forEach(key => {
+                const element = document.getElementById(`${type}-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+                if (element) {
+                    element.value = s[key];
+                }
+            });
+        }
+
+        // Select message type
+        function selectMessageType(type) {
+            currentMessageType = type;
+            
+            // Update active button
+            document.querySelectorAll('.message-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide settings
+            document.querySelectorAll('.message-settings').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(type + '-settings').style.display = 'block';
+            
+            loadSettingsToForm();
+            updatePreview();
+        }
+
+        // Update settings from form
+        function updateSettings() {
+            const type = currentMessageType;
+            const s = flexSettings[type];
+            
+            // Update settings based on current message type
+            Object.keys(s).forEach(key => {
+                const element = document.getElementById(`${type}-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+                if (element) {
+                    s[key] = element.value;
+                }
+            });
+
+            updatePreview();
+            updateJSONDisplay();
+        }
+
+        // Update preview based on current message type
+        function updatePreview() {
+            const preview = document.getElementById('message-preview');
+            let html = '';
+
+            switch(currentMessageType) {
+                case 'welcome':
+                    html = generateWelcomePreview();
+                    break;
+                case 'form':
+                    html = generateFormPreview();
+                    break;
+                case 'confirm':
+                    html = generateConfirmPreview();
+                    break;
+                case 'repair':
+                    html = generateRepairPreview();
+                    break;
+                case 'status':
+                    html = generateStatusPreview();
+                    break;
+                case 'tracking':
+                    html = generateTrackingPreview();
+                    break;
+                default:
+                    html = `<div style="padding: 20px; text-align: center; color: #64748b;">
+                        <h3>🚧 กำลังพัฒนา</h3>
+                        <p>ฟีเจอร์นี้กำลังอยู่ในขั้นตอนการพัฒนา</p>
+                    </div>`;
+            }
+
+            preview.innerHTML = html;
+        }
+
+        // Generate enhanced welcome message preview
+        function generateWelcomePreview() {
+            const s = flexSettings.welcome;
+            
+            const headerStyle = `background: linear-gradient(135deg, ${s.primaryColor}, ${s.secondaryColor}); padding: 24px; border-radius: 20px; margin: 8px; box-shadow: 0 4px 20px rgba(255, 140, 0, 0.3);`;
+            const bodyStyle = `background-color: ${s.bgColor}; padding: 24px; border-radius: 16px; margin-top: 20px;`;
+            
+            return `
+                <div style="${headerStyle}">
+                    <div style="text-align: center;">
+                        <div style="font-size: 36px; margin-bottom: 12px;">⚡</div>
+                        <div style="color: white; font-size: 18px; font-weight: bold; margin-bottom: 8px;">
+                            ระบบแจ้งซ่อมไฟฟ้า
+                        </div>
+                        <div style="color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">
+                            ${s.subtitle}
+                        </div>
+                    </div>
+                </div>
+                <div style="${bodyStyle}">
+                    <div style="background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 60px; height: 60px; background: ${s.bgColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            🤝
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: ${s.textPrimary}; font-size: 16px; margin-bottom: 4px;">
+                                ${s.message}
+                            </div>
+                            <div style="color: ${s.textSecondary}; font-size: 13px;">
+                                ${s.instruction}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-weight: bold; color: ${s.textPrimary}; margin-bottom: 15px;">🌟 บริการของเรา</div>
+                        <div style="background: ${s.bgColor}; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 18px;">🔧</span>
+                            <span style="color: ${s.textSecondary}; font-size: 13px; font-weight: 600;">แจ้งซ่อมไฟฟ้าสาธารณะ</span>
+                        </div>
+                        <div style="background: ${s.bgColor}; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 18px;">📊</span>
+                            <span style="color: ${s.textSecondary}; font-size: 13px; font-weight: 600;">ติดตามสถานะการซ่อม</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button style="width: 100%; padding: 16px; background: ${s.buttonColor}; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+                            ${s.repairBtn}
+                        </button>
+                        <button style="width: 100%; padding: 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+                            ${s.trackBtn}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Generate form preview
+        function generateFormPreview() {
+            const s = flexSettings.form;
+            
+            const headerStyle = `background: ${s.primaryColor}; padding: 24px; color: white; display: flex; align-items: center; gap: 12px;`;
+            const bodyStyle = `background-color: ${s.bgColor}; padding: 24px;`;
+            
+            return `
+                <div style="${headerStyle}">
+                    <span style="font-size: 20px;">📝</span>
+                    <span style="font-size: 18px; font-weight: bold;">${s.title}</span>
+                </div>
+                <div style="${bodyStyle}">
+                    <div style="background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 60px; height: 60px; background: ${s.cardBg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: ${s.primaryColor};">
+                            ✨
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #1A1A1A; font-size: 16px; margin-bottom: 4px;">
+                                ${s.description}
+                            </div>
+                            <div style="color: #4A4A4A; font-size: 13px;">
+                                ${s.instruction}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 2px solid #FFD4A3; margin: 20px 0;"></div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-weight: bold; color: #1A1A1A; margin-bottom: 15px;">📋 ข้อมูลที่ต้องกรอก</div>
+                        
+                        <div style="background: #FFF8F0; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border-left: 4px solid ${s.primaryColor};">
+                            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: ${s.primaryColor};">👤</div>
+                            <span style="color: #1A1A1A; font-size: 13px; font-weight: 600;">คำนำหน้า ชื่อ นามสกุล</span>
+                        </div>
+                        
+                        <div style="background: #FFF0E6; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border-left: 4px solid #FFA500;">
+                            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #FFA500;">🎂</div>
+                            <span style="color: #1A1A1A; font-size: 13px; font-weight: 600;">อายุ เชื้อชาติ สัญชาติ</span>
+                        </div>
+                        
+                        <div style="background: #F0FDF4; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border-left: 4px solid #28A745;">
+                            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #28A745;">📱</div>
+                            <span style="color: #1A1A1A; font-size: 13px; font-weight: 600;">หมายเลขโทรศัพท์</span>
+                        </div>
+                        
+                        <div style="background: #F0F9FF; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border-left: 4px solid #007BFF;">
+                            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #007BFF;">🏠</div>
+                            <span style="color: #1A1A1A; font-size: 13px; font-weight: 600;">ที่อยู่ (บ้านเลขที่ หมู่ที่)</span>
+                        </div>
+                    </div>
+                    
+                    <button style="width: 100%; padding: 16px; background: ${s.primaryColor}; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+                        📝 เปิดฟอร์มกรอกข้อมูล
+                    </button>
+                </div>
+            `;
+        }
+
+        // Generate confirm preview
+        function generateConfirmPreview() {
+            const s = flexSettings.confirm;
+            
+            const headerStyle = `background: ${s.primaryColor}; padding: 24px; color: white; display: flex; align-items: center; gap: 12px;`;
+            const bodyStyle = `background-color: ${s.bgColor}; padding: 24px;`;
+            
+            return `
+                <div style="${headerStyle}">
+                    <span style="font-size: 20px;">✅</span>
+                    <span style="font-size: 18px; font-weight: bold;">${s.title}</span>
+                </div>
+                <div style="${bodyStyle}">
+                    <div style="background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 60px; height: 60px; background: ${s.bgColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: ${s.primaryColor};">
+                            👤
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #1A1A1A; font-size: 16px; margin-bottom: 4px;">
+                                ${s.message}
+                            </div>
+                            <div style="color: #4A4A4A; font-size: 13px;">
+                                ${s.instruction}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 2px solid #FFD4A3; margin: 20px 0;"></div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="background: #FFF8F0; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; justify-content: space-between; border-left: 4px solid ${s.primaryColor};">
+                            <span style="color: ${s.primaryColor}; font-weight: bold; font-size: 13px;">👤 ชื่อ:</span>
+                            <span style="color: #1A1A1A; font-size: 13px;">${sampleUserData.prefix}${sampleUserData.firstName} ${sampleUserData.lastName}</span>
+                        </div>
+                        
+                        <div style="background: #F0F9FF; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; justify-content: space-between; border-left: 4px solid #007BFF;">
+                            <span style="color: #007BFF; font-weight: bold; font-size: 13px;">🎂 อายุ:</span>
+                            <span style="color: #1A1A1A; font-size: 13px;">${sampleUserData.age} ปี</span>
+                        </div>
+                        
+                        <div style="background: #F0FDF4; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; justify-content: space-between; border-left: 4px solid #28A745;">
+                            <span style="color: #28A745; font-weight: bold; font-size: 13px;">🌏 เชื้อชาติ:</span>
+                            <span style="color: #1A1A1A; font-size: 13px;">${sampleUserData.ethnicity}</span>
+                        </div>
+                        
+                        <div style="background: #FAF5FF; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; justify-content: space-between; border-left: 4px solid #8B5CF6;">
+                            <span style="color: #8B5CF6; font-weight: bold; font-size: 13px;">🏳️ สัญชาติ:</span>
+                            <span style="color: #1A1A1A; font-size: 13px;">${sampleUserData.nationality}</span>
+                        </div>
+                        
+                        <div style="background: #FEF2F2; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; justify-content: space-between; border-left: 4px solid #DC3545;">
+                            <span style="color: #DC3545; font-weight: bold; font-size: 13px;">📱 โทร:</span>
+                            <span style="color: #1A1A1A; font-size: 13px;">${sampleUserData.phone}</span>
+                        </div>
+                        
+                        <div style="background: #FFF8F0; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; justify-content: space-between; border-left: 4px solid ${s.primaryColor};">
+                            <span style="color: ${s.primaryColor}; font-weight: bold; font-size: 13px;">🏠 ที่อยู่:</span>
+                            <span style="color: #1A1A1A; font-size: 13px;">บ้านเลขที่ ${sampleUserData.houseNo}, ${sampleUserData.moo}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button style="width: 100%; padding: 16px; background: ${s.primaryColor}; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+                            ✅ ถูกต้อง ดำเนินการต่อ
+                        </button>
+                        <button style="width: 100%; padding: 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+                            ✏️ แก้ไขข้อมูล
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Generate repair form preview
+        function generateRepairPreview() {
+            const s = flexSettings.repair;
+            
+            const headerStyle = `background: ${s.primaryColor}; padding: 24px; color: white; display: flex; align-items: center; gap: 12px;`;
+            const bodyStyle = `background-color: ${s.bgColor}; padding: 24px;`;
+            
+            return `
+                <div style="${headerStyle}">
+                    <span style="font-size: 20px;">🔧</span>
+                    <span style="font-size: 18px; font-weight: bold;">${s.title}</span>
+                </div>
+                <div style="${bodyStyle}">
+                    <div style="background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 60px; height: 60px; background: #FFF8F0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: ${s.primaryColor};">
+                            ⚡
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #1A1A1A; font-size: 16px; margin-bottom: 4px;">
+                                ${s.description}
+                            </div>
+                            <div style="color: #4A4A4A; font-size: 13px;">
+                                ${s.instruction}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 2px solid #FFD4A3; margin: 20px 0;"></div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-weight: bold; color: #1A1A1A; margin-bottom: 15px;">📋 ข้อมูลที่ต้องระบุ</div>
+                        
+                        <div style="background: #F0F9FF; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border-left: 4px solid #007BFF;">
+                            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #007BFF;">🗼</div>
+                            <span style="color: #1A1A1A; font-size: 13px; font-weight: 600;">รหัสเสาไฟฟ้า (หากทราบ)</span>
+                        </div>
+                        
+                        <div style="background: #F0FDF4; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border-left: 4px solid #28A745;">
+                            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #28A745;">📍</div>
+                            <span style="color: #1A1A1A; font-size: 13px; font-weight: 600;">ตำแหน่งที่ตั้ง/พิกัด GPS</span>
+                        </div>
+                        
+                        <div style="background: #FEF2F2; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border-left: 4px solid #DC3545;">
+                            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #DC3545;">⚠️</div>
+                            <span style="color: #1A1A1A; font-size: 13px; font-weight: 600;">ลักษณะปัญหา/อาการ</span>
+                        </div>
+                        
+                        <div style="background: #FAF5FF; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border-left: 4px solid #8B5CF6;">
+                            <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #8B5CF6;">📸</div>
+                            <span style="color: #1A1A1A; font-size: 13px; font-weight: 600;">รูปภาพประกอบ (ถ้ามี)</span>
+                        </div>
+                    </div>
+                    
+                    <button style="width: 100%; padding: 16px; background: ${s.primaryColor}; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+                        📝 เปิดฟอร์มแจ้งซ่อม
+                    </button>
+                </div>
+            `;
+        }
+
+        // Generate status update preview
+        function generateStatusPreview() {
+            const s = flexSettings.status;
+            
+            const statusConfigs = {
+                'รอดำเนินการ': { emoji: '⏳', color: s.pendingColor, bgColor: '#FFF8F0' },
+                'อนุมัติแล้วรอช่าง': { emoji: '✅', color: s.approvedColor, bgColor: '#F0FDF4' },
+                'กำลังดำเนินการ': { emoji: '🔧', color: s.progressColor, bgColor: '#F0F9FF' },
+                'เสร็จสิ้น': { emoji: '🎉', color: s.completeColor, bgColor: '#F0FDF4' },
+                'ไม่อนุมัติโดยผู้บริหาร': { emoji: '❌', color: s.rejectedColor, bgColor: '#FEF2F2' }
+            };
+
+            const config = statusConfigs[s.current] || statusConfigs['รอดำเนินการ'];
+            
+            const headerStyle = `background: ${config.color}; padding: 24px; color: white; display: flex; align-items: center; gap: 12px;`;
+            const bodyStyle = `background-color: #FFFFFF; padding: 24px;`;
+            
+            return `
+                <div style="${headerStyle}">
+                    <span style="font-size: 20px;">${config.emoji}</span>
+                    <span style="font-size: 18px; font-weight: bold;">อัปเดตสถานะ</span>
+                </div>
+                <div style="${bodyStyle}">
+                    <div style="background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="width: 60px; height: 60px; background: ${config.bgColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            ${config.emoji}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #1A1A1A; font-size: 16px; margin-bottom: 4px;">
+                                🎫 ${s.requestId}
+                            </div>
+                            <div style="color: ${config.color}; font-size: 14px; font-weight: bold;">
+                                สถานะ: ${s.current}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${s.notes ? `
+                    <div style="border-top: 2px solid ${config.color}; margin: 20px 0;"></div>
+                    <div style="background: ${config.bgColor}; padding: 16px; border-radius: 12px; display: flex; align-items: flex-start; gap: 12px;">
+                        <div style="width: 36px; height: 36px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: ${config.color}; flex-shrink: 0;">
+                            📝
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #4A4A4A; font-size: 13px; margin-bottom: 4px;">
+                                หมายเหตุจากเจ้าหน้าที่:
+                            </div>
+                            <div style="color: #1A1A1A; font-size: 13px;">
+                                ${s.notes}
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <button style="width: 100%; padding: 16px; background: #f1f5f9; color: ${config.color}; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; margin-top: 20px;">
+                        📊 ติดตามสถานะอื่นๆ
+                    </button>
+                </div>
+            `;
+        }
+
+        // Generate tracking method preview
+        function generateTrackingPreview() {
+            const s = flexSettings.tracking;
+            
+            const headerStyle = `background: ${s.primaryColor}; padding: 24px; color: white; display: flex; align-items: center; gap: 12px;`;
+            const bodyStyle = `background-color: #FFF8F0; padding: 24px;`;
+            
+            return `
+                <div style="${headerStyle}">
+                    <span style="font-size: 20px;">📊</span>
+                    <span style="font-size: 18px; font-weight: bold;">${s.title}</span>
+                </div>
+                <div style="${bodyStyle}">
+                    <div style="background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 60px; height: 60px; background: #FFF8F0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: ${s.primaryColor};">
+                            🔍
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #1A1A1A; font-size: 16px; margin-bottom: 4px;">
+                                ${s.description}
+                            </div>
+                            <div style="color: #4A4A4A; font-size: 13px;">
+                                ${s.instruction}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="background: #FFF8F0; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 18px; color: ${s.primaryColor};">🎫</span>
+                            <span style="color: #4A4A4A; font-size: 13px; font-weight: 600;">ค้นหาด้วยเลขที่การแจ้งซ่อม</span>
+                        </div>
+                        <div style="background: #FFF0E6; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 18px; color: ${s.buttonColor};">📱</span>
+                            <span style="color: #4A4A4A; font-size: 13px; font-weight: 600;">ค้นหาด้วยเบอร์โทรศัพท์</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button style="width: 100%; padding: 16px; background: ${s.primaryColor}; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+                            🎫 ใช้เลขที่การแจ้งซ่อม
+                        </button>
+                        <button style="width: 100%; padding: 16px; background: ${s.buttonColor}; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+                            📱 ใช้เบอร์โทรศัพท์
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update JSON display
+        function updateJSONDisplay() {
+            const jsonDisplay = document.getElementById('json-display');
+            jsonDisplay.textContent = JSON.stringify(flexSettings, null, 2);
+        }
+
+        // Go back to admin
+        function goBack() {
+            window.history.back();
+        }
+
+        // Save settings
+        function saveSettings() {
+            showToast('✅ บันทึกการตั้งค่าสำเร็จ!', 'success');
+        }
+
+        // Reset settings to default
+        function resetSettings() {
+            Swal.fire({
+                title: 'ยืนยันการรีเซ็ต',
+                text: 'คุณต้องการรีเซ็ตการตั้งค่าเป็นค่าเริ่มต้นหรือไม่?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '✅ รีเซ็ต',
+                cancelButtonText: '❌ ยกเลิก',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Reset to default values
+                    flexSettings = {
+                        welcome: {
+                            primaryColor: '#FF8C00',
+                            secondaryColor: '#FFA500',
+                            accentColor: '#FFB347',
+                            bgColor: '#FFF8F0',
+                            cardBg: '#FFFFFF',
+                            borderColor: '#FFD4A3',
+                            textPrimary: '#1A1A1A',
+                            textSecondary: '#4A4A4A',
+                            buttonColor: '#FF8C00',
+                            buttonHover: '#FF7F00',
+                            title: '⚡ ระบบแจ้งซ่อมไฟฟ้า',
+                            subtitle: 'องค์การบริหารส่วนตำบลข่าใหญ่',
+                            message: '🙏 ยินดีต้อนรับท่านครับ',
+                            instruction: 'กรุณาเลือกบริการที่ต้องการใช้งาน',
+                            repairBtn: '🔧 แจ้งซ่อมไฟฟ้า',
+                            trackBtn: '📊 ติดตามการซ่อม'
+                        },
+                        form: {
+                            primaryColor: '#FF8C00',
+                            bgColor: '#FFFFFF',
+                            cardBg: '#FFF8F0',
+                            title: '📝 กรอกข้อมูลส่วนตัว',
+                            description: 'ข้อมูลสำหรับการติดต่อ',
+                            instruction: 'กรุณากรอกข้อมูลเพื่อให้เจ้าหน้าที่สามารถติดต่อกลับได้'
+                        },
+                        confirm: {
+                            primaryColor: '#FF8C00',
+                            successColor: '#28A745',
+                            bgColor: '#FFF8F0',
+                            title: '✅ ยืนยันข้อมูลส่วนตัว',
+                            message: 'ข้อมูลที่บันทึกไว้',
+                            instruction: 'กรุณาตรวจสอบความถูกต้อง'
+                        },
+                        repair: {
+                            primaryColor: '#FF8C00',
+                            bgColor: '#FFFFFF',
+                            title: '🔧 แจ้งซ่อมไฟฟ้า',
+                            description: 'กรอกแบบฟอร์มแจ้งซ่อม',
+                            instruction: 'ระบุรายละเอียดปัญหาไฟฟ้าพร้อมตำแหน่งที่ตั้ง'
+                        },
+                        status: {
+                            pendingColor: '#FF8C00',
+                            approvedColor: '#28A745',
+                            progressColor: '#007BFF',
+                            completeColor: '#28A745',
+                            rejectedColor: '#DC3545',
+                            current: 'อนุมัติแล้วรอช่าง',
+                            requestId: '2025-001',
+                            notes: 'ได้รับการแจ้งซ่อมแล้ว กำลังตรวจสอบข้อมูล'
+                        },
+                        tracking: {
+                            primaryColor: '#FF8C00',
+                            buttonColor: '#FFA500',
+                            title: '📊 ติดตามการซ่อม',
+                            description: 'เลือกวิธีติดตาม',
+                            instruction: 'กรุณาเลือกวิธีการค้นหาข้อมูลการแจ้งซ่อมของท่าน'
+                        }
+                    };
+                    
+                    loadSettingsToForm();
+                    updatePreview();
+                    updateJSONDisplay();
+                    showToast('🔄 รีเซ็ตการตั้งค่าแล้ว', 'success');
+                }
+            });
+        }
+
+        // Export JSON
+        function exportJSON() {
+            const dataStr = JSON.stringify(flexSettings, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `enhanced-flex-settings_${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast('📋 ส่งออกไฟล์ JSON แล้ว', 'success');
+        }
+
+        // Copy JSON to clipboard
+        async function copyToClipboard() {
+            try {
+                const jsonText = JSON.stringify(flexSettings, null, 2);
+                await navigator.clipboard.writeText(jsonText);
+                showToast('📄 Copy JSON ไปยัง Clipboard สำเร็จ!', 'success');
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = JSON.stringify(flexSettings, null, 2);
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('📄 Copy JSON ไปยัง Clipboard สำเร็จ!', 'success');
+            }
+        }
+
+        // Test message
+        function testMessage() {
+            showToast('🧪 ทดสอบข้อความ...', 'info');
+            setTimeout(() => {
+                showToast('✅ ส่งข้อความทดสอบสำเร็จ!', 'success');
+            }, 1500);
+        }
+
+        // Preview on mobile
+        function previewMobile() {
+            const newWindow = window.open('', '_blank', 'width=375,height=667');
+            let previewHTML = '';
+            
+            switch(currentMessageType) {
+                case 'welcome':
+                    previewHTML = generateWelcomePreview();
+                    break;
+                case 'form':
+                    previewHTML = generateFormPreview();
+                    break;
+                case 'confirm':
+                    previewHTML = generateConfirmPreview();
+                    break;
+                case 'repair':
+                    previewHTML = generateRepairPreview();
+                    break;
+                case 'status':
+                    previewHTML = generateStatusPreview();
+                    break;
+                case 'tracking':
+                    previewHTML = generateTrackingPreview();
+                    break;
+                default:
+                    previewHTML = '<div style="padding: 20px; text-align: center;">กำลังพัฒนา...</div>';
+            }
+            
+            newWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Mobile Preview</title>
+                    <style>
+                        body { 
+                            margin: 0; 
+                            padding: 20px; 
+                            background: linear-gradient(135deg, #FF8C00, #FFA500); 
+                            font-family: Arial, sans-serif; 
+                            min-height: 100vh;
+                        }
+                        .flex-message { 
+                            background: white; 
+                            border-radius: 16px; 
+                            overflow: hidden; 
+                            box-shadow: 0 8px 25px rgba(0,0,0,0.2); 
+                            max-width: 100%;
+                        }
+                        .flex-header { 
+                            padding: 20px; 
+                            display: flex; 
+                            align-items: center; 
+                            gap: 15px; 
+                        }
+                        .flex-body { 
+                            padding: 24px; 
+                        }
+                        .flex-btn { 
+                            width: 100%; 
+                            padding: 16px; 
+                            border: none; 
+                            border-radius: 8px; 
+                            font-weight: bold; 
+                            cursor: pointer; 
+                            font-size: 15px; 
+                            margin-bottom: 12px;
+                            transition: all 0.3s ease;
+                        }
+                        .flex-btn:hover {
+                            transform: translateY(-1px);
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                        }
+                        .image-preview { 
+                            width: 100%; 
+                            max-height: 140px; 
+                            object-fit: cover; 
+                            border-radius: 12px; 
+                            margin: 15px 0; 
+                        }
+                        .welcome-message { 
+                            text-align: center; 
+                            margin-bottom: 20px; 
+                        }
+                        .card-display {
+                            background: rgba(255, 255, 255, 0.9);
+                            border-radius: 16px;
+                            padding: 20px;
+                            margin: 15px 0;
+                            border-left: 4px solid #FF8C00;
+                            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.1);
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="flex-message">${previewHTML}</div>
+                </body>
+                </html>
+            `);
+        }
+
+        function showToast(message, type = 'info') {
+            const iconMap = {
+                success: 'success',
+                error: 'error',
+                warning: 'warning',
+                info: 'info'
+            };
+
+            Swal.fire({
+                icon: iconMap[type],
+                title: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: false,
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95))',
+                color: '#1A1A1A',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveSettings();
+            }
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportJSON();
+            }
+            if (e.ctrlKey && e.key === 'c' && e.target.id === 'json-display') {
+                e.preventDefault();
+                copyToClipboard();
+            }
+        });
+
+        // Auto-save settings when form changes
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('input, textarea, select')) {
+                updateSettings();
+            }
+        });
+
+        // Add smooth animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add entrance animations
+            setTimeout(() => {
+                document.querySelector('.editor-panel').style.animation = 'slideInLeft 0.6s ease-out';
+                document.querySelector('.preview-panel').style.animation = 'slideInRight 0.6s ease-out';
+            }, 100);
+        });
+
+        // CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInLeft {
+                from {
+                    transform: translateX(-100px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes fadeInUp {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            
+            .message-type-btn, .form-section, .btn {
+                animation: fadeInUp 0.4s ease-out;
+            }
+            
+            .flex-message {
+                animation: fadeInUp 0.5s ease-out;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

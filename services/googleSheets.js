@@ -1391,6 +1391,89 @@ async saveRepairRequestFromForm(requestData) {
     }
   }
 
+   /**
+   * บันทึกการตั้งค่า Flex Message ลง Google Sheets
+   */
+  async saveFlexMessageSettings(settings) {
+    try {
+      await this.authenticate();
+      const sheet = await this.getOrCreateSheet(this.SYSTEM_CONFIG_SHEET_NAME);
+      
+      // เตรียมข้อมูลให้อยู่ในรูปแบบที่เก็บใน Google Sheets ได้
+      const settingsString = JSON.stringify(settings);
+      const timestamp = new Date().toLocaleString('th-TH', { timeZone: config.TIMEZONE });
+      
+      const rows = await sheet.getRows();
+      const mapping = this.columnMappings[this.SYSTEM_CONFIG_SHEET_NAME];
+      
+      // หาแถวที่มี FLEX_MESSAGE_SETTINGS
+      let existingRow = null;
+      for (const row of rows) {
+        if (row.get(mapping.COUNTER_TYPE) === 'FLEX_MESSAGE_SETTINGS') {
+          existingRow = row;
+          break;
+        }
+      }
+      
+      if (existingRow) {
+        // อัปเดตแถวที่มีอยู่
+        existingRow.set(mapping.PERIOD, 'CURRENT');
+        existingRow.set(mapping.VALUE, settingsString);
+        await existingRow.save();
+      } else {
+        // เพิ่มแถวใหม่
+        const newRowData = {
+          [mapping.COUNTER_TYPE]: 'FLEX_MESSAGE_SETTINGS',
+          [mapping.PERIOD]: 'CURRENT',
+          [mapping.VALUE]: settingsString
+        };
+        await sheet.addRow(newRowData);
+      }
+      
+      console.log('✅ Flex Message settings saved to Google Sheets');
+      return true;
+    } catch (error) {
+      console.error('❌ Error saving Flex Message settings to Google Sheets:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * ดึงการตั้งค่า Flex Message จาก Google Sheets
+   */
+  async getFlexMessageSettings() {
+    try {
+      await this.authenticate();
+      const sheet = await this.getOrCreateSheet(this.SYSTEM_CONFIG_SHEET_NAME);
+      
+      const rows = await sheet.getRows();
+      const mapping = this.columnMappings[this.SYSTEM_CONFIG_SHEET_NAME];
+      
+      // หาแถวที่มี FLEX_MESSAGE_SETTINGS
+      for (const row of rows) {
+        if (row.get(mapping.COUNTER_TYPE) === 'FLEX_MESSAGE_SETTINGS') {
+          try {
+            const settingsString = row.get(mapping.VALUE);
+            if (settingsString) {
+              const settings = JSON.parse(settingsString);
+              console.log('✅ Loaded Flex Message settings from Google Sheets');
+              return settings;
+            }
+          } catch (parseError) {
+            console.error('❌ Error parsing Flex Message settings:', parseError.message);
+            return null;
+          }
+        }
+      }
+      
+      console.log('ℹ️ No Flex Message settings found in Google Sheets');
+      return null;
+    } catch (error) {
+      console.error('❌ Error loading Flex Message settings from Google Sheets:', error.message);
+      return null;
+    }
+  }
+
   /**
    * ฟังก์ชันทดสอบระบบครบถ้วน
    */
@@ -1434,4 +1517,5 @@ async saveRepairRequestFromForm(requestData) {
   }
 }
 
+// แก้ไข module.exports ให้ถูกต้อง
 module.exports = new GoogleSheetsService();
