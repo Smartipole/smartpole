@@ -14,6 +14,7 @@ const lineBotHandler = require('./services/lineBotHandler'); // ✅ เพิ่
 const { google } = require('googleapis');
 const stream = require('stream');
 const schedule = require('node-schedule');
+const { JWT } = require('google-auth-library');
 
 let pdfService = null;
 try {
