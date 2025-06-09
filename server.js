@@ -1025,7 +1025,8 @@ app.post('/api/admin/upload-signature', authenticateAdminToken, async (req, res)
         const anonyfileNamePrefix = fileNamePrefix ? fileNamePrefix.replace(/[^a-zA-Z0-9-_]/g, '') : 'signature';
         const fileName = `${anonyfileNamePrefix}_${username}_${Date.now()}.png`;
 
-        const serviceAccountAuthForDrive = new jwt.JWT({
+        // ✅ แก้ไขตรงนี้: ใช้ JWT แทน jwt.JWT
+        const serviceAccountAuthForDrive = new JWT({
             email: config.GOOGLE_SERVICE_ACCOUNT_EMAIL,
             key: config.GOOGLE_PRIVATE_KEY,
             scopes: ['https://www.googleapis.com/auth/drive.file'],
