@@ -1178,6 +1178,149 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
+// เพิ่มในส่วนท้าย server.js (ก่อน app.listen)
+
+let keepAliveInterval = null;
+
+// Telegram Configuration
+const TELEGRAM_BOT_TOKEN = '7610983723:AAEFXDbDlq5uTHeyID8Fc5XEmIUx-LT6rJM';
+const TELEGRAM_CHAT_ID = '7809169283';
+
+// ฟังก์ชันส่งข้อความไป Telegram
+async function sendTelegramNotification(message) {
+    try {
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        const response = await axios.post(url, {
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown'
+        });
+        
+        if (response.data.ok) {
+            console.log('📱 Telegram notification sent successfully');
+        } else {
+            console.warn('⚠️ Telegram notification failed:', response.data);
+        }
+    } catch (error) {
+        console.error('❌ Error sending Telegram notification:', error.message);
+    }
+}
+
+// ฟังก์ชันเช็คว่าอยู่ในช่วงเวลาทำงานหรือไม่
+function isWorkingHours() {
+    const now = new Date();
+    const hours = now.getHours();
+    // เวลาไทย: 05:00-21:00
+    return hours >= 5 && hours < 21;
+}
+
+// ฟังก์ชัน Keep-Alive ping
+function keepAlivePing() {
+    console.log(`🏓 Keep alive ping at ${new Date().toLocaleString('th-TH')}`);
+    
+    // Optional: ping ตัวเอง
+    if (config.BASE_URL) {
+        axios.get(`${config.BASE_URL}/health`)
+            .then(() => console.log('✅ Self ping successful'))
+            .catch(err => console.warn('⚠️ Self ping failed:', err.message));
+    }
+}
+
+// เริ่ม Keep-Alive
+async function startKeepAlive() {
+    if (keepAliveInterval) return; // ป้องกันการสร้างซ้ำ
+    
+    const currentTime = new Date().toLocaleString('th-TH', { 
+        timeZone: 'Asia/Bangkok',
+        year: 'numeric',
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    console.log('🟢 Starting keep-alive service (Working hours: 05:00-21:00)');
+    
+    // ส่งแจ้งเตือนไป Telegram
+    await sendTelegramNotification(
+        `🟢 *ระบบเข้าสู่โหมด Standby*\n\n` +
+        `⏰ เวลา: ${currentTime}\n` +
+        `🔄 ระยะเวลา: 05:00 - 21:00\n` +
+        `📊 สถานะ: กำลังทำงาน Keep-Alive\n` +
+        `⚡ ระบบพร้อมใช้งาน`
+    );
+    
+    keepAliveInterval = setInterval(() => {
+        if (isWorkingHours()) {
+            keepAlivePing();
+        } else {
+            console.log('😴 Outside working hours, skipping ping');
+        }
+    }, 14 * 60 * 1000); // ทุก 14 นาที
+}
+
+// หยุด Keep-Alive
+async function stopKeepAlive() {
+    if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+        keepAliveInterval = null;
+        
+        const currentTime = new Date().toLocaleString('th-TH', { 
+            timeZone: 'Asia/Bangkok',
+            year: 'numeric',
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        console.log('🔴 Keep-alive service stopped');
+        
+        // ส่งแจ้งเตือนไป Telegram
+        await sendTelegramNotification(
+            `🔴 *สิ้นสุดเวลา Standby*\n\n` +
+            `⏰ เวลา: ${currentTime}\n` +
+            `😴 สถานะ: ระบบหยุดพักการทำงาน\n` +
+            `🌙 โหมด: Sleep Mode\n` +
+            `⏰ เวลาเริ่มใหม่: 05:00 น. วันถัดไป`
+        );
+    }
+}
+
+// ตั้งเวลาอัตโนมัติ (ถ้าต้องการ)
+const schedule = require('node-schedule');
+
+// เริ่มทำงาน 05:00 ทุกวัน
+schedule.scheduleJob('0 5 * * *', async () => {
+    console.log('🌅 Starting daily keep-alive service');
+    await startKeepAlive();
+});
+
+// หยุดทำงาน 21:00 ทุกวัน  
+schedule.scheduleJob('0 21 * * *', async () => {
+    console.log('🌙 Stopping daily keep-alive service');
+    await stopKeepAlive();
+});
+
+// เริ่มทำงานทันทีถ้าอยู่ในเวลาทำงาน
+if (isWorkingHours()) {
+    startKeepAlive();
+    console.log('🟢 Started keep-alive (currently in working hours)');
+} else {
+    console.log('😴 Not starting keep-alive (outside working hours)');
+}
+
+// ปิดระบบเมื่อ shutdown
+process.on('SIGINT', async () => {
+    await stopKeepAlive();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    await stopKeepAlive();
+    process.exit(0);
+});
+
 // --- Start Server ---
 const PORT = config.PORT || 3000;
 app.listen(PORT, async () => {
