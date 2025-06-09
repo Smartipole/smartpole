@@ -1,4 +1,4 @@
-// server.js (ปรับปรุงหลังแยก LINE Bot Handler)
+// server.js (ปรับปรุงหลังแยก LINE Bot Handler + UptimeRobot Integration)
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -91,12 +91,133 @@ function authenticateAdminToken(req, res, next) {
     });
 }
 
+// =====================================
+// 🔄 KEEP-ALIVE & MONITORING SYSTEM
+// =====================================
+
+let keepAliveInterval = null;
+let serverStartTime = new Date();
+let monitoringStats = {
+    totalRequests: 0,
+    healthChecks: 0,
+    uptimeChecks: 0,
+    lastUptimeCheck: null,
+    downtimeAlerts: 0
+};
+
+// Telegram Configuration
+const TELEGRAM_BOT_TOKEN = '7610983723:AAEFXDbDlq5uTHeyID8Fc5XEmIUx-LT6rJM';
+const TELEGRAM_CHAT_ID = '7809169283';
+
+// ฟังก์ชันเช็คว่าอยู่ในช่วงเวลาทำงานหรือไม่
+function isWorkingHours() {
+    const now = new Date();
+    const hours = now.getHours();
+    // เวลาไทย: 05:00-21:00
+    return hours >= 5 && hours < 21;
+}
+
+// ฟังก์ชันส่งข้อความไป Telegram
+async function sendTelegramNotification(message) {
+    try {
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        const response = await axios.post(url, {
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown'
+        });
+        
+        if (response.data.ok) {
+            console.log('📱 Telegram notification sent successfully');
+        } else {
+            console.warn('⚠️ Telegram notification failed:', response.data);
+        }
+    } catch (error) {
+        console.error('❌ Error sending Telegram notification:', error.message);
+    }
+}
+
+// ฟังก์ชัน Keep-Alive ping
+function keepAlivePing() {
+    console.log(`🏓 Keep alive ping at ${new Date().toLocaleString('th-TH')}`);
+    
+    // Optional: ping ตัวเอง
+    if (config.BASE_URL) {
+        axios.get(`${config.BASE_URL}/health`)
+            .then(() => console.log('✅ Self ping successful'))
+            .catch(err => console.warn('⚠️ Self ping failed:', err.message));
+    }
+}
+
+// เริ่ม Keep-Alive
+async function startKeepAlive() {
+    if (keepAliveInterval) return; // ป้องกันการสร้างซ้ำ
+    
+    const currentTime = new Date().toLocaleString('th-TH', { 
+        timeZone: 'Asia/Bangkok',
+        year: 'numeric',
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    console.log('🟢 Starting keep-alive service (Working hours: 05:00-21:00)');
+    
+    // ส่งแจ้งเตือนไป Telegram
+    await sendTelegramNotification(
+        `🟢 *ระบบเข้าสู่โหมด Standby*\n\n` +
+        `⏰ เวลา: ${currentTime}\n` +
+        `🔄 ระยะเวลา: 05:00 - 21:00\n` +
+        `📊 สถานะ: กำลังทำงาน Keep-Alive\n` +
+        `⚡ ระบบพร้อมใช้งาน`
+    );
+    
+    keepAliveInterval = setInterval(() => {
+        if (isWorkingHours()) {
+            keepAlivePing();
+        } else {
+            console.log('😴 Outside working hours, skipping ping');
+        }
+    }, 14 * 60 * 1000); // ทุก 14 นาที
+}
+
+// หยุด Keep-Alive
+async function stopKeepAlive() {
+    if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+        keepAliveInterval = null;
+        
+        const currentTime = new Date().toLocaleString('th-TH', { 
+            timeZone: 'Asia/Bangkok',
+            year: 'numeric',
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        console.log('🔴 Keep-alive service stopped');
+        
+        // ส่งแจ้งเตือนไป Telegram
+        await sendTelegramNotification(
+            `🔴 *สิ้นสุดเวลา Standby*\n\n` +
+            `⏰ เวลา: ${currentTime}\n` +
+            `😴 สถานะ: ระบบหยุดพักการทำงาน\n` +
+            `🌙 โหมด: Sleep Mode\n` +
+            `⏰ เวลาเริ่มใหม่: 05:00 น. วันถัดไป`
+        );
+    }
+}
+
 // --- General Routes ---
 app.get('/', (req, res) => {
   res.json({
     status: 'success',
     message: `LINE Bot API & Admin API for ${config.ORG_NAME} is running!`,
     timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    monitoringActive: isWorkingHours(),
     endpoints: {
       personal_info_form: `${config.BASE_URL}/form?userId=TEST_USER_ID`,
       repair_form: `${config.BASE_URL}/repair-form.html?userId=TEST_USER_ID`,
@@ -105,13 +226,236 @@ app.get('/', (req, res) => {
       admin_login_page_html: `${config.BASE_URL}/admin/login`,
       admin_dashboard_page_html: `${config.BASE_URL}/admin/dashboard`,
       admin_executive_dashboard_page_html: `${config.BASE_URL}/admin/executive-dashboard`,
-      looker_studio_dashboard: config.LOOKER_STUDIO_DASHBOARD_URL
+      looker_studio_dashboard: config.LOOKER_STUDIO_DASHBOARD_URL,
+      // UptimeRobot endpoints
+      health_check: `${config.BASE_URL}/health`,
+      detailed_health: `${config.BASE_URL}/api/health`,
+      uptime_status: `${config.BASE_URL}/uptime-status`,
+      monitoring_stats: `${config.BASE_URL}/api/monitoring/stats`
     },
     integrations: {
       lookerStudio: lookerStudioService.healthCheck(),
-      notifications: notificationService.healthCheck()
+      notifications: notificationService.healthCheck(),
+      uptimeRobot: {
+        workingHours: '05:00-21:00 (GMT+7)',
+        currentlyActive: isWorkingHours(),
+        telegramNotifications: !!TELEGRAM_BOT_TOKEN
+      }
     }
   });
+});
+
+// =====================================
+// 🔍 UPTIMEROBOT MONITORING ENDPOINTS
+// =====================================
+
+// Basic health check สำหรับ UptimeRobot
+app.get('/health', (req, res) => {
+    monitoringStats.healthChecks++;
+    
+    // ถ้าอยู่นอกเวลาทำงาน ให้ส่ง status พิเศษ
+    if (!isWorkingHours()) {
+        return res.status(200).json({ 
+            status: 'sleeping', 
+            message: 'Outside working hours (05:00-21:00 GMT+7)',
+            timestamp: new Date().toISOString(),
+            nextActiveTime: getNextActiveTime()
+        });
+    }
+    
+    res.status(200).json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        workingHours: true
+    });
+});
+
+// Status endpoint เฉพาะสำหรับ UptimeRobot
+app.get('/uptime-status', (req, res) => {
+    monitoringStats.uptimeChecks++;
+    monitoringStats.lastUptimeCheck = new Date().toISOString();
+    
+    const isActive = isWorkingHours();
+    const status = isActive ? 'active' : 'standby';
+    
+    res.status(200).json({
+        status: status,
+        active: isActive,
+        message: isActive ? 'System is active and monitoring' : 'System in standby mode',
+        workingHours: '05:00-21:00 GMT+7',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        nextActiveTime: isActive ? null : getNextActiveTime(),
+        nextStandbyTime: isActive ? getNextStandbyTime() : null
+    });
+});
+
+// ฟังก์ชันคำนวณเวลาทำงานถัดไป
+function getNextActiveTime() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(5, 0, 0, 0);
+    
+    if (now.getHours() < 5) {
+        // ถ้ายังไม่ถึง 5 โมงเช้าของวันนี้
+        const today = new Date(now);
+        today.setHours(5, 0, 0, 0);
+        return today.toISOString();
+    }
+    
+    return tomorrow.toISOString();
+}
+
+// ฟังก์ชันคำนวณเวลาหยุดถัดไป
+function getNextStandbyTime() {
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(21, 0, 0, 0);
+    
+    if (now.getHours() >= 21) {
+        // ถ้าเลยเวลาหยุดแล้ว ให้คืนเวลาหยุดของพรุ่งนี้
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(21, 0, 0, 0);
+        return tomorrow.toISOString();
+    }
+    
+    return today.toISOString();
+}
+
+// UptimeRobot webhook receiver
+app.post('/api/monitoring/uptime-webhook', async (req, res) => {
+    try {
+        const { alertType, monitorFriendlyName, monitorURL, alertDateTime } = req.body;
+        
+        console.log('📡 UptimeRobot webhook received:', { alertType, monitorFriendlyName });
+        
+        let message;
+        if (alertType === 'down') {
+            monitoringStats.downtimeAlerts++;
+            message = `🚨 *ALERT: Server Down*\n\n` +
+                     `📍 Monitor: ${monitorFriendlyName}\n` +
+                     `🔗 URL: ${monitorURL}\n` +
+                     `⏰ Time: ${alertDateTime}\n` +
+                     `📊 Working Hours: ${isWorkingHours() ? 'Active' : 'Standby'}\n` +
+                     `🔄 Total Alerts: ${monitoringStats.downtimeAlerts}`;
+        } else if (alertType === 'up') {
+            message = `✅ *RECOVERY: Server Back Online*\n\n` +
+                     `📍 Monitor: ${monitorFriendlyName}\n` +
+                     `🔗 URL: ${monitorURL}\n` +
+                     `⏰ Time: ${alertDateTime}\n` +
+                     `🎉 Status: Server recovered successfully`;
+        }
+        
+        if (message) {
+            await sendTelegramNotification(message);
+        }
+        
+        res.json({ 
+            status: 'success', 
+            message: 'Webhook processed successfully',
+            alertType,
+            processed: !!message
+        });
+        
+    } catch (error) {
+        console.error('❌ Error processing UptimeRobot webhook:', error);
+        res.status(500).json({ 
+            status: 'error', 
+            message: 'Error processing webhook: ' + error.message 
+        });
+    }
+});
+
+// Monitoring statistics
+app.get('/api/monitoring/stats', (req, res) => {
+    const uptimeSeconds = process.uptime();
+    const uptimeHours = Math.floor(uptimeSeconds / 3600);
+    const uptimeMinutes = Math.floor((uptimeSeconds % 3600) / 60);
+    
+    res.json({
+        server: {
+            startTime: serverStartTime.toISOString(),
+            uptime: {
+                seconds: Math.floor(uptimeSeconds),
+                formatted: `${uptimeHours}h ${uptimeMinutes}m`,
+                days: Math.floor(uptimeSeconds / 86400)
+            },
+            status: isWorkingHours() ? 'active' : 'standby'
+        },
+        monitoring: {
+            ...monitoringStats,
+            workingHours: '05:00-21:00 GMT+7',
+            currentlyInWorkingHours: isWorkingHours(),
+            keepAliveActive: !!keepAliveInterval,
+            telegramNotifications: !!TELEGRAM_BOT_TOKEN
+        },
+        schedule: {
+            nextActiveTime: isWorkingHours() ? null : getNextActiveTime(),
+            nextStandbyTime: isWorkingHours() ? getNextStandbyTime() : null
+        }
+    });
+});
+
+// Manual monitoring controls (สำหรับ admin)
+app.post('/api/admin/monitoring/start', authenticateAdminToken, async (req, res) => {
+    try {
+        await startKeepAlive();
+        res.json({ 
+            status: 'success', 
+            message: 'Keep-alive monitoring started manually' 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: 'error', 
+            message: error.message 
+        });
+    }
+});
+
+app.post('/api/admin/monitoring/stop', authenticateAdminToken, async (req, res) => {
+    try {
+        await stopKeepAlive();
+        res.json({ 
+            status: 'success', 
+            message: 'Keep-alive monitoring stopped manually' 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: 'error', 
+            message: error.message 
+        });
+    }
+});
+
+// Test UptimeRobot notification
+app.post('/api/admin/monitoring/test-notification', authenticateAdminToken, async (req, res) => {
+    try {
+        const testMessage = `🧪 *UptimeRobot Test Notification*\n\n` +
+                           `⏰ Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
+                           `📊 Status: ${isWorkingHours() ? 'Active' : 'Standby'}\n` +
+                           `🔄 Uptime: ${Math.floor(process.uptime() / 60)} minutes\n` +
+                           `✅ Telegram integration working correctly`;
+        
+        await sendTelegramNotification(testMessage);
+        res.json({ 
+            status: 'success', 
+            message: 'Test notification sent to Telegram successfully' 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: 'error', 
+            message: 'Failed to send test notification: ' + error.message 
+        });
+    }
+});
+
+// Middleware สำหรับนับ requests
+app.use((req, res, next) => {
+    monitoringStats.totalRequests++;
+    next();
 });
 
 app.get('/form', (req, res) => {
@@ -1084,24 +1428,6 @@ app.post('/api/admin/test-flex-message', authenticateAdminToken, async (req, res
     }
 });
 
-// --- Server Health Check and Final Error Handling ---
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
-});
-
-app.use((req, res, next) => {
-    if (!res.headersSent) {
-        res.status(404).json({ status: 'error', message: 'Route not found or not handled' });
-    }
-});
-
-app.use((err, req, res, next) => {
-    console.error('❌ Unhandled Error:', err.stack || err.message || err);
-    if (!res.headersSent) {
-        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-    }
-});
-
 // เพิ่มใน server.js
 app.get('/api/health', async (req, res) => {
     try {
@@ -1125,136 +1451,60 @@ app.get('/api/health', async (req, res) => {
         res.json({
             status: 'healthy',
             timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            workingHours: {
+                active: isWorkingHours(),
+                schedule: '05:00-21:00 GMT+7',
+                nextActiveTime: isWorkingHours() ? null : getNextActiveTime(),
+                nextStandbyTime: isWorkingHours() ? getNextStandbyTime() : null
+            },
             services: {
                 googleSheets: 'connected',
                 pdfService: pdfHealth.status,
                 lookerStudio: lookerHealth.isEnabled ? 'enabled' : 'disabled',
-                notifications: notificationHealth.autoReportEnabled ? 'enabled' : 'disabled'
+                notifications: notificationHealth.autoReportEnabled ? 'enabled' : 'disabled',
+                keepAlive: keepAliveInterval ? 'active' : 'inactive',
+                telegram: TELEGRAM_BOT_TOKEN ? 'configured' : 'not-configured'
             },
             integrations: {
                 lookerStudio: lookerHealth,
                 notifications: notificationHealth
+            },
+            monitoring: {
+                totalRequests: monitoringStats.totalRequests,
+                healthChecks: monitoringStats.healthChecks,
+                uptimeChecks: monitoringStats.uptimeChecks,
+                lastUptimeCheck: monitoringStats.lastUptimeCheck,
+                downtimeAlerts: monitoringStats.downtimeAlerts
             },
             message: pdfHealth.status === 'unavailable' ? 'PDF features disabled but system operational' : 'All services operational'
         });
     } catch (error) {
         res.status(500).json({
             status: 'unhealthy',
-            error: error.message
+            error: error.message,
+            timestamp: new Date().toISOString(),
+            workingHours: {
+                active: isWorkingHours(),
+                schedule: '05:00-21:00 GMT+7'
+            }
         });
     }
 });
 
-// =====================================
-// 🔄 KEEP-ALIVE SYSTEM WITH TELEGRAM
-// =====================================
-
-let keepAliveInterval = null;
-
-// Telegram Configuration
-const TELEGRAM_BOT_TOKEN = '7610983723:AAEFXDbDlq5uTHeyID8Fc5XEmIUx-LT6rJM';
-const TELEGRAM_CHAT_ID = '7809169283';
-
-// ฟังก์ชันส่งข้อความไป Telegram
-async function sendTelegramNotification(message) {
-    try {
-        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-        const response = await axios.post(url, {
-            chat_id: TELEGRAM_CHAT_ID,
-            text: message,
-            parse_mode: 'Markdown'
-        });
-        
-        if (response.data.ok) {
-            console.log('📱 Telegram notification sent successfully');
-        } else {
-            console.warn('⚠️ Telegram notification failed:', response.data);
-        }
-    } catch (error) {
-        console.error('❌ Error sending Telegram notification:', error.message);
+// --- Server Health Check and Final Error Handling ---
+app.use((req, res, next) => {
+    if (!res.headersSent) {
+        res.status(404).json({ status: 'error', message: 'Route not found or not handled' });
     }
-}
+});
 
-// ฟังก์ชันเช็คว่าอยู่ในช่วงเวลาทำงานหรือไม่
-function isWorkingHours() {
-    const now = new Date();
-    const hours = now.getHours();
-    // เวลาไทย: 05:00-21:00
-    return hours >= 5 && hours < 21;
-}
-
-// ฟังก์ชัน Keep-Alive ping
-function keepAlivePing() {
-    console.log(`🏓 Keep alive ping at ${new Date().toLocaleString('th-TH')}`);
-    
-    // Optional: ping ตัวเอง
-    if (config.BASE_URL) {
-        axios.get(`${config.BASE_URL}/health`)
-            .then(() => console.log('✅ Self ping successful'))
-            .catch(err => console.warn('⚠️ Self ping failed:', err.message));
+app.use((err, req, res, next) => {
+    console.error('❌ Unhandled Error:', err.stack || err.message || err);
+    if (!res.headersSent) {
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
-}
-
-// เริ่ม Keep-Alive
-async function startKeepAlive() {
-    if (keepAliveInterval) return; // ป้องกันการสร้างซ้ำ
-    
-    const currentTime = new Date().toLocaleString('th-TH', { 
-        timeZone: 'Asia/Bangkok',
-        year: 'numeric',
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-    
-    console.log('🟢 Starting keep-alive service (Working hours: 05:00-21:00)');
-    
-    // ส่งแจ้งเตือนไป Telegram
-    await sendTelegramNotification(
-        `🟢 *ระบบเข้าสู่โหมด Standby*\n\n` +
-        `⏰ เวลา: ${currentTime}\n` +
-        `🔄 ระยะเวลา: 05:00 - 21:00\n` +
-        `📊 สถานะ: กำลังทำงาน Keep-Alive\n` +
-        `⚡ ระบบพร้อมใช้งาน`
-    );
-    
-    keepAliveInterval = setInterval(() => {
-        if (isWorkingHours()) {
-            keepAlivePing();
-        } else {
-            console.log('😴 Outside working hours, skipping ping');
-        }
-    }, 14 * 60 * 1000); // ทุก 14 นาที
-}
-
-// หยุด Keep-Alive
-async function stopKeepAlive() {
-    if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-        keepAliveInterval = null;
-        
-        const currentTime = new Date().toLocaleString('th-TH', { 
-            timeZone: 'Asia/Bangkok',
-            year: 'numeric',
-            month: '2-digit', 
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        console.log('🔴 Keep-alive service stopped');
-        
-        // ส่งแจ้งเตือนไป Telegram
-        await sendTelegramNotification(
-            `🔴 *สิ้นสุดเวลา Standby*\n\n` +
-            `⏰ เวลา: ${currentTime}\n` +
-            `😴 สถานะ: ระบบหยุดพักการทำงาน\n` +
-            `🌙 โหมด: Sleep Mode\n` +
-            `⏰ เวลาเริ่มใหม่: 05:00 น. วันถัดไป`
-        );
-    }
-}
+});
 
 // ตั้งเวลาอัตโนมัติ
 // เริ่มทำงาน 05:00 ทุกวัน
@@ -1277,40 +1527,21 @@ if (isWorkingHours()) {
     console.log('😴 Not starting keep-alive (outside working hours)');
 }
 
-// ตรวจสอบ usage
-app.get('/api/system/usage', (req, res) => {
-    res.json({
-        uptime: process.uptime(),
-        keepAliveStatus: keepAliveInterval ? 'active' : 'inactive',
-        workingHours: isWorkingHours(),
-        nextSchedule: '05:00 tomorrow',
-        telegramConfig: {
-            botConfigured: !!TELEGRAM_BOT_TOKEN,
-            chatConfigured: !!TELEGRAM_CHAT_ID
-        }
-    });
-});
-
-// ทดสอบส่ง Telegram
-app.post('/api/system/test-telegram', async (req, res) => {
-    try {
-        await sendTelegramNotification(
-            `🧪 *ทดสอบระบบแจ้งเตือน*\n\n` +
-            `⏰ เวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
-            `✅ การเชื่อมต่อ Telegram ทำงานปกติ`
-        );
-        res.json({ status: 'success', message: 'ส่งข้อความทดสอบไป Telegram สำเร็จ' });
-    } catch (error) {
-        res.status(500).json({ status: 'error', message: error.message });
-    }
-});
-
 // เพิ่มในส่วนการปิด server (รวม keep-alive และ services)
 process.on('SIGINT', async () => {
     console.log('🛑 Shutting down server...');
     try {
         // หยุด Keep-Alive ก่อน
         await stopKeepAlive();
+        
+        // ส่งแจ้งเตือนปิดระบบ
+        await sendTelegramNotification(
+            `🛑 *Server Shutdown*\n\n` +
+            `⏰ Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
+            `📊 Uptime: ${Math.floor(process.uptime() / 60)} minutes\n` +
+            `🔄 Total Requests: ${monitoringStats.totalRequests}\n` +
+            `⚠️ Reason: Manual shutdown (SIGINT)`
+        );
         
         // ปิด PDF Service
         if (pdfService && typeof pdfService.closeBrowser === 'function') {
@@ -1333,6 +1564,15 @@ process.on('SIGTERM', async () => {
     try {
         // หยุด Keep-Alive ก่อน
         await stopKeepAlive();
+        
+        // ส่งแจ้งเตือนปิดระบบ
+        await sendTelegramNotification(
+            `🛑 *Server Shutdown*\n\n` +
+            `⏰ Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
+            `📊 Uptime: ${Math.floor(process.uptime() / 60)} minutes\n` +
+            `🔄 Total Requests: ${monitoringStats.totalRequests}\n` +
+            `⚠️ Reason: Process termination (SIGTERM)`
+        );
         
         // ปิด PDF Service
         if (pdfService && typeof pdfService.closeBrowser === 'function') {
@@ -1362,6 +1602,14 @@ app.listen(PORT, async () => {
   console.log(`👑 Executive Dashboard (HTML): ${config.BASE_URL}/admin/executive-dashboard`);
   console.log(`📊 Reports Dashboard (HTML): ${config.BASE_URL}/admin/reports`);
   
+  // UptimeRobot specific endpoints
+  console.log(`\n🔍 UptimeRobot Monitoring Endpoints:`);
+  console.log(`├── Basic Health Check: ${config.BASE_URL}/health`);
+  console.log(`├── Detailed Health Check: ${config.BASE_URL}/api/health`);
+  console.log(`├── Uptime Status: ${config.BASE_URL}/uptime-status`);
+  console.log(`├── Monitoring Stats: ${config.BASE_URL}/api/monitoring/stats`);
+  console.log(`└── Webhook Receiver: ${config.BASE_URL}/api/monitoring/uptime-webhook`);
+  
   // Setup System_Config sheet ครั้งแรก
   try {
     await googleSheetsService.setupSystemConfigSheet();
@@ -1384,8 +1632,25 @@ app.listen(PORT, async () => {
   }
   
   // ✅ แสดงสถานะ Keep-Alive System
-  console.log(`🔄 Keep-Alive System: ${isWorkingHours() ? 'Active' : 'Standby'} (05:00-21:00)`);
-  console.log(`📱 Telegram Notifications: ${TELEGRAM_BOT_TOKEN ? 'Configured' : 'Not configured'}`);
+  console.log(`\n🔄 Monitoring & Keep-Alive System:`);
+  console.log(`├── Working Hours: 05:00-21:00 (GMT+7)`);
+  console.log(`├── Current Status: ${isWorkingHours() ? 'Active' : 'Standby'}`);
+  console.log(`├── Keep-Alive: ${keepAliveInterval ? 'Running' : 'Stopped'}`);
+  console.log(`├── Telegram Notifications: ${TELEGRAM_BOT_TOKEN ? 'Configured' : 'Not configured'}`);
+  console.log(`└── UptimeRobot Integration: Ready`);
+  
+  // ส่งแจ้งเตือนเริ่มระบบ
+  if (TELEGRAM_BOT_TOKEN) {
+    await sendTelegramNotification(
+      `🚀 *Server Started Successfully*\n\n` +
+      `⏰ Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
+      `🌐 Port: ${PORT}\n` +
+      `📊 Status: ${isWorkingHours() ? 'Active Monitoring' : 'Standby Mode'}\n` +
+      `🔄 Keep-Alive: ${isWorkingHours() ? 'Running' : 'Scheduled for 05:00'}\n` +
+      `🔍 UptimeRobot: Ready for monitoring\n` +
+      `✅ All services operational`
+    );
+  }
 });
 
 module.exports = app;
