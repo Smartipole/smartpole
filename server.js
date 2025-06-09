@@ -13,6 +13,7 @@ const notificationService = require('./services/notificationService');
 const lineBotHandler = require('./services/lineBotHandler'); // ✅ เพิ่มการ import LINE Bot Handler
 const { google } = require('googleapis');
 const stream = require('stream');
+const schedule = require('node-schedule');
 
 let pdfService = null;
 try {
@@ -1005,7 +1006,6 @@ app.get('/admin/mobile-technician', authenticateAdminToken, (req, res) => {
 });
 app.get('/admin', (req, res) => { res.redirect('/admin/smart-login.html'); });
 
-
 // ✅ Flex Message Settings API
 app.get('/api/admin/flex-settings', authenticateAdminToken, async (req, res) => {
     try {
@@ -1102,39 +1102,6 @@ app.use((err, req, res, next) => {
     }
 });
 
-// เพิ่มในส่วนการปิด server
-process.on('SIGINT', async () => {
-    console.log('🛑 Shutting down server...');
-    try {
-        if (pdfService && typeof pdfService.closeBrowser === 'function') {
-            await pdfService.closeBrowser();
-        }
-        if (notificationService && typeof notificationService.shutdown === 'function') {
-            notificationService.shutdown();
-        }
-    } catch (error) {
-        console.error('Error closing services:', error);
-    }
-    console.log('👋 Server shutdown complete');
-    process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-    console.log('🛑 Shutting down server...');
-    try {
-        if (pdfService && typeof pdfService.closeBrowser === 'function') {
-            await pdfService.closeBrowser();
-        }
-        if (notificationService && typeof notificationService.shutdown === 'function') {
-            notificationService.shutdown();
-        }
-    } catch (error) {
-        console.error('Error closing services:', error);
-    }
-    console.log('👋 Server shutdown complete');
-    process.exit(0);
-});
-
 // เพิ่มใน server.js
 app.get('/api/health', async (req, res) => {
     try {
@@ -1178,7 +1145,9 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// เพิ่มในส่วนท้าย server.js (ก่อน app.listen)
+// =====================================
+// 🔄 KEEP-ALIVE SYSTEM WITH TELEGRAM
+// =====================================
 
 let keepAliveInterval = null;
 
@@ -1287,9 +1256,7 @@ async function stopKeepAlive() {
     }
 }
 
-// ตั้งเวลาอัตโนมัติ (ถ้าต้องการ)
-const schedule = require('node-schedule');
-
+// ตั้งเวลาอัตโนมัติ
 // เริ่มทำงาน 05:00 ทุกวัน
 schedule.scheduleJob('0 5 * * *', async () => {
     console.log('🌅 Starting daily keep-alive service');
@@ -1310,14 +1277,76 @@ if (isWorkingHours()) {
     console.log('😴 Not starting keep-alive (outside working hours)');
 }
 
-// ปิดระบบเมื่อ shutdown
+// ตรวจสอบ usage
+app.get('/api/system/usage', (req, res) => {
+    res.json({
+        uptime: process.uptime(),
+        keepAliveStatus: keepAliveInterval ? 'active' : 'inactive',
+        workingHours: isWorkingHours(),
+        nextSchedule: '05:00 tomorrow',
+        telegramConfig: {
+            botConfigured: !!TELEGRAM_BOT_TOKEN,
+            chatConfigured: !!TELEGRAM_CHAT_ID
+        }
+    });
+});
+
+// ทดสอบส่ง Telegram
+app.post('/api/system/test-telegram', async (req, res) => {
+    try {
+        await sendTelegramNotification(
+            `🧪 *ทดสอบระบบแจ้งเตือน*\n\n` +
+            `⏰ เวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
+            `✅ การเชื่อมต่อ Telegram ทำงานปกติ`
+        );
+        res.json({ status: 'success', message: 'ส่งข้อความทดสอบไป Telegram สำเร็จ' });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+});
+
+// เพิ่มในส่วนการปิด server (รวม keep-alive และ services)
 process.on('SIGINT', async () => {
-    await stopKeepAlive();
+    console.log('🛑 Shutting down server...');
+    try {
+        // หยุด Keep-Alive ก่อน
+        await stopKeepAlive();
+        
+        // ปิด PDF Service
+        if (pdfService && typeof pdfService.closeBrowser === 'function') {
+            await pdfService.closeBrowser();
+        }
+        
+        // ปิด Notification Service
+        if (notificationService && typeof notificationService.shutdown === 'function') {
+            notificationService.shutdown();
+        }
+    } catch (error) {
+        console.error('Error closing services:', error);
+    }
+    console.log('👋 Server shutdown complete');
     process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-    await stopKeepAlive();
+    console.log('🛑 Shutting down server...');
+    try {
+        // หยุด Keep-Alive ก่อน
+        await stopKeepAlive();
+        
+        // ปิด PDF Service
+        if (pdfService && typeof pdfService.closeBrowser === 'function') {
+            await pdfService.closeBrowser();
+        }
+        
+        // ปิด Notification Service
+        if (notificationService && typeof notificationService.shutdown === 'function') {
+            notificationService.shutdown();
+        }
+    } catch (error) {
+        console.error('Error closing services:', error);
+    }
+    console.log('👋 Server shutdown complete');
     process.exit(0);
 });
 
@@ -1353,6 +1382,10 @@ app.listen(PORT, async () => {
   } else {
     console.log(`🔕 Auto Reports: Disabled`);
   }
+  
+  // ✅ แสดงสถานะ Keep-Alive System
+  console.log(`🔄 Keep-Alive System: ${isWorkingHours() ? 'Active' : 'Standby'} (05:00-21:00)`);
+  console.log(`📱 Telegram Notifications: ${TELEGRAM_BOT_TOKEN ? 'Configured' : 'Not configured'}`);
 });
 
 module.exports = app;
