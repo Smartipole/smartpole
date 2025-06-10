@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ ระบบแจ้งซ่อมไฟฟ้า - Desktop Dashboard</title>
+    
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- DataTables CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(251, 191, 36, 0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-icon {
+            font-size: 2.5rem;
+            color: #fbbf24;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.1); filter: brightness(1.3); }
+        }
+
+        .sidebar-title {
+            color: #fbbf24;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .sidebar-subtitle {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.25rem 1rem;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 0.75rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2);
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+            min-width: 1.5rem;
+            text-align: center;
+        }
+
+        /* User Profile */
+        .sidebar-user {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .user-avatar {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .user-info h4 {
+            color: #f8fafc;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-info p {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .page-icon {
+            font-size: 2.5rem;
+            color: #f59e0b;
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+            animation: shine 0.6s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fbbf24;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.3);
+            border-color: rgba(251, 191, 36, 0.6);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .stat-icon.primary { color: #fbbf24; }
+        .stat-icon.success { color: #10b981; }
+        .stat-icon.warning { color: #f59e0b; }
+        .stat-icon.danger { color: #ef4444; }
+        .stat-icon.info { color: #3b82f6; }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tables */
+        .table-container {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 1rem;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead th {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+        }
+
+        .table tbody td {
+            background: rgba(30, 41, 59, 0.5);
+            color: #f8fafc;
+            border: none;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .table tbody tr:hover {
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            border-radius: 0.75rem;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+            color: #0f172a;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.3);
+            transform: translateY(-2px);
+            color: #f8fafc;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .status-approved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-progress { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .status-completed { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        /* Forms */
+        .form-control {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.5rem;
+            color: #f8fafc;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control:focus {
+            background: rgba(15, 23, 42, 0.7);
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+            color: #f8fafc;
+        }
+
+        .form-label {
+            color: #f8fafc;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modals */
+        .modal-content {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 1rem;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        .modal-title {
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            color: #f8fafc;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 250px;
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+        }
+
+        /* Loading */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner-border {
+            color: #fbbf24;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+
+        /* Print Styles */
+        @media print {
+            .sidebar,
+            .btn,
+            .modal {
+                display: none !important;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                background: white;
+                color: black;
+            }
+            
+            .card {
+                background: white;
+                border: 1px solid #ccc;
+                color: black;
+            }
+            
+            .page-title {
+                color: black;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(251, 191, 36, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(251, 191, 36, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <div class="sidebar-icon">⚡</div>
+            </div>
+            <h2 class="sidebar-title">ระบบแจ้งซ่อมไฟฟ้า</h2>
+            <p class="sidebar-subtitle">อบต.ข่าใหญ่ - Desktop Dashboard</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="#" class="nav-link active" onclick="showPage('dashboard')">
+                    <span class="nav-icon">🏠</span>
+                    <span>หน้าแรก</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="showPage('requests')">
+                    <span class="nav-icon">🔧</span>
+                    <span>จัดการคำขอซ่อม</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="showPage('reports')">
+                    <span class="nav-icon">📊</span>
+                    <span>รายงานและสถิติ</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="showPage('inventory')">
+                    <span class="nav-icon">📦</span>
+                    <span>จัดการคลังอุปกรณ์</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="showPage('users')">
+                    <span class="nav-icon">👥</span>
+                    <span>จัดการผู้ใช้</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="showPage('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span>ตั้งค่าระบบ</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-profile" onclick="showUserMenu()">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <h4 id="userName">Loading...</h4>
+                    <p id="userRole">ผู้ใช้</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboardPage">
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="page-icon">🏠</span>
+                    หน้าแรก - ภาพรวมระบบ
+                </h1>
+                <div>
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        🔄 รีเฟรชข้อมูล
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-icon primary">🔧</span>
+                    <div class="stat-value" id="totalRequests">-</div>
+                    <div class="stat-label">คำขอซ่อมทั้งหมด</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon warning">⏳</span>
+                    <div class="stat-value" id="pendingRequests">-</div>
+                    <div class="stat-label">รอดำเนินการ</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon info">🔧</span>
+                    <div class="stat-value" id="inProgressRequests">-</div>
+                    <div class="stat-label">กำลังดำเนินการ</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon success">✅</span>
+                    <div class="stat-value" id="completedRequests">-</div>
+                    <div class="stat-label">เสร็จสิ้นแล้ว</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon primary">📦</span>
+                    <div class="stat-value" id="totalInventory">-</div>
+                    <div class="stat-label">รายการคลัง</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon info">👥</span>
+                    <div class="stat-value" id="totalUsers">-</div>
+                    <div class="stat-label">ผู้ใช้ระบบ</div>
+                </div>
+            </div>
+
+            <!-- Recent Requests -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span>📋</span>
+                        คำขอล่าสุด
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>🎫 เลขที่</th>
+                                    <th>👤 ผู้แจ้ง</th>
+                                    <th>📍 ปัญหา</th>
+                                    <th>📊 สถานะ</th>
+                                    <th>📅 วันที่</th>
+                                    <th>⚙️ การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentRequestsTable">
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2">กำลังโหลดข้อมูล...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Page -->
+        <div id="requestsPage" class="d-none">
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="page-icon">🔧</span>
+                    จัดการคำขอซ่อม
+                </h1>
+                <div>
+                    <button class="btn btn-primary" onclick="openLookerReports()">
+                        📊 เปิด Looker Studio
+                    </button>
+                    <button class="btn btn-success" onclick="exportRequests()">
+                        📁 Export ข้อมูล
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span>🔍</span>
+                        ค้นหาและกรองข้อมูล
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">ค้นหาเลขที่คำขอ</label>
+                            <input type="text" class="form-control" id="searchRequestId" placeholder="พิมพ์เลขที่...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">สถานะ</label>
+                            <select class="form-control" id="filterStatus">
+                                <option value="">ทุกสถานะ</option>
+                                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                                <option value="อนุมัติแล้วรอช่าง">อนุมัติแล้วรอช่าง</option>
+                                <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
+                                <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+                                <option value="ยกเลิก">ยกเลิก</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">วันที่เริ่มต้น</label>
+                            <input type="date" class="form-control" id="filterDateFrom">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">วันที่สิ้นสุด</label>
+                            <input type="date" class="form-control" id="filterDateTo">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary" onclick="filterRequests()">
+                            🔍 ค้นหา
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearFilters()">
+                            🗑️ ล้างตัวกรอง
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requests Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span>📋</span>
+                        รายการคำขอซ่อม
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="requestsTable">
+                            <thead>
+                                <tr>
+                                    <th>🎫 เลขที่</th>
+                                    <th>👤 ผู้แจ้ง</th>
+                                    <th>📱 เบอร์โทร</th>
+                                    <th>🗼 รหัสเสา</th>
+                                    <th>📍 ปัญหา</th>
+                                    <th>📊 สถานะ</th>
+                                    <th>📅 วันที่</th>
+                                    <th>⚙️ การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTableBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="reportsPage" class="d-none">
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="page-icon">📊</span>
+                    รายงานและสถิติ
+                </h1>
+                <div>
+                    <button class="btn btn-primary" onclick="openLookerStudio()">
+                        📈 เปิด Looker Studio
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Reports -->
+            <div class="stats-grid mb-4">
+                <div class="stat-card" style="cursor: pointer;" onclick="generateReport('today')">
+                    <span class="stat-icon primary">📈</span>
+                    <div class="stat-value" id="todayReports">-</div>
+                    <div class="stat-label">รายงานวันนี้</div>
+                </div>
+                <div class="stat-card" style="cursor: pointer;" onclick="generateReport('week')">
+                    <span class="stat-icon info">📅</span>
+                    <div class="stat-value" id="weekReports">-</div>
+                    <div class="stat-label">รายงานสัปดาห์นี้</div>
+                </div>
+                <div class="stat-card" style="cursor: pointer;" onclick="generateReport('month')">
+                    <span class="stat-icon warning">📆</span>
+                    <div class="stat-value" id="monthReports">-</div>
+                    <div class="stat-label">รายงานเดือนนี้</div>
+                </div>
+                <div class="stat-card" style="cursor: pointer;" onclick="generateReport('year')">
+                    <span class="stat-icon success">📋</span>
+                    <div class="stat-value" id="yearReports">-</div>
+                    <div class="stat-label">รายงานปีนี้</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <span>📊</span>
+                                สถิติตามสถานะ
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <span>📈</span>
+                                แนวโน้มรายเดือน
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="trendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Page -->
+        <div id="inventoryPage" class="d-none">
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="page-icon">📦</span>
+                    จัดการคลังอุปกรณ์
+                </h1>
+                <div>
+                    <button class="btn btn-primary" onclick="showAddInventoryModal()">
+                        ➕ เพิ่มรายการใหม่
+                    </button>
+                    <button class="btn btn-success" onclick="exportInventory()">
+                        📁 Export ข้อมูล
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inventory Stats -->
+            <div class="stats-grid mb-4">
+                <div class="stat-card">
+                    <span class="stat-icon primary">📦</span>
+                    <div class="stat-value" id="totalInventoryItems">-</div>
+                    <div class="stat-label">รายการทั้งหมด</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon success">✅</span>
+                    <div class="stat-value" id="inStockItems">-</div>
+                    <div class="stat-label">มีสต็อก</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon warning">⚠️</span>
+                    <div class="stat-value" id="lowStockItems">-</div>
+                    <div class="stat-label">สต็อกต่ำ</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon danger">❌</span>
+                    <div class="stat-value" id="outOfStockItems">-</div>
+                    <div class="stat-label">หมดสต็อก</div>
+                </div>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span>📋</span>
+                        รายการอุปกรณ์ในคลัง
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>📦 รายการ</th>
+                                    <th>📏 หน่วย</th>
+                                    <th>💰 ราคา/หน่วย</th>
+                                    <th>📊 คงเหลือ</th>
+                                    <th>📈 เบิกแล้ว</th>
+                                    <th>💸 มูลค่ารวม</th>
+                                    <th>⚙️ การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Page -->
+        <div id="usersPage" class="d-none">
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="page-icon">👥</span>
+                    จัดการผู้ใช้
+                </h1>
+                <div>
+                    <button class="btn btn-primary" onclick="showAddUserModal()">
+                        ➕ เพิ่มผู้ใช้ใหม่
+                    </button>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span>📋</span>
+                        รายการผู้ใช้ระบบ
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>👤 ผู้ใช้</th>
+                                    <th>📧 อีเมล</th>
+                                    <th>🔑 สิทธิ์</th>
+                                    <th>📊 สถานะ</th>
+                                    <th>⏰ เข้าใช้ล่าสุด</th>
+                                    <th>⚙️ การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settingsPage" class="d-none">
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="page-icon">⚙️</span>
+                    ตั้งค่าระบบ
+                </h1>
+            </div>
+
+            <!-- Telegram Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span>📱</span>
+                        การแจ้งเตือน Telegram
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form id="telegramForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Bot Token</label>
+                                <input type="text" class="form-control" id="botToken" placeholder="ใส่ Bot Token">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Chat ID</label>
+                                <input type="text" class="form-control" id="chatId" placeholder="ใส่ Chat ID">
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="enableTelegram">
+                                    <label class="form-check-label" for="enableTelegram">
+                                        เปิดใช้งานการแจ้งเตือน Telegram
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">💾 บันทึก</button>
+                            <button type="button" class="btn btn-secondary" onclick="testTelegram()">🧪 ทดสอบ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- System Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span>ℹ️</span>
+                        ข้อมูลระบบ
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>เวอร์ชันระบบ:</strong> 2.0.0</p>
+                            <p><strong>แพลตฟอร์ม:</strong> Desktop Web Application</p>
+                            <p><strong>ฐานข้อมูล:</strong> Google Sheets</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>รายงาน:</strong> Google Looker Studio</p>
+                            <p><strong>การแจ้งเตือน:</strong> Telegram Bot</p>
+                            <p><strong>การพิมพ์:</strong> PDF Export</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.js"></script>
+    
+    <!-- Auth Utils -->
+    <script src="/auth-utils.js"></script>
+
+    <script>
+        // Global Variables
+        let currentUser = null;
+        let allRequests = [];
+        let allInventory = [];
+        let allUsers = [];
+        let statusChart = null;
+        let trendChart = null;
+        let lookerStudioUrl = '';
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        async function initializeApp() {
+            console.log('Initializing Dashboard App...');
+            
+            // Check if AuthUtils is loaded
+            if (!window.AuthUtils) {
+                console.error('AuthUtils not loaded');
+                window.location.href = '/admin/smart-login.html?message=' + encodeURIComponent('ระบบยังไม่พร้อม กรุณาลองใหม่อีกครั้ง');
+                return;
+            }
+            
+            // Debug authentication state
+            window.AuthUtils.debugAuth();
+            
+            // Check authentication first
+            if (!window.AuthUtils.protectPage(['admin', 'executive', 'technician'])) {
+                console.warn('Authentication failed, redirecting to login');
+                return;
+            }
+
+            const authUser = window.AuthUtils.getCurrentUser();
+            console.log('Current authenticated user:', authUser);
+            
+            if (authUser && authUser.user) {
+                currentUser = {
+                    username: authUser.user.username,
+                    role: authUser.user.role,
+                    token: authUser.token,
+                    system: authUser.system
+                };
+                
+                console.log('User authenticated successfully:', currentUser);
+                
+                updateUserDisplay();
+                
+                try {
+                    await loadLookerConfig();
+                    await loadDashboardData();
+                    showToast('ยินดีต้อนรับสู่ Desktop Dashboard! ⚡', 'success');
+                } catch (error) {
+                    console.error('Error loading dashboard data:', error);
+                    showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+                }
+            } else {
+                console.error('No valid user data found');
+                window.AuthUtils.forceLogout('ไม่พบข้อมูลผู้ใช้');
+            }
+        }
+
+        function validateCurrentSession() {
+            const authUser = window.AuthUtils.getCurrentUser();
+            
+            if (!authUser) {
+                console.warn('No current user found');
+                return false;
+            }
+            
+            // ตรวจสอบข้อมูลผู้ใช้
+            if (!authUser.user || !authUser.user.username || !authUser.user.role) {
+                console.warn('Invalid user data:', authUser.user);
+                return false;
+            }
+            
+            // ตรวจสอบ token
+            if (!authUser.token) {
+                console.warn('No token found');
+                return false;
+            }
+            
+            // ตรวจสอบรูปแบบ token
+            try {
+                const tokenParts = authUser.token.split('.');
+                if (tokenParts.length !== 3) {
+                    console.warn('Invalid token format');
+                    return false;
+                }
+                
+                const payload = JSON.parse(atob(tokenParts[1]));
+                const now = Math.floor(Date.now() / 1000);
+                
+                if (payload.exp && payload.exp < now) {
+                    console.warn('Token expired');
+                    return false;
+                }
+                
+                console.log('Session validation successful');
+                return true;
+            } catch (error) {
+                console.error('Error validating token:', error);
+                return false;
+            }
+        }
+
+        function updateUserDisplay() {
+            if (currentUser) {
+                const userNameElement = document.getElementById('userName');
+                const userRoleElement = document.getElementById('userRole');
+                const userAvatarElement = document.getElementById('userAvatar');
+                
+                if (userNameElement) {
+                    userNameElement.textContent = currentUser.username;
+                }
+                
+                if (userRoleElement) {
+                    userRoleElement.textContent = getRoleDisplayName(currentUser.role);
+                }
+                
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = currentUser.username.charAt(0).toUpperCase();
+                }
+                
+                console.log('User display updated:', {
+                    username: currentUser.username,
+                    role: currentUser.role,
+                    system: currentUser.system
+                });
+            } else {
+                console.warn('No current user to display');
+            }
+        }
+
+        async function safeApiCall(url, options = {}) {
+            try {
+                if (!window.AuthUtils.isAuthenticated()) {
+                    throw new Error('Not authenticated');
+                }
+                
+                const response = await window.AuthUtils.apiCall(url, options);
+                return response;
+            } catch (error) {
+                console.error('API call failed:', error);
+                
+                if (error.message.includes('authenticated') || error.message.includes('Unauthorized')) {
+                    window.AuthUtils.forceLogout('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่');
+                    throw error;
+                }
+                
+                throw error;
+            }
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = {
+                'admin': 'ผู้ดูแลระบบ',
+                'executive': 'ผู้บริหาร',
+                'technician': 'ช่างเทคนิค'
+            };
+            return roles[role] || role;
+        }
+
+        // Load Looker Studio Configuration
+        async function loadLookerConfig() {
+            try {
+                const response = await safeApiCall('/api/admin/config/looker-url');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data && data.data.lookerUrl) {
+                    lookerStudioUrl = data.data.lookerUrl;
+                    console.log('Looker Studio URL loaded:', lookerStudioUrl);
+                } else {
+                    console.warn('ไม่พบ Looker Studio URL ใน config');
+                    lookerStudioUrl = '#';
+                }
+            } catch (error) {
+                console.error('Error loading Looker config:', error);
+                lookerStudioUrl = '#';
+            }
+        }
+
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                showToast('กำลังโหลดข้อมูลระบบ...', 'info');
+                
+                await Promise.all([
+                    loadStats(),
+                    loadRecentRequests()
+                ]);
+                
+                showToast('โหลดข้อมูลสำเร็จ! 📊', 'success');
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+            }
+        }
+
+        async function loadStats() {
+            try {
+                // Load repair requests
+                const requestsResponse = await safeApiCall('/api/admin/repair-requests?limit=1000');
+                const requestsData = await requestsResponse.json();
+                
+                if (requestsData.status === 'success') {
+                    allRequests = requestsData.data || [];
+                    
+                    const total = allRequests.length;
+                    const pending = allRequests.filter(r => r.STATUS === 'รอดำเนินการ' || r.STATUS === 'อนุมัติแล้วรอช่าง').length;
+                    const inProgress = allRequests.filter(r => r.STATUS === 'กำลังดำเนินการ').length;
+                    const completed = allRequests.filter(r => r.STATUS === 'เสร็จสิ้น').length;
+                    
+                    document.getElementById('totalRequests').textContent = total;
+                    document.getElementById('pendingRequests').textContent = pending;
+                    document.getElementById('inProgressRequests').textContent = inProgress;
+                    document.getElementById('completedRequests').textContent = completed;
+                }
+
+                // Load inventory
+                try {
+                    const inventoryResponse = await safeApiCall('/api/admin/inventory');
+                    const inventoryData = await inventoryResponse.json();
+                    
+                    if (inventoryData.status === 'success') {
+                        allInventory = inventoryData.data || [];
+                        document.getElementById('totalInventory').textContent = allInventory.length;
+                    }
+                } catch (e) {
+                    console.warn('Could not load inventory:', e);
+                    document.getElementById('totalInventory').textContent = '0';
+                }
+
+                // Load users
+                try {
+                    const usersResponse = await safeApiCall('/api/admin/users');
+                    const usersData = await usersResponse.json();
+                    
+                    if (usersData.status === 'success') {
+                        allUsers = usersData.data || [];
+                        document.getElementById('totalUsers').textContent = allUsers.length;
+                    }
+                } catch (e) {
+                    console.warn('Could not load users:', e);
+                    document.getElementById('totalUsers').textContent = '0';
+                }
+
+                console.log('Stats loaded successfully');
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                throw error;
+            }
+        }
+
+        async function loadRecentRequests() {
+            try {
+                const tbody = document.getElementById('recentRequestsTable');
+                
+                if (allRequests.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                <p>ยังไม่มีข้อมูลคำขอ</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const recentRequests = allRequests.slice(0, 10); // แสดง 10 รายการล่าสุด
+                
+                tbody.innerHTML = recentRequests.map(request => {
+                    const fullName = `${request.FIRST_NAME || ''} ${request.LAST_NAME || ''}`.trim() || 'ไม่ระบุ';
+                    const statusBadge = getStatusBadge(request.STATUS);
+                    const dateReported = new Date(request.DATE_REPORTED).toLocaleDateString('th-TH');
+                    
+                    return `
+                        <tr>
+                            <td class="fw-bold text-warning">${request.REQUEST_ID}</td>
+                            <td>${fullName}</td>
+                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${request.PROBLEM_DESCRIPTION || request.REASON || 'ไม่มีรายละเอียด'}
+                            </td>
+                            <td>${statusBadge}</td>
+                            <td>${dateReported}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="viewRequestDetails('${request.REQUEST_ID}')">
+                                    👁️ ดู
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="printRequest('${request.REQUEST_ID}')">
+                                    🖨️ พิมพ์
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading recent requests:', error);
+                document.getElementById('recentRequestsTable').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger">
+                            <p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function getStatusBadge(status) {
+            const statusConfig = {
+                'รอดำเนินการ': 'status-pending',
+                'อนุมัติแล้วรอช่าง': 'status-approved',
+                'กำลังดำเนินการ': 'status-progress',
+                'เสร็จสิ้น': 'status-completed',
+                'ยกเลิก': 'status-cancelled',
+                'ไม่อนุมัติโดยผู้บริหาร': 'status-cancelled'
+            };
+            
+            const className = statusConfig[status] || 'status-pending';
+            return `<span class="status-badge ${className}">${status || 'ไม่ระบุ'}</span>`;
+        }
+
+        // Navigation Functions
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = ['dashboardPage', 'requestsPage', 'reportsPage', 'inventoryPage', 'usersPage', 'settingsPage'];
+            pages.forEach(page => {
+                const element = document.getElementById(page);
+                if (element) element.classList.add('d-none');
+            });
+            
+            // Show selected page
+            const selectedPage = document.getElementById(pageId + 'Page');
+            if (selectedPage) selectedPage.classList.remove('d-none');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.closest('.nav-link').classList.add('active');
+            
+            // Load page-specific data
+            switch(pageId) {
+                case 'requests':
+                    loadRequestsPage();
+                    break;
+                case 'reports':
+                    loadReportsPage();
+                    break;
+                case 'inventory':
+                    loadInventoryPage();
+                    break;
+                case 'users':
+                    loadUsersPage();
+                    break;
+                case 'settings':
+                    loadSettingsPage();
+                    break;
+            }
+        }
+
+        // Requests Page Functions
+        async function loadRequestsPage() {
+            try {
+                const tbody = document.getElementById('requestsTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            <div class="spinner-border text-warning" role="status"></div>
+                            <p class="mt-2">กำลังโหลดข้อมูลคำขอ...</p>
+                        </td>
+                    </tr>
+                `;
+
+                // Reload requests if needed
+                if (allRequests.length === 0) {
+                    await loadStats();
+                }
+
+                renderRequestsTable(allRequests);
+            } catch (error) {
+                console.error('Error loading requests page:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลคำขอ', 'error');
+            }
+        }
+
+        function renderRequestsTable(requests) {
+            const tbody = document.getElementById('requestsTableBody');
+            
+            if (requests.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">
+                            <p>ไม่พบข้อมูลคำขอ</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = requests.map(request => {
+                const fullName = `${request.FIRST_NAME || ''} ${request.LAST_NAME || ''}`.trim() || 'ไม่ระบุ';
+                const statusBadge = getStatusBadge(request.STATUS);
+                const dateReported = new Date(request.DATE_REPORTED).toLocaleDateString('th-TH');
+                
+                return `
+                    <tr>
+                        <td class="fw-bold text-warning">${request.REQUEST_ID}</td>
+                        <td>${fullName}</td>
+                        <td>${request.PHONE || 'ไม่ระบุ'}</td>
+                        <td>${request.POLE_ID || 'ไม่ระบุ'}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${request.PROBLEM_DESCRIPTION || request.REASON || 'ไม่มีรายละเอียด'}
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>${dateReported}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-primary" onclick="viewRequestDetails('${request.REQUEST_ID}')">
+                                    👁️ ดู
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="printRequest('${request.REQUEST_ID}')">
+                                    🖨️ พิมพ์
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="updateRequestStatus('${request.REQUEST_ID}')">
+                                    ✏️ แก้ไข
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Reports Page Functions
+        async function loadReportsPage() {
+            try {
+                // Calculate report stats
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+                const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                const yearStart = new Date(today.getFullYear(), 0, 1);
+
+                const todayCount = allRequests.filter(r => r.DATE_REPORTED && r.DATE_REPORTED.startsWith(todayStr)).length;
+                const weekCount = allRequests.filter(r => new Date(r.DATE_REPORTED) >= weekStart).length;
+                const monthCount = allRequests.filter(r => new Date(r.DATE_REPORTED) >= monthStart).length;
+                const yearCount = allRequests.filter(r => new Date(r.DATE_REPORTED) >= yearStart).length;
+
+                document.getElementById('todayReports').textContent = todayCount;
+                document.getElementById('weekReports').textContent = weekCount;
+                document.getElementById('monthReports').textContent = monthCount;
+                document.getElementById('yearReports').textContent = yearCount;
+
+                // Generate charts
+                generateStatusChart();
+                generateTrendChart();
+
+            } catch (error) {
+                console.error('Error loading reports page:', error);
+            }
+        }
+
+        function generateStatusChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            if (statusChart) {
+                statusChart.destroy();
+            }
+
+            const pending = allRequests.filter(r => r.STATUS === 'รอดำเนินการ' || r.STATUS === 'อนุมัติแล้วรอช่าง').length;
+            const inProgress = allRequests.filter(r => r.STATUS === 'กำลังดำเนินการ').length;
+            const completed = allRequests.filter(r => r.STATUS === 'เสร็จสิ้น').length;
+            const cancelled = allRequests.filter(r => r.STATUS === 'ยกเลิก' || r.STATUS === 'ไม่อนุมัติโดยผู้บริหาร').length;
+
+            statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['รอดำเนินการ', 'กำลังดำเนินการ', 'เสร็จสิ้น', 'ยกเลิก'],
+                    datasets: [{
+                        data: [pending, inProgress, completed, cancelled],
+                        backgroundColor: ['#fbbf24', '#f59e0b', '#10b981', '#ef4444'],
+                        borderColor: ['#f59e0b', '#d97706', '#059669', '#dc2626'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#f8fafc',
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (trendChart) {
+                trendChart.destroy();
+            }
+
+            // Generate monthly data for last 6 months
+            const monthlyData = {};
+            const now = new Date();
+            
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthKey = date.toISOString().substring(0, 7);
+                monthlyData[monthKey] = 0;
+            }
+
+            allRequests.forEach(request => {
+                const month = new Date(request.DATE_REPORTED).toISOString().substring(0, 7);
+                if (monthlyData.hasOwnProperty(month)) {
+                    monthlyData[month]++;
+                }
+            });
+
+            const labels = Object.keys(monthlyData).map(month => {
+                const date = new Date(month + '-01');
+                return date.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' });
+            });
+            const data = Object.values(monthlyData);
+
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนคำขอ',
+                        data: data,
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f8fafc',
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Inventory Page Functions
+        async function loadInventoryPage() {
+            try {
+                const tbody = document.getElementById('inventoryTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="spinner-border text-warning" role="status"></div>
+                            <p class="mt-2">กำลังโหลดข้อมูลคลัง...</p>
+                        </td>
+                    </tr>
+                `;
+
+                // Load inventory if needed
+                if (allInventory.length === 0) {
+                    const response = await window.AuthUtils.apiCall('/api/admin/inventory');
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        allInventory = data.data || [];
+                    }
+                }
+
+                updateInventoryStats();
+                renderInventoryTable();
+
+            } catch (error) {
+                console.error('Error loading inventory page:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลคลัง', 'error');
+            }
+        }
+
+        function updateInventoryStats() {
+            const total = allInventory.length;
+            const inStock = allInventory.filter(item => item.CURRENT_STOCK > 0).length;
+            const lowStock = allInventory.filter(item => item.CURRENT_STOCK > 0 && item.CURRENT_STOCK <= 10).length;
+            const outOfStock = allInventory.filter(item => item.CURRENT_STOCK <= 0).length;
+
+            document.getElementById('totalInventoryItems').textContent = total;
+            document.getElementById('inStockItems').textContent = inStock;
+            document.getElementById('lowStockItems').textContent = lowStock;
+            document.getElementById('outOfStockItems').textContent = outOfStock;
+        }
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            
+            if (allInventory.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <p>ยังไม่มีข้อมูลคลังอุปกรณ์</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = allInventory.map(item => {
+                const currentStock = item.CURRENT_STOCK || 0;
+                const pricePerUnit = item.PRICE_PER_UNIT || 0;
+                const usedQuantity = item.USED_QUANTITY || 0;
+                const totalValue = currentStock * pricePerUnit;
+                
+                let stockClass = 'text-success';
+                if (currentStock <= 0) stockClass = 'text-danger';
+                else if (currentStock <= 10) stockClass = 'text-warning';
+
+                return `
+                    <tr>
+                        <td class="fw-bold">${item.ITEM_NAME}</td>
+                        <td>${item.UNIT || 'ชิ้น'}</td>
+                        <td class="text-end">${pricePerUnit.toLocaleString()} บาท</td>
+                        <td class="text-end ${stockClass}">${currentStock.toLocaleString()}</td>
+                        <td class="text-end">${usedQuantity.toLocaleString()}</td>
+                        <td class="text-end fw-bold">${totalValue.toLocaleString()} บาท</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-primary" onclick="editInventoryItem('${item.ITEM_NAME}')">
+                                    ✏️ แก้ไข
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="adjustInventory('${item.ITEM_NAME}', 'add')">
+                                    ➕ เพิ่ม
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="adjustInventory('${item.ITEM_NAME}', 'use')">
+                                    ➖ เบิก
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteInventoryItem('${item.ITEM_NAME}')">
+                                    🗑️ ลบ
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Users Page Functions
+        async function loadUsersPage() {
+            try {
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="spinner-border text-warning" role="status"></div>
+                            <p class="mt-2">กำลังโหลดข้อมูลผู้ใช้...</p>
+                        </td>
+                    </tr>
+                `;
+
+                // Load users if needed
+                if (allUsers.length === 0) {
+                    const response = await window.AuthUtils.apiCall('/api/admin/users');
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        allUsers = data.data || [];
+                    }
+                }
+
+                renderUsersTable();
+
+            } catch (error) {
+                console.error('Error loading users page:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้', 'error');
+            }
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (allUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <p>ยังไม่มีข้อมูลผู้ใช้</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = allUsers.map(user => {
+                const roleIcon = user.ROLE === 'admin' ? '👑' : user.ROLE === 'executive' ? '👔' : '🔧';
+                const statusBadge = user.IS_ACTIVE === 'TRUE' 
+                    ? '<span class="status-badge status-completed">🟢 ใช้งานอยู่</span>'
+                    : '<span class="status-badge status-cancelled">🔴 ระงับ</span>';
+                const lastLogin = user.LAST_LOGIN || 'ยังไม่เคยเข้าใช้';
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-2" style="width: 40px; height: 40px; font-size: 1rem;">
+                                    ${user.USERNAME.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="fw-bold">${user.USERNAME}</div>
+                                    <small class="text-muted">${user.FULL_NAME || 'ไม่ระบุ'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${user.EMAIL || 'ไม่ระบุ'}</td>
+                        <td>
+                            <span class="status-badge status-approved">
+                                ${roleIcon} ${getRoleDisplayName(user.ROLE)}
+                            </span>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>${lastLogin}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-primary" onclick="editUser('${user.USERNAME}')">
+                                    ✏️ แก้ไข
+                                </button>
+                                ${user.USERNAME !== currentUser.username ? `
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.USERNAME}')">
+                                        🗑️ ลบ
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Settings Page Functions
+        async function loadSettingsPage() {
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/telegram-config');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data) {
+                    document.getElementById('botToken').value = data.data.botToken || '';
+                    document.getElementById('chatId').value = data.data.chatId || '';
+                    document.getElementById('enableTelegram').checked = data.data.isEnabled || false;
+                }
+            } catch (error) {
+                console.error('Error loading Telegram settings:', error);
+            }
+        }
+
+        // Action Functions
+        function viewRequestDetails(requestId) {
+            const request = allRequests.find(r => r.REQUEST_ID === requestId);
+            if (!request) return;
+
+            const fullName = `${request.FIRST_NAME || ''} ${request.LAST_NAME || ''}`.trim() || 'ไม่ระบุ';
+            
+            Swal.fire({
+                title: `🎫 รายละเอียดคำขอ: ${requestId}`,
+                html: `
+                    <div class="text-start">
+                        <p><strong>👤 ผู้แจ้ง:</strong> ${fullName}</p>
+                        <p><strong>📱 เบอร์โทร:</strong> ${request.PHONE || 'ไม่ระบุ'}</p>
+                        <p><strong>🗼 รหัสเสา:</strong> ${request.POLE_ID || 'ไม่ระบุ'}</p>
+                        <p><strong>📍 ปัญหา:</strong> ${request.PROBLEM_DESCRIPTION || request.REASON || 'ไม่มีรายละเอียด'}</p>
+                        <p><strong>📊 สถานะ:</strong> ${getStatusBadge(request.STATUS)}</p>
+                        <p><strong>📅 วันที่แจ้ง:</strong> ${new Date(request.DATE_REPORTED).toLocaleDateString('th-TH')}</p>
+                        ${request.TECHNICIAN_NOTES ? `<p><strong>📝 หมายเหตุ:</strong> ${request.TECHNICIAN_NOTES}</p>` : ''}
+                    </div>
+                `,
+                width: '600px',
+                showCloseButton: true,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'swal2-popup-custom'
+                }
+            });
+        }
+
+        function printRequest(requestId) {
+            if (lookerStudioUrl && lookerStudioUrl !== '#') {
+                const separator = lookerStudioUrl.includes('?') ? '&' : '?';
+                const printUrl = `${lookerStudioUrl}${separator}REQUEST_ID=${encodeURIComponent(requestId)}`;
+                window.open(printUrl, '_blank');
+                showToast(`เปิด Looker Studio สำหรับพิมพ์คำขอ: ${requestId}`, 'success');
+            } else {
+                showToast('ไม่พบการตั้งค่า Looker Studio URL', 'error');
+            }
+        }
+
+        function openLookerReports() {
+            if (lookerStudioUrl && lookerStudioUrl !== '#') {
+                window.open(lookerStudioUrl, '_blank');
+                showToast('เปิด Looker Studio Dashboard', 'success');
+            } else {
+                showToast('ไม่พบการตั้งค่า Looker Studio URL', 'error');
+            }
+        }
+
+        function openLookerStudio() {
+            openLookerReports();
+        }
+
+        function generateReport(period) {
+            showToast(`กำลังสร้างรายงาน${period === 'today' ? 'วันนี้' : period === 'week' ? 'สัปดาห์นี้' : period === 'month' ? 'เดือนนี้' : 'ปีนี้'}...`, 'info');
+            
+            if (lookerStudioUrl && lookerStudioUrl !== '#') {
+                // Add period filter to Looker URL
+                const separator = lookerStudioUrl.includes('?') ? '&' : '?';
+                const reportUrl = `${lookerStudioUrl}${separator}period=${period}`;
+                window.open(reportUrl, '_blank');
+                showToast('เปิดรายงานใน Looker Studio', 'success');
+            } else {
+                showToast('ไม่พบการตั้งค่า Looker Studio URL', 'error');
+            }
+        }
+
+        // Filter Functions
+        function filterRequests() {
+            const searchTerm = document.getElementById('searchRequestId').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+
+            let filteredRequests = allRequests;
+
+            if (searchTerm) {
+                filteredRequests = filteredRequests.filter(r => 
+                    r.REQUEST_ID && r.REQUEST_ID.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (statusFilter) {
+                filteredRequests = filteredRequests.filter(r => r.STATUS === statusFilter);
+            }
+
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                filteredRequests = filteredRequests.filter(r => {
+                    const reqDate = new Date(r.DATE_REPORTED);
+                    return reqDate >= fromDate;
+                });
+            }
+
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                toDate.setHours(23, 59, 59, 999);
+                filteredRequests = filteredRequests.filter(r => {
+                    const reqDate = new Date(r.DATE_REPORTED);
+                    return reqDate <= toDate;
+                });
+            }
+
+            renderRequestsTable(filteredRequests);
+            showToast(`พบข้อมูล ${filteredRequests.length} รายการ`, 'success');
+        }
+
+        function clearFilters() {
+            document.getElementById('searchRequestId').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            renderRequestsTable(allRequests);
+            showToast('ล้างตัวกรองแล้ว', 'info');
+        }
+
+        // Export Functions
+        function exportRequests() {
+            showToast('กำลังเตรียมข้อมูลสำหรับ Export...', 'info');
+            
+            // Simple CSV export
+            const headers = ['เลขที่คำขอ', 'ผู้แจ้ง', 'เบอร์โทร', 'รหัสเสา', 'ปัญหา', 'สถานะ', 'วันที่แจ้ง'];
+            const csvContent = [
+                headers.join(','),
+                ...allRequests.map(r => [
+                    r.REQUEST_ID,
+                    `"${r.FIRST_NAME || ''} ${r.LAST_NAME || ''}"`,
+                    r.PHONE || '',
+                    r.POLE_ID || '',
+                    `"${(r.PROBLEM_DESCRIPTION || r.REASON || '').replace(/"/g, '""')}"`,
+                    r.STATUS || '',
+                    new Date(r.DATE_REPORTED).toLocaleDateString('th-TH')
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `repair_requests_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showToast('Export ข้อมูลสำเร็จ! 📁', 'success');
+        }
+
+        function exportInventory() {
+            showToast('กำลังเตรียมข้อมูลคลังสำหรับ Export...', 'info');
+            
+            const headers = ['รายการ', 'หน่วย', 'ราคาต่อหน่วย', 'คงเหลือ', 'เบิกแล้ว', 'มูลค่ารวม'];
+            const csvContent = [
+                headers.join(','),
+                ...allInventory.map(item => [
+                    `"${item.ITEM_NAME}"`,
+                    item.UNIT || '',
+                    item.PRICE_PER_UNIT || 0,
+                    item.CURRENT_STOCK || 0,
+                    item.USED_QUANTITY || 0,
+                    (item.CURRENT_STOCK || 0) * (item.PRICE_PER_UNIT || 0)
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `inventory_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showToast('Export ข้อมูลคลังสำเร็จ! 📁', 'success');
+        }
+
+        // Modal Functions (placeholder - implement as needed)
+        function showAddInventoryModal() {
+            showToast('ฟีเจอร์เพิ่มรายการคลังจะพัฒนาในเวอร์ชันถัดไป', 'info');
+        }
+
+        function showAddUserModal() {
+            showToast('ฟีเจอร์เพิ่มผู้ใช้จะพัฒนาในเวอร์ชันถัดไป', 'info');
+        }
+
+        function editInventoryItem(itemName) {
+            showToast(`แก้ไขรายการ: ${itemName} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+        }
+
+        function adjustInventory(itemName, action) {
+            const actionText = action === 'add' ? 'เพิ่ม' : 'เบิก';
+            showToast(`${actionText}สต็อก: ${itemName} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+        }
+
+        function deleteInventoryItem(itemName) {
+            showConfirm(`คุณต้องการลบรายการ "${itemName}" ใช่หรือไม่?`, () => {
+                showToast(`ลบรายการ: ${itemName} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+            });
+        }
+
+        function editUser(username) {
+            showToast(`แก้ไขผู้ใช้: ${username} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+        }
+
+        function deleteUser(username) {
+            showConfirm(`คุณต้องการลบผู้ใช้ "${username}" ใช่หรือไม่?`, () => {
+                showToast(`ลบผู้ใช้: ${username} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+            });
+        }
+
+        function updateRequestStatus(requestId) {
+            showToast(`แก้ไขสถานะคำขอ: ${requestId} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+        }
+
+        // Settings Functions
+        document.getElementById('telegramForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const botToken = document.getElementById('botToken').value.trim();
+            const chatId = document.getElementById('chatId').value.trim();
+            const isEnabled = document.getElementById('enableTelegram').checked;
+            
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/telegram-config', {
+                    method: 'POST',
+                    body: JSON.stringify({ botToken, chatId, isEnabled })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('บันทึกการตั้งค่า Telegram สำเร็จ! 📱', 'success');
+                } else {
+                    throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาดในการบันทึก: ' + error.message, 'error');
+            }
+        });
+
+        async function testTelegram() {
+            const botToken = document.getElementById('botToken').value.trim();
+            const chatId = document.getElementById('chatId').value.trim();
+            
+            if (!botToken || !chatId) {
+                showToast('กรุณากรอก Bot Token และ Chat ID', 'error');
+                return;
+            }
+            
+            try {
+                const response = await window.AuthUtils.apiCall('/api/admin/telegram-test', {
+                    method: 'POST',
+                    body: JSON.stringify({ botToken, chatId })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast('ทดสอบ Telegram สำเร็จ! ✅', 'success');
+                } else {
+                    showToast('การทดสอบล้มเหลว: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาดในการทดสอบ', 'error');
+            }
+        }
+
+        // Utility Functions
+        async function refreshData() {
+            showToast('กำลังรีเฟรชข้อมูล...', 'info');
+            allRequests = [];
+            allInventory = [];
+            allUsers = [];
+            await loadDashboardData();
+        }
+
+        function showUserMenu() {
+            Swal.fire({
+                title: '👤 เมนูผู้ใช้',
+                html: `
+                    <div class="text-center">
+                        <div class="user-avatar mb-3" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto;">
+                            ${currentUser.username.charAt(0).toUpperCase()}
+                        </div>
+                        <h4>${currentUser.username}</h4>
+                        <p class="text-muted">${getRoleDisplayName(currentUser.role)}</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '🚪 ออกจากระบบ',
+                cancelButtonText: '❌ ปิด',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    logout();
+                }
+            });
+        }
+
+        function logout() {
+            showConfirm('คุณต้องการออกจากระบบใช่หรือไม่?', () => {
+                if (window.AuthUtils && typeof window.AuthUtils.logout === 'function') {
+                    window.AuthUtils.logout();
+                } else {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('authUser');
+                    window.location.href = '/admin/smart-login.html';
+                }
+            });
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'info') {
+            const iconMap = {
+                success: 'success',
+                error: 'error',
+                warning: 'warning',
+                info: 'info'
+            };
+
+            Swal.fire({
+                icon: iconMap[type],
+                title: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: false,
+                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95))',
+                color: '#f8fafc'
+            });
+        }
+
+        function showConfirm(message, onConfirm) {
+            Swal.fire({
+                title: 'ยืนยันการดำเนินการ',
+                text: message,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '✅ ยืนยัน',
+                cancelButtonText: '❌ ยกเลิก',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444'
+            }).then((result) => {
+                if (result.isConfirmed && onConfirm) {
+                    onConfirm();
+                }
+            });
+        }
+
+        // Responsive handling
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        // Auto refresh data when page becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && currentUser) {
+                loadDashboardData();
+            }
+        });
+
+        // Initialize tooltips and other Bootstrap components
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap tooltips if any
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+</body>
+</html>

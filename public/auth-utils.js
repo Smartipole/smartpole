@@ -8,7 +8,9 @@ class AuthUtils {
         this.API_BASE = '';
         this.LOGIN_PAGE = '/admin/smart-login.html';
         
-        // Token keys
+        // Token keys for different systems
+        this.AUTH_TOKEN_KEY = 'authToken';          // Desktop Dashboard
+        this.AUTH_USER_KEY = 'authUser';            // Desktop Dashboard
         this.EXECUTIVE_TOKEN_KEY = 'executive_token';
         this.TECHNICIAN_TOKEN_KEY = 'technician_token';
         this.EXECUTIVE_USER_KEY = 'executive_user';
@@ -19,7 +21,26 @@ class AuthUtils {
      * Get current user data based on current system
      */
     getCurrentUser() {
-        // Try executive session first
+        // Try desktop session first (authToken/authUser)
+        const authToken = localStorage.getItem(this.AUTH_TOKEN_KEY);
+        const authUser = localStorage.getItem(this.AUTH_USER_KEY);
+        
+        if (authToken && authUser) {
+            try {
+                return {
+                    token: authToken,
+                    user: JSON.parse(authUser),
+                    system: 'desktop'
+                };
+            } catch (e) {
+                console.error('Error parsing desktop user data:', e);
+                // Clear corrupted session
+                localStorage.removeItem(this.AUTH_TOKEN_KEY);
+                localStorage.removeItem(this.AUTH_USER_KEY);
+            }
+        }
+        
+        // Try executive session
         const executiveToken = localStorage.getItem(this.EXECUTIVE_TOKEN_KEY);
         const executiveUser = localStorage.getItem(this.EXECUTIVE_USER_KEY);
         
@@ -32,6 +53,9 @@ class AuthUtils {
                 };
             } catch (e) {
                 console.error('Error parsing executive user data:', e);
+                // Clear corrupted session
+                localStorage.removeItem(this.EXECUTIVE_TOKEN_KEY);
+                localStorage.removeItem(this.EXECUTIVE_USER_KEY);
             }
         }
         
@@ -48,6 +72,9 @@ class AuthUtils {
                 };
             } catch (e) {
                 console.error('Error parsing technician user data:', e);
+                // Clear corrupted session
+                localStorage.removeItem(this.TECHNICIAN_TOKEN_KEY);
+                localStorage.removeItem(this.TECHNICIAN_USER_KEY);
             }
         }
         
@@ -58,7 +85,56 @@ class AuthUtils {
      * Check if user is authenticated for any system
      */
     isAuthenticated() {
-        return this.getCurrentUser() !== null;
+        const currentUser = this.getCurrentUser();
+        if (!currentUser) {
+            return false;
+        }
+        
+        // Check if token is valid (basic validation)
+        try {
+            const tokenParts = currentUser.token.split('.');
+            if (tokenParts.length !== 3) {
+                console.warn('Invalid token format detected');
+                this.clearCurrentSession(currentUser.system);
+                return false;
+            }
+            
+            // Check token expiration
+            const payload = JSON.parse(atob(tokenParts[1]));
+            const now = Math.floor(Date.now() / 1000);
+            
+            if (payload.exp && payload.exp < now) {
+                console.warn('Token expired');
+                this.clearCurrentSession(currentUser.system);
+                return false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error validating token:', error);
+            this.clearCurrentSession(currentUser?.system);
+            return false;
+        }
+    }
+
+    /**
+     * Clear session for specific system
+     */
+    clearCurrentSession(system) {
+        switch (system) {
+            case 'desktop':
+                localStorage.removeItem(this.AUTH_TOKEN_KEY);
+                localStorage.removeItem(this.AUTH_USER_KEY);
+                break;
+            case 'executive':
+                localStorage.removeItem(this.EXECUTIVE_TOKEN_KEY);
+                localStorage.removeItem(this.EXECUTIVE_USER_KEY);
+                break;
+            case 'technician':
+                localStorage.removeItem(this.TECHNICIAN_TOKEN_KEY);
+                localStorage.removeItem(this.TECHNICIAN_USER_KEY);
+                break;
+        }
     }
 
     /**
@@ -80,6 +156,8 @@ class AuthUtils {
      */
     clearAllSessions() {
         // Remove all authentication tokens
+        localStorage.removeItem(this.AUTH_TOKEN_KEY);
+        localStorage.removeItem(this.AUTH_USER_KEY);
         localStorage.removeItem(this.EXECUTIVE_TOKEN_KEY);
         localStorage.removeItem(this.TECHNICIAN_TOKEN_KEY);
         localStorage.removeItem(this.EXECUTIVE_USER_KEY);
@@ -89,7 +167,7 @@ class AuthUtils {
         const keysToRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key && (key.includes('_token') || key.includes('_user') || key.includes('_session'))) {
+            if (key && (key.includes('_token') || key.includes('_user') || key.includes('_session') || key === 'authToken' || key === 'authUser')) {
                 keysToRemove.push(key);
             }
         }
@@ -220,6 +298,7 @@ class AuthUtils {
     async apiCall(url, options = {}) {
         // Check authentication
         if (!this.isAuthenticated()) {
+            console.warn('Not authenticated for API call to:', url);
             this.forceLogout('ไม่พบการเข้าสู่ระบบ');
             throw new Error('Not authenticated');
         }
@@ -261,6 +340,37 @@ class AuthUtils {
             }
             throw error;
         }
+    }
+
+    /**
+     * Setup page protection (redirect to login if not authenticated)
+     */
+    protectPage(requiredRoles = null) {
+        console.log('Protecting page, checking authentication...');
+        
+        if (!this.isAuthenticated()) {
+            console.warn('User not authenticated, redirecting to login');
+            this.logout('กรุณาเข้าสู่ระบบก่อนใช้งาน');
+            return false;
+        }
+        
+        const currentUser = this.getCurrentUser();
+        console.log('Current user for page protection:', currentUser);
+        
+        // Check role requirements
+        if (requiredRoles && Array.isArray(requiredRoles)) {
+            const userRole = currentUser.user.role;
+            console.log('Checking role requirement:', { userRole, requiredRoles });
+            
+            if (!requiredRoles.includes(userRole)) {
+                console.warn('User role not authorized for this page');
+                this.logout('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+                return false;
+            }
+        }
+        
+        console.log('Page protection successful');
+        return true;
     }
 
     /**
@@ -357,26 +467,25 @@ class AuthUtils {
     }
 
     /**
-     * Setup page protection (redirect to login if not authenticated)
+     * Debug authentication state
      */
-    protectPage(requiredRoles = null) {
-        if (!this.isAuthenticated()) {
-            this.logout('กรุณาเข้าสู่ระบบก่อนใช้งาน');
-            return false;
-        }
+    debugAuth() {
+        const tokens = {
+            authToken: localStorage.getItem(this.AUTH_TOKEN_KEY),
+            authUser: localStorage.getItem(this.AUTH_USER_KEY),
+            executiveToken: localStorage.getItem(this.EXECUTIVE_TOKEN_KEY),
+            executiveUser: localStorage.getItem(this.EXECUTIVE_USER_KEY),
+            technicianToken: localStorage.getItem(this.TECHNICIAN_TOKEN_KEY),
+            technicianUser: localStorage.getItem(this.TECHNICIAN_USER_KEY)
+        };
         
-        const currentUser = this.getCurrentUser();
+        console.log('Authentication Debug:', {
+            tokens,
+            currentUser: this.getCurrentUser(),
+            isAuthenticated: this.isAuthenticated()
+        });
         
-        // Check role requirements
-        if (requiredRoles && Array.isArray(requiredRoles)) {
-            const userRole = currentUser.user.role;
-            if (!requiredRoles.includes(userRole)) {
-                this.logout('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
-                return false;
-            }
-        }
-        
-        return true;
+        return tokens;
     }
 }
 
@@ -385,6 +494,11 @@ window.AuthUtils = new AuthUtils();
 
 // Auto-initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('AuthUtils initialized');
+    
+    // Debug authentication state
+    window.AuthUtils.debugAuth();
+    
     // Initialize auto-logout checker
     window.AuthUtils.initializeAutoLogout();
     
