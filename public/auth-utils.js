@@ -1,126 +1,53 @@
-// auth-utils.js - Enhanced Authentication utilities for อบต.ข่าใหญ่ Admin System
+// auth-utils.js - Authentication utilities for อบต.ข่าใหญ่ Admin System
 
 /**
- * Enhanced Authentication and Session Management Utilities
- * รองรับ Multi-system และ Multi-role authentication
+ * Authentication and Session Management Utilities
  */
 class AuthUtils {
     constructor() {
         this.API_BASE = '';
         this.LOGIN_PAGE = '/admin/smart-login.html';
         
-        // Token keys for different systems
-        this.PC_TOKEN_KEY = 'pc_token';
+        // Token keys
         this.EXECUTIVE_TOKEN_KEY = 'executive_token';
         this.TECHNICIAN_TOKEN_KEY = 'technician_token';
-        this.ADMIN_TOKEN_KEY = 'admin_token';
-        
-        // User data keys
-        this.PC_USER_KEY = 'pc_user';
         this.EXECUTIVE_USER_KEY = 'executive_user';
         this.TECHNICIAN_USER_KEY = 'technician_user';
-        this.ADMIN_USER_KEY = 'admin_user';
-        
-        // System priorities (higher number = higher priority)
-        this.SYSTEM_PRIORITY = {
-            'pc': 4,
-            'admin': 3,
-            'executive': 2,
-            'technician': 1
-        };
-        
-        // Role display names
-        this.ROLE_NAMES = {
-            'executive': 'ผู้บริหาร',
-            'technician': 'ช่างเทคนิค', 
-            'admin': 'ผู้ดูแลระบบ'
-        };
     }
 
     /**
-     * Get current user data based on current system (ปรับปรุงใหม่)
-     * ตรวจสอบทุก system และ return ระบบที่มี priority สูงสุด
+     * Get current user data based on current system
      */
     getCurrentUser() {
-        const sessions = [
-            {
-                token: localStorage.getItem(this.PC_TOKEN_KEY),
-                user: localStorage.getItem(this.PC_USER_KEY),
-                system: 'pc',
-                priority: this.SYSTEM_PRIORITY.pc
-            },
-            {
-                token: localStorage.getItem(this.ADMIN_TOKEN_KEY),
-                user: localStorage.getItem(this.ADMIN_USER_KEY),
-                system: 'admin',
-                priority: this.SYSTEM_PRIORITY.admin
-            },
-            {
-                token: localStorage.getItem(this.EXECUTIVE_TOKEN_KEY),
-                user: localStorage.getItem(this.EXECUTIVE_USER_KEY),
-                system: 'executive',
-                priority: this.SYSTEM_PRIORITY.executive
-            },
-            {
-                token: localStorage.getItem(this.TECHNICIAN_TOKEN_KEY),
-                user: localStorage.getItem(this.TECHNICIAN_USER_KEY),
-                system: 'technician',
-                priority: this.SYSTEM_PRIORITY.technician
-            }
-        ];
-
-        // กรองเอาเฉพาะ session ที่มี token และ user
-        const validSessions = sessions.filter(session => 
-            session.token && session.user
-        );
-
-        if (validSessions.length === 0) {
-            return null;
-        }
-
-        // เรียงตาม priority และเอาตัวสูงสุด
-        validSessions.sort((a, b) => b.priority - a.priority);
-        const currentSession = validSessions[0];
-
-        try {
-            return {
-                token: currentSession.token,
-                user: JSON.parse(currentSession.user),
-                system: currentSession.system
-            };
-        } catch (e) {
-            console.error('Error parsing user data:', e);
-            // ลบ session ที่เสียหาย
-            this.clearSessionBySystem(currentSession.system);
-            return null;
-        }
-    }
-
-    /**
-     * Get user by specific system
-     */
-    getUserBySystem(system) {
-        const tokenKey = this[`${system.toUpperCase()}_TOKEN_KEY`];
-        const userKey = this[`${system.toUpperCase()}_USER_KEY`];
+        // Try executive session first
+        const executiveToken = localStorage.getItem(this.EXECUTIVE_TOKEN_KEY);
+        const executiveUser = localStorage.getItem(this.EXECUTIVE_USER_KEY);
         
-        if (!tokenKey || !userKey) {
-            console.error(`Invalid system: ${system}`);
-            return null;
-        }
-
-        const token = localStorage.getItem(tokenKey);
-        const user = localStorage.getItem(userKey);
-        
-        if (token && user) {
+        if (executiveToken && executiveUser) {
             try {
                 return {
-                    token: token,
-                    user: JSON.parse(user),
-                    system: system
+                    token: executiveToken,
+                    user: JSON.parse(executiveUser),
+                    system: 'executive'
                 };
             } catch (e) {
-                console.error(`Error parsing user data for ${system}:`, e);
-                this.clearSessionBySystem(system);
+                console.error('Error parsing executive user data:', e);
+            }
+        }
+        
+        // Try technician session
+        const technicianToken = localStorage.getItem(this.TECHNICIAN_TOKEN_KEY);
+        const technicianUser = localStorage.getItem(this.TECHNICIAN_USER_KEY);
+        
+        if (technicianToken && technicianUser) {
+            try {
+                return {
+                    token: technicianToken,
+                    user: JSON.parse(technicianUser),
+                    system: 'technician'
+                };
+            } catch (e) {
+                console.error('Error parsing technician user data:', e);
             }
         }
         
@@ -128,61 +55,10 @@ class AuthUtils {
     }
 
     /**
-     * Clear session by specific system
-     */
-    clearSessionBySystem(system) {
-        const tokenKey = this[`${system.toUpperCase()}_TOKEN_KEY`];
-        const userKey = this[`${system.toUpperCase()}_USER_KEY`];
-        
-        if (tokenKey) localStorage.removeItem(tokenKey);
-        if (userKey) localStorage.removeItem(userKey);
-    }
-
-    /**
      * Check if user is authenticated for any system
      */
     isAuthenticated() {
         return this.getCurrentUser() !== null;
-    }
-
-    /**
-     * Check if user has specific role
-     */
-    hasRole(role) {
-        const currentUser = this.getCurrentUser();
-        return currentUser && currentUser.user && currentUser.user.role === role;
-    }
-
-    /**
-     * Check if user has any of the specified roles
-     */
-    hasAnyRole(roles) {
-        if (!Array.isArray(roles)) {
-            return this.hasRole(roles);
-        }
-        
-        const currentUser = this.getCurrentUser();
-        if (!currentUser || !currentUser.user) {
-            return false;
-        }
-        
-        return roles.includes(currentUser.user.role);
-    }
-
-    /**
-     * Get current user's role
-     */
-    getCurrentRole() {
-        const currentUser = this.getCurrentUser();
-        return currentUser && currentUser.user ? currentUser.user.role : null;
-    }
-
-    /**
-     * Get role display name
-     */
-    getRoleDisplayName(role = null) {
-        const userRole = role || this.getCurrentRole();
-        return this.ROLE_NAMES[userRole] || userRole || 'ไม่ระบุ';
     }
 
     /**
@@ -200,20 +76,14 @@ class AuthUtils {
     }
 
     /**
-     * Clear all session data (ปรับปรุงให้ครอบคลุมทุก system)
+     * Clear all session data
      */
     clearAllSessions() {
         // Remove all authentication tokens
-        localStorage.removeItem(this.PC_TOKEN_KEY);
         localStorage.removeItem(this.EXECUTIVE_TOKEN_KEY);
         localStorage.removeItem(this.TECHNICIAN_TOKEN_KEY);
-        localStorage.removeItem(this.ADMIN_TOKEN_KEY);
-        
-        // Remove all user data
-        localStorage.removeItem(this.PC_USER_KEY);
         localStorage.removeItem(this.EXECUTIVE_USER_KEY);
         localStorage.removeItem(this.TECHNICIAN_USER_KEY);
-        localStorage.removeItem(this.ADMIN_USER_KEY);
         
         // Clear any other session-related data
         const keysToRemove = [];
@@ -225,28 +95,6 @@ class AuthUtils {
         }
         
         keysToRemove.forEach(key => localStorage.removeItem(key));
-    }
-
-    /**
-     * Save session for specific system
-     */
-    saveSession(system, token, userData) {
-        const tokenKey = this[`${system.toUpperCase()}_TOKEN_KEY`];
-        const userKey = this[`${system.toUpperCase()}_USER_KEY`];
-        
-        if (!tokenKey || !userKey) {
-            console.error(`Invalid system: ${system}`);
-            return false;
-        }
-        
-        try {
-            localStorage.setItem(tokenKey, token);
-            localStorage.setItem(userKey, JSON.stringify(userData));
-            return true;
-        } catch (error) {
-            console.error(`Error saving session for ${system}:`, error);
-            return false;
-        }
     }
 
     /**
@@ -416,15 +264,14 @@ class AuthUtils {
     }
 
     /**
-     * Create logout button element (ปรับปรุงให้ทำงานได้ดีกับหลายระบบ)
+     * Create logout button element
      */
     createLogoutButton(container, options = {}) {
         const {
             text = 'ออกจากระบบ',
             className = 'logout-btn',
             style = 'default',
-            position = 'append',
-            showUserInfo = true
+            position = 'append'
         } = options;
         
         const button = document.createElement('button');
@@ -484,10 +331,8 @@ class AuthUtils {
     confirmLogout() {
         const currentUser = this.getCurrentUser();
         const userName = currentUser?.user?.username || 'ผู้ใช้';
-        const userRole = this.getRoleDisplayName(currentUser?.user?.role);
-        const currentSystem = currentUser?.system || 'ไม่ทราบ';
         
-        if (confirm(`คุณต้องการออกจากระบบหรือไม่?\n\nผู้ใช้: ${userName}\nตำแหน่ง: ${userRole}\nระบบ: ${currentSystem}`)) {
+        if (confirm(`คุณต้องการออกจากระบบหรือไม่?\n\nผู้ใช้: ${userName}`)) {
             this.logout('ออกจากระบบสำเร็จ');
         }
     }
@@ -512,7 +357,7 @@ class AuthUtils {
     }
 
     /**
-     * Setup page protection (ปรับปรุงให้รองรับ multi-role)
+     * Setup page protection (redirect to login if not authenticated)
      */
     protectPage(requiredRoles = null) {
         if (!this.isAuthenticated()) {
@@ -520,136 +365,18 @@ class AuthUtils {
             return false;
         }
         
-        // ถ้าไม่ระบุ role ก็ผ่าน (authenticated ก็พอ)
-        if (!requiredRoles) {
-            return true;
-        }
+        const currentUser = this.getCurrentUser();
         
-        // ตรวจสอบ role requirements
-        if (!this.hasAnyRole(requiredRoles)) {
-            const currentRole = this.getCurrentRole();
-            console.warn(`Access denied. Current role: ${currentRole}, Required: ${requiredRoles}`);
-            this.logout('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
-            return false;
+        // Check role requirements
+        if (requiredRoles && Array.isArray(requiredRoles)) {
+            const userRole = currentUser.user.role;
+            if (!requiredRoles.includes(userRole)) {
+                this.logout('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+                return false;
+            }
         }
         
         return true;
-    }
-
-    /**
-     * Get system URL based on role and device
-     */
-    getSystemUrl(role, deviceType = 'desktop') {
-        const urls = {
-            pc: '/admin/pc-dashboard.html',
-            executive: '/admin/mobile-executive.html',
-            technician: '/admin/mobile-technician.html',
-            admin: '/admin/mobile-admin.html'
-        };
-
-        // สำหรับ admin สามารถเข้าได้ทุกระบบ
-        if (role === 'admin') {
-            return deviceType === 'desktop' ? urls.pc : urls.admin;
-        }
-        
-        // สำหรับ executive และ technician
-        if (role === 'executive') {
-            return deviceType === 'desktop' ? urls.pc : urls.executive;
-        }
-        
-        if (role === 'technician') {
-            return deviceType === 'desktop' ? urls.pc : urls.technician;
-        }
-        
-        // Default fallback
-        return urls.executive;
-    }
-
-    /**
-     * Redirect to appropriate system based on user role and device
-     */
-    redirectToSystem(targetSystem = null, userData = null) {
-        const currentUser = userData || this.getCurrentUser();
-        if (!currentUser) {
-            this.logout('ไม่พบข้อมูลผู้ใช้');
-            return;
-        }
-
-        let systemUrl;
-        if (targetSystem) {
-            const urls = {
-                pc: '/admin/pc-dashboard.html',
-                executive: '/admin/mobile-executive.html',
-                technician: '/admin/mobile-technician.html',
-                admin: '/admin/mobile-admin.html'
-            };
-            systemUrl = urls[targetSystem];
-        } else {
-            // Auto-detect based on role and device
-            const deviceType = this.detectDeviceType();
-            systemUrl = this.getSystemUrl(currentUser.user.role, deviceType);
-        }
-
-        if (systemUrl) {
-            window.location.href = systemUrl;
-        } else {
-            console.error('Unable to determine system URL');
-            this.logout('ไม่สามารถระบุระบบที่เหมาะสมได้');
-        }
-    }
-
-    /**
-     * Detect device type
-     */
-    detectDeviceType() {
-        const userAgent = navigator.userAgent.toLowerCase();
-        const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-        const isTablet = /ipad|android(?=.*tablet)|(?=.*\bmobile\b)(?=.*\btablet\b)/i.test(userAgent);
-        const screenWidth = window.screen.width;
-        const isLargeScreen = screenWidth >= 1024;
-        
-        if (isMobile && !isTablet) {
-            return 'mobile';
-        } else if (isTablet) {
-            return 'tablet';
-        } else if (isLargeScreen) {
-            return 'desktop';
-        } else {
-            return 'mobile'; // Default to mobile for smaller screens
-        }
-    }
-
-    /**
-     * Debug: Get all active sessions
-     */
-    getActiveSessions() {
-        const systems = ['pc', 'executive', 'technician', 'admin'];
-        const sessions = {};
-        
-        systems.forEach(system => {
-            const session = this.getUserBySystem(system);
-            if (session) {
-                sessions[system] = {
-                    username: session.user.username,
-                    role: session.user.role,
-                    hasToken: !!session.token
-                };
-            }
-        });
-        
-        return sessions;
-    }
-
-    /**
-     * Debug: Log current authentication status
-     */
-    debugAuthStatus() {
-        console.group('🔐 Auth Status Debug');
-        console.log('Authenticated:', this.isAuthenticated());
-        console.log('Current User:', this.getCurrentUser());
-        console.log('Current Role:', this.getCurrentRole());
-        console.log('Active Sessions:', this.getActiveSessions());
-        console.groupEnd();
     }
 }
 
@@ -665,7 +392,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const navbarUser = document.querySelector('.navbar-user');
     const headerActions = document.querySelector('.header-actions');
     const adminHeader = document.querySelector('.admin-header');
-    const headerRight = document.querySelector('.header-right');
     
     if (navbarUser) {
         window.AuthUtils.createLogoutButton(navbarUser);
@@ -673,9 +399,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.AuthUtils.createLogoutButton(headerActions);
     } else if (adminHeader) {
         window.AuthUtils.createLogoutButton(adminHeader);
-    } else if (headerRight) {
-        // สำหรับ PC Dashboard ที่มี header-right แล้ว
-        console.log('Header-right found, logout button should be handled by page');
     }
 });
 

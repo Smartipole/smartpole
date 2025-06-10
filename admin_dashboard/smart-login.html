@@ -90,6 +90,30 @@
             outline: none !important;
         }
 
+        .swal2-icon.swal2-success .swal2-success-ring {
+            border-color: #10b981 !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #f59e0b !important;
+            color: #f59e0b !important;
+        }
+
+        .swal2-icon.swal2-info {
+            border-color: #3b82f6 !important;
+            color: #3b82f6 !important;
+        }
+
+        .swal2-icon.swal2-question {
+            border-color: #fbbf24 !important;
+            color: #fbbf24 !important;
+        }
+
         /* Animated background elements */
         body::before {
             content: '';
@@ -233,24 +257,6 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        .device-info {
-            background: rgba(15, 23, 42, 0.3);
-            border-radius: 0.75rem;
-            padding: 0.75rem;
-            margin-top: 1rem;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-        }
-
-        .device-info-text {
-            font-size: 0.875rem;
-            color: #0f172a;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
         .login-form {
             padding: 2.5rem 2rem;
             position: relative;
@@ -386,8 +392,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Platform Selection */
-        .platform-selection {
+        .role-selection {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.3), rgba(30, 41, 59, 0.2));
             border-radius: 1rem;
             padding: 2rem;
@@ -396,7 +401,7 @@
             backdrop-filter: blur(10px);
         }
 
-        .platform-title {
+        .role-title {
             font-size: 1.1rem;
             font-weight: 700;
             color: #fbbf24;
@@ -408,13 +413,13 @@
             gap: 0.5rem;
         }
 
-        .platform-options {
+        .role-options {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
 
-        .platform-option {
+        .role-option {
             display: flex;
             align-items: center;
             padding: 1.5rem;
@@ -427,7 +432,7 @@
             overflow: hidden;
         }
 
-        .platform-option::before {
+        .role-option::before {
             content: '';
             position: absolute;
             top: -50%;
@@ -440,19 +445,19 @@
             opacity: 0;
         }
 
-        .platform-option:hover {
+        .role-option:hover {
             border-color: #fbbf24;
             background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(30, 41, 59, 0.6));
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
         }
 
-        .platform-option:hover::before {
+        .role-option:hover::before {
             opacity: 1;
             animation: shine 0.8s ease-in-out;
         }
 
-        .platform-option.selected {
+        .role-option.selected {
             border-color: #fbbf24;
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
             color: #0f172a;
@@ -460,13 +465,13 @@
             box-shadow: 0 12px 30px rgba(251, 191, 36, 0.4);
         }
 
-        .platform-option.selected .platform-icon {
+        .role-option.selected .role-icon {
             background: rgba(15, 23, 42, 0.2);
             color: #0f172a;
             transform: scale(1.1);
         }
 
-        .platform-icon {
+        .role-icon {
             width: 3.5rem;
             height: 3.5rem;
             border-radius: 1rem;
@@ -480,14 +485,14 @@
             border: 1px solid rgba(251, 191, 36, 0.3);
         }
 
-        .platform-info h3 {
+        .role-info h3 {
             font-size: 1.1rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
             color: inherit;
         }
 
-        .platform-info p {
+        .role-info p {
             font-size: 0.9rem;
             opacity: 0.9;
             color: inherit;
@@ -699,11 +704,11 @@
                 font-size: 1.7rem;
             }
 
-            .platform-option {
+            .role-option {
                 padding: 1.25rem;
             }
 
-            .platform-icon {
+            .role-icon {
                 width: 3rem;
                 height: 3rem;
                 font-size: 1.5rem;
@@ -750,7 +755,7 @@
         /* Focus visible for better accessibility */
         .login-btn:focus-visible,
         .proceed-btn:focus-visible,
-        .platform-option:focus-visible {
+        .role-option:focus-visible {
             outline: 2px solid #fbbf24;
             outline-offset: 2px;
         }
@@ -779,11 +784,6 @@
                     🏛️ ระบบจัดการ
                 </h1>
                 <p class="login-subtitle">อบต.ข่าใหญ่ - ส่องสว่างทุกมุมเมือง</p>
-                <div class="device-info">
-                    <div class="device-info-text" id="deviceInfo">
-                        🔍 กำลังตรวจจับอุปกรณ์...
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -855,43 +855,35 @@
             </div>
         </div>
 
-        <!-- Platform Selection (for admin) -->
-        <div id="platformSelection" class="login-form hidden">
-            <div class="platform-selection">
-                <div class="platform-title">
+        <!-- Role Selection (for admin) -->
+        <div id="roleSelection" class="login-form hidden">
+            <div class="role-selection">
+                <div class="role-title">
                     🎯 เลือกระบบที่ต้องการเข้าใช้งาน
                 </div>
                 
-                <div class="platform-options">
-                    <div class="platform-option" data-target="pc" onclick="selectPlatform('pc')" tabindex="0">
-                        <div class="platform-icon">💻</div>
-                        <div class="platform-info">
-                            <h3>ระบบ PC Dashboard</h3>
-                            <p>แดชบอร์ดขั้นสูงสำหรับหน้าจอขนาดใหญ่ รองรับการพิมพ์และ Looker Studio</p>
+                <div class="role-options">
+                    <div class="role-option" data-target="admin" onclick="selectRole('admin')" tabindex="0">
+                        <div class="role-icon">⚙️</div>
+                        <div class="role-info">
+                            <h3>ระบบผู้ดูแลระบบ</h3>
+                            <p>จัดการผู้ใช้ ระบบ และข้อมูลทั้งหมด พร้อม Dashboard และรายงาน</p>
                         </div>
                     </div>
                     
-                    <div class="platform-option" data-target="executive" onclick="selectPlatform('executive')" tabindex="0">
-                        <div class="platform-icon">👑</div>
-                        <div class="platform-info">
-                            <h3>ระบบผู้บริหาร (Mobile)</h3>
+                    <div class="role-option" data-target="executive" onclick="selectRole('executive')" tabindex="0">
+                        <div class="role-icon">👑</div>
+                        <div class="role-info">
+                            <h3>ระบบผู้บริหาร</h3>
                             <p>อนุมัติคำขอแจ้งซ่อม ลงลายเซ็นดิจิทัล และติดตามสถานะงาน</p>
                         </div>
                     </div>
                     
-                    <div class="platform-option" data-target="technician" onclick="selectPlatform('technician')" tabindex="0">
-                        <div class="platform-icon">🔧</div>
-                        <div class="platform-info">
-                            <h3>ระบบช่างเทคนิค (Mobile)</h3>
+                    <div class="role-option" data-target="technician" onclick="selectRole('technician')" tabindex="0">
+                        <div class="role-icon">🔧</div>
+                        <div class="role-info">
+                            <h3>ระบบช่างเทคนิค</h3>
                             <p>จัดการงานซ่อม คลังอุปกรณ์ เสาไฟฟ้า และอัปเดตสถานะงาน</p>
-                        </div>
-                    </div>
-                    
-                    <div class="platform-option" data-target="admin" onclick="selectPlatform('admin')" tabindex="0">
-                        <div class="platform-icon">⚙️</div>
-                        <div class="platform-info">
-                            <h3>ระบบผู้ดูแลระบบ (Mobile)</h3>
-                            <p>จัดการผู้ใช้ ระบบ และข้อมูลทั้งหมด พร้อม Dashboard และรายงาน</p>
                         </div>
                     </div>
                 </div>
@@ -927,15 +919,13 @@
     <script>
         // Global variables
         let currentUser = null;
-        let selectedPlatform = null;
-        let deviceType = 'unknown';
+        let selectedRole = null;
 
         // API Base URL
         const API_BASE = '';
 
         // System URLs
         const SYSTEM_URLS = {
-            pc: '/admin/pc-dashboard.html',
             executive: '/admin/mobile-executive.html',
             technician: '/admin/mobile-technician.html',
             admin: '/admin/mobile-admin.html'
@@ -948,62 +938,8 @@
             admin: 'ผู้ดูแลระบบ'
         };
 
-        // Device detection
-        function detectDevice() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-            const isTablet = /ipad|android(?=.*tablet)|(?=.*\bmobile\b)(?=.*\btablet\b)/i.test(userAgent);
-            
-            // Check screen size as well
-            const screenWidth = window.screen.width;
-            const screenHeight = window.screen.height;
-            const isLargeScreen = screenWidth >= 1024 || screenHeight >= 768;
-            
-            if (isMobile && !isTablet) {
-                deviceType = 'mobile';
-                return {
-                    type: 'mobile',
-                    icon: '📱',
-                    name: 'มือถือ',
-                    description: 'อุปกรณ์มือถือหรือสมาร์ทโฟน'
-                };
-            } else if (isTablet) {
-                deviceType = 'tablet';
-                return {
-                    type: 'tablet',
-                    icon: '📱',
-                    name: 'แท็บเล็ต',
-                    description: 'อุปกรณ์แท็บเล็ต'
-                };
-            } else if (isLargeScreen) {
-                deviceType = 'desktop';
-                return {
-                    type: 'desktop',
-                    icon: '💻',
-                    name: 'คอมพิวเตอร์',
-                    description: 'คอมพิวเตอร์หรือแล็ปท็อป'
-                };
-            } else {
-                deviceType = 'unknown';
-                return {
-                    type: 'unknown',
-                    icon: '🖥️',
-                    name: 'อุปกรณ์ไม่ทราบ',
-                    description: 'ไม่สามารถระบุประเภทอุปกรณ์ได้'
-                };
-            }
-        }
-
-        // Update device info display
-        function updateDeviceInfo() {
-            const device = detectDevice();
-            const deviceInfoEl = document.getElementById('deviceInfo');
-            deviceInfoEl.innerHTML = `${device.icon} ${device.name} - ${device.description}`;
-        }
-
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            updateDeviceInfo();
             setupEventListeners();
             handleUrlParameters();
             checkExistingSession();
@@ -1020,13 +956,13 @@
                 }
             });
 
-            // Keyboard navigation for platform options
-            document.querySelectorAll('.platform-option').forEach(option => {
+            // Keyboard navigation for role options
+            document.querySelectorAll('.role-option').forEach(option => {
                 option.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        const platform = this.getAttribute('data-target');
-                        selectPlatform(platform);
+                        const role = this.getAttribute('data-target');
+                        selectRole(role);
                     }
                 });
             });
@@ -1068,60 +1004,69 @@
         }
 
         async function checkExistingSession() {
-            // Check for existing sessions (simplified for this example)
-            const pcToken = localStorage.getItem('pc_token');
+            // Check for existing sessions
             const executiveToken = localStorage.getItem('executive_token');
             const technicianToken = localStorage.getItem('technician_token');
             
-            if (pcToken) {
-                const userData = localStorage.getItem('pc_user');
+            // Function to validate and redirect to existing session
+            const validateAndRedirect = (token, userKey, systemUrl, systemName) => {
+                const userData = localStorage.getItem(userKey);
                 if (userData) {
                     try {
                         const user = JSON.parse(userData);
-                        showRedirectInfo('pc', user.role);
+                        
+                        // Check if token is expired (simple check)
+                        try {
+                            const tokenParts = token.split('.');
+                            if (tokenParts.length === 3) {
+                                const payload = JSON.parse(atob(tokenParts[1]));
+                                const now = Math.floor(Date.now() / 1000);
+                                
+                                if (payload.exp && payload.exp < now) {
+                                    // Token expired, clear session
+                                    localStorage.removeItem('executive_token');
+                                    localStorage.removeItem('executive_user');
+                                    localStorage.removeItem('technician_token');
+                                    localStorage.removeItem('technician_user');
+                                    showInfoMessage('⏰ เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
+                                    return false;
+                                }
+                            }
+                        } catch (e) {
+                            // If token parsing fails, clear session
+                            localStorage.removeItem('executive_token');
+                            localStorage.removeItem('executive_user');
+                            localStorage.removeItem('technician_token');
+                            localStorage.removeItem('technician_user');
+                            return false;
+                        }
+                        
+                        // Valid session found, redirect
+                        showRedirectInfo(systemName.toLowerCase(), user.role);
                         setTimeout(() => {
-                            window.location.href = SYSTEM_URLS.pc;
+                            window.location.href = systemUrl;
                         }, 2000);
-                        return;
+                        return true;
                     } catch (e) {
-                        localStorage.removeItem('pc_token');
-                        localStorage.removeItem('pc_user');
+                        // Invalid user data, clear session
+                        localStorage.removeItem(userKey);
+                        localStorage.removeItem(userKey.replace('_user', '_token'));
                     }
                 }
-            }
+                return false;
+            };
             
-            // Check other sessions...
+            // Check executive session first
             if (executiveToken) {
-                const userData = localStorage.getItem('executive_user');
-                if (userData) {
-                    try {
-                        const user = JSON.parse(userData);
-                        showRedirectInfo('executive', user.role);
-                        setTimeout(() => {
-                            window.location.href = SYSTEM_URLS.executive;
-                        }, 2000);
-                        return;
-                    } catch (e) {
-                        localStorage.removeItem('executive_token');
-                        localStorage.removeItem('executive_user');
-                    }
+                if (validateAndRedirect(executiveToken, 'executive_user', SYSTEM_URLS.executive, 'executive')) {
+                    return;
                 }
             }
             
+            // Check technician session
             if (technicianToken) {
-                const userData = localStorage.getItem('technician_user');
-                if (userData) {
-                    try {
-                        const user = JSON.parse(userData);
-                        showRedirectInfo('technician', user.role);
-                        setTimeout(() => {
-                            window.location.href = SYSTEM_URLS.technician;
-                        }, 2000);
-                        return;
-                    } catch (e) {
-                        localStorage.removeItem('technician_token');
-                        localStorage.removeItem('technician_user');
-                    }
+                if (validateAndRedirect(technicianToken, 'technician_user', SYSTEM_URLS.technician, 'technician')) {
+                    return;
                 }
             }
         }
@@ -1158,7 +1103,7 @@
                     
                     showSuccess(`🎉 เข้าสู่ระบบสำเร็จ! สวัสดี ${ROLE_NAMES[data.role] || 'ผู้ใช้'} ${data.username}`);
                     
-                    // Determine target system based on role and device
+                    // Determine target system based on role
                     await determineTargetSystem(data.role);
                 } else {
                     showError(data.message || '❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
@@ -1176,24 +1121,16 @@
             
             switch (role) {
                 case 'executive':
-                    if (deviceType === 'desktop') {
-                        redirectToSystem('pc', role);
-                    } else {
-                        redirectToSystem('executive', role);
-                    }
+                    redirectToSystem('executive', role);
                     break;
                     
                 case 'technician':
-                    if (deviceType === 'desktop') {
-                        redirectToSystem('pc', role);
-                    } else {
-                        redirectToSystem('technician', role);
-                    }
+                    redirectToSystem('technician', role);
                     break;
                     
                 case 'admin':
                     // Admin can access all systems - show selection
-                    showPlatformSelection();
+                    showRoleSelection();
                     break;
                     
                 default:
@@ -1201,20 +1138,20 @@
             }
         }
 
-        function showPlatformSelection() {
+        function showRoleSelection() {
             document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('platformSelection').classList.remove('hidden');
+            document.getElementById('roleSelection').classList.remove('hidden');
         }
 
-        function selectPlatform(platform) {
-            selectedPlatform = platform;
+        function selectRole(role) {
+            selectedRole = role;
             
             // Update UI
-            document.querySelectorAll('.platform-option').forEach(option => {
+            document.querySelectorAll('.role-option').forEach(option => {
                 option.classList.remove('selected');
             });
             
-            document.querySelector(`[data-target="${platform}"]`).classList.add('selected');
+            document.querySelector(`[data-target="${role}"]`).classList.add('selected');
             document.getElementById('proceedBtn').disabled = false;
 
             // Add haptic feedback for mobile
@@ -1224,12 +1161,12 @@
         }
 
         function proceedToSystem() {
-            if (!selectedPlatform || !currentUser) {
+            if (!selectedRole || !currentUser) {
                 showError('❌ กรุณาเลือกระบบที่ต้องการเข้าใช้งาน');
                 return;
             }
             
-            redirectToSystem(selectedPlatform, currentUser.role);
+            redirectToSystem(selectedRole, currentUser.role);
         }
 
         function redirectToSystem(targetSystem, userRole) {
@@ -1239,28 +1176,26 @@
                 role: userRole
             };
             
-            // Clear all existing sessions first
-            localStorage.removeItem('pc_token');
-            localStorage.removeItem('pc_user');
-            localStorage.removeItem('executive_token');
-            localStorage.removeItem('executive_user');
-            localStorage.removeItem('technician_token');
-            localStorage.removeItem('technician_user');
-            
-            if (targetSystem === 'pc') {
-                localStorage.setItem('pc_token', currentUser.token);
-                localStorage.setItem('pc_user', JSON.stringify(userData));
-            } else if (targetSystem === 'executive') {
+            if (targetSystem === 'executive') {
                 localStorage.setItem('executive_token', currentUser.token);
                 localStorage.setItem('executive_user', JSON.stringify(userData));
+                // Clear other sessions
+                localStorage.removeItem('technician_token');
+                localStorage.removeItem('technician_user');
             } else if (targetSystem === 'technician') {
                 localStorage.setItem('technician_token', currentUser.token);
                 localStorage.setItem('technician_user', JSON.stringify(userData));
+                // Clear other sessions
+                localStorage.removeItem('executive_token');
+                localStorage.removeItem('executive_user');
             } else if (targetSystem === 'admin') {
-                // For admin, use executive token
+                // For admin, we can use either executive or technician token
+                // Let's use executive token for admin dashboard access
                 localStorage.setItem('executive_token', currentUser.token);
                 localStorage.setItem('executive_user', JSON.stringify(userData));
-                targetSystem = 'executive'; // Redirect to executive system
+                // Clear technician session
+                localStorage.removeItem('technician_token');
+                localStorage.removeItem('technician_user');
             }
             
             // Show redirect info
@@ -1274,14 +1209,13 @@
 
         function showRedirectInfo(targetSystem, userRole) {
             const systemNames = {
-                pc: 'PC Dashboard',
                 executive: 'ระบบผู้บริหาร',
                 technician: 'ระบบช่างเทคนิค',
                 admin: 'ระบบผู้ดูแลระบบ'
             };
             
             document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('platformSelection').classList.add('hidden');
+            document.getElementById('roleSelection').classList.add('hidden');
             document.getElementById('redirectInfo').classList.remove('hidden');
             
             document.getElementById('redirectTitle').innerHTML = 
@@ -1444,11 +1378,6 @@
                 }
             });
         }
-
-        // Update device info on window resize
-        window.addEventListener('resize', function() {
-            updateDeviceInfo();
-        });
     </script>
 </body>
 </html>
