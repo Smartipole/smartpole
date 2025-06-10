@@ -1386,6 +1386,7 @@
                         <span class="section-icon">📊</span>
                         สถิติงานซ่อมของฉัน
                     </h2>
+                     <button class="back-btn" onclick="openTechnicianDashboard()">โหมด PC</button>
                     <div class="stats-grid">
                         <div class="stat-card">
                             <span class="stat-icon electric">⚡</span>
@@ -2988,6 +2989,11 @@
             } catch (error) {
                 showToast('เกิดข้อผิดพลาดในการส่ง: ' + error.message, 'error');
             }
+        }
+
+        function openTechnicianDashboard() {
+            window.open('/admin/Dashboard.html', '_blank');
+            showToast('เปิดหน้าDashboard', 'success');
         }
 
         // Custom Work Report Functions

@@ -1135,8 +1135,8 @@
                         
                         <div class="action-card requests" onclick="openTechnicianDashboard()">
                             <span class="action-icon">🔧</span>
-                            <h3 class="action-title">หน้าช่างเทคนิค</h3>
-                            <p class="action-description">เข้าถึง Technician Dashboard สำหรับรับงานและอัปเดตสถานะ</p>
+                            <h3 class="action-title">เวอร์ชัน Desktop Dashboard</h3>
+                            <p class="action-description">เข้าถึง Desktop Dashboard สำหรับรับ PC</p>
                         </div>
                         
                         <div class="action-card reports" onclick="openMobileExecutive()">
@@ -2012,8 +2012,8 @@
         }
 
         function openTechnicianDashboard() {
-            window.open('/admin/requests', '_blank');
-            showToast('เปิดหน้าจัดการคำขอซ่อมแล้ว 🔧', 'success');
+            window.open('/admin/Dashboard.html', '_blank');
+            showToast('เปิดหน้าDashboard', 'success');
         }
 
         function openMobileExecutive() {

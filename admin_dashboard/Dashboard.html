@@ -415,6 +415,28 @@
             color: #f8fafc;
         }
 
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            color: white;
+        }
+
         /* Status Badges */
         .status-badge {
             padding: 0.25rem 0.75rem;
@@ -473,6 +495,47 @@
             color: #f8fafc;
         }
 
+        .modal-footer {
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        /* Loading Spinner */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(251, 191, 36, 0.3);
+            border-top: 5px solid #fbbf24;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .sidebar {
@@ -495,50 +558,6 @@
             }
         }
 
-        /* Loading */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .spinner-border {
-            color: #fbbf24;
-        }
-
-        /* Charts */
-        .chart-container {
-            position: relative;
-            height: 400px;
-            background: rgba(15, 23, 42, 0.3);
-            border-radius: 1rem;
-            padding: 1rem;
-        }
-
-        /* Print Styles */
-        @media print {
-            .sidebar,
-            .btn,
-            .modal {
-                display: none !important;
-            }
-            
-            .main-content {
-                margin-left: 0;
-                background: white;
-                color: black;
-            }
-            
-            .card {
-                background: white;
-                border: 1px solid #ccc;
-                color: black;
-            }
-            
-            .page-title {
-                color: black;
-            }
-        }
-
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -556,9 +575,70 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(251, 191, 36, 0.7);
         }
+
+        /* Additional utility classes */
+        .text-center { text-align: center; }
+        .text-end { text-align: right; }
+        .d-none { display: none !important; }
+        .d-flex { display: flex !important; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+        .fw-bold { font-weight: bold; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 1rem; }
+        .me-2 { margin-right: 0.5rem; }
+
+        .btn-group {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: -0.75rem;
+        }
+
+        .col-md-3,
+        .col-md-6 {
+            padding: 0.75rem;
+        }
+
+        .col-md-3 { flex: 0 0 25%; max-width: 25%; }
+        .col-md-6 { flex: 0 0 50%; max-width: 50%; }
+        .col-12 { flex: 0 0 100%; max-width: 100%; }
+
+        @media (max-width: 768px) {
+            .col-md-3,
+            .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        .g-3 > * {
+            margin: 0.75rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay d-none">
+        <div class="spinner"></div>
+    </div>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -693,9 +773,7 @@
                             <tbody id="recentRequestsTable">
                                 <tr>
                                     <td colspan="6" class="text-center">
-                                        <div class="spinner-border" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
+                                        <div class="spinner"></div>
                                         <p class="mt-2">กำลังโหลดข้อมูล...</p>
                                     </td>
                                 </tr>
@@ -719,6 +797,9 @@
                     </button>
                     <button class="btn btn-success" onclick="exportRequests()">
                         📁 Export ข้อมูล
+                    </button>
+                    <button class="btn btn-info" onclick="exportRequestsPDF()">
+                        📄 Export PDF
                     </button>
                 </div>
             </div>
@@ -810,6 +891,9 @@
                 <div>
                     <button class="btn btn-primary" onclick="openLookerStudio()">
                         📈 เปิด Looker Studio
+                    </button>
+                    <button class="btn btn-success" onclick="sendTelegramReport()">
+                        📱 ส่งรายงาน Telegram
                     </button>
                 </div>
             </div>
@@ -1060,6 +1144,202 @@
         </div>
     </div>
 
+    <!-- Add Inventory Modal -->
+    <div class="modal fade" id="addInventoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">📦 เพิ่มรายการอุปกรณ์ใหม่</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addInventoryForm">
+                        <div class="mb-3">
+                            <label class="form-label">ชื่อรายการ</label>
+                            <input type="text" class="form-control" id="newItemName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">หน่วย</label>
+                            <input type="text" class="form-control" id="newItemUnit" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ราคาต่อหน่วย</label>
+                            <input type="number" class="form-control" id="newItemPrice" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">จำนวนเริ่มต้น</label>
+                            <input type="number" class="form-control" id="newItemStock" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNewInventoryItem()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">👤 เพิ่มผู้ใช้ใหม่</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div class="mb-3">
+                            <label class="form-label">ชื่อผู้ใช้</label>
+                            <input type="text" class="form-control" id="newUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">รหัสผ่าน</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ชื่อเต็ม</label>
+                            <input type="text" class="form-control" id="newFullName">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">อีเมล</label>
+                            <input type="email" class="form-control" id="newEmail">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">สิทธิ์การใช้งาน</label>
+                            <select class="form-control" id="newRole" required>
+                                <option value="technician">ช่างเทคนิค</option>
+                                <option value="executive">ผู้บริหาร</option>
+                                <option value="admin">ผู้ดูแลระบบ</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="newIsActive" checked>
+                                <label class="form-check-label" for="newIsActive">
+                                    เปิดใช้งาน
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNewUser()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Inventory Modal -->
+    <div class="modal fade" id="editInventoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">✏️ แก้ไขรายการอุปกรณ์</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editInventoryForm">
+                        <input type="hidden" id="editOriginalItemName">
+                        <div class="mb-3">
+                            <label class="form-label">ชื่อรายการ</label>
+                            <input type="text" class="form-control" id="editItemName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">หน่วย</label>
+                            <input type="text" class="form-control" id="editItemUnit" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ราคาต่อหน่วย</label>
+                            <input type="number" class="form-control" id="editItemPrice" step="0.01" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditInventoryItem()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Adjust Inventory Modal -->
+    <div class="modal fade" id="adjustInventoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adjustModalTitle">📊 ปรับปรุงสต็อก</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="adjustInventoryForm">
+                        <input type="hidden" id="adjustItemName">
+                        <input type="hidden" id="adjustType">
+                        <div class="mb-3">
+                            <label class="form-label">รายการ</label>
+                            <input type="text" class="form-control" id="adjustItemNameDisplay" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">จำนวน</label>
+                            <input type="number" class="form-control" id="adjustQuantity" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">หมายเหตุ</label>
+                            <textarea class="form-control" id="adjustNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAdjustInventory()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Request Status Modal -->
+    <div class="modal fade" id="updateStatusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">📊 อัปเดตสถานะคำขอ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateStatusForm">
+                        <input type="hidden" id="updateRequestId">
+                        <div class="mb-3">
+                            <label class="form-label">เลขที่คำขอ</label>
+                            <input type="text" class="form-control" id="updateRequestIdDisplay" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">สถานะใหม่</label>
+                            <select class="form-control" id="updateNewStatus" required>
+                                <option value="">เลือกสถานะ</option>
+                                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                                <option value="อนุมัติแล้วรอช่าง">อนุมัติแล้วรอช่าง</option>
+                                <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
+                                <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+                                <option value="ยกเลิก">ยกเลิก</option>
+                                <option value="ไม่อนุมัติโดยผู้บริหาร">ไม่อนุมัติโดยผู้บริหาร</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">หมายเหตุช่าง</label>
+                            <textarea class="form-control" id="updateTechnicianNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUpdateStatus()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -1083,6 +1363,7 @@
         let statusChart = null;
         let trendChart = null;
         let lookerStudioUrl = '';
+        let currentRequestsData = [];
 
         // Initialize App
         document.addEventListener('DOMContentLoaded', function() {
@@ -1134,50 +1415,6 @@
             } else {
                 console.error('No valid user data found');
                 window.AuthUtils.forceLogout('ไม่พบข้อมูลผู้ใช้');
-            }
-        }
-
-        function validateCurrentSession() {
-            const authUser = window.AuthUtils.getCurrentUser();
-            
-            if (!authUser) {
-                console.warn('No current user found');
-                return false;
-            }
-            
-            // ตรวจสอบข้อมูลผู้ใช้
-            if (!authUser.user || !authUser.user.username || !authUser.user.role) {
-                console.warn('Invalid user data:', authUser.user);
-                return false;
-            }
-            
-            // ตรวจสอบ token
-            if (!authUser.token) {
-                console.warn('No token found');
-                return false;
-            }
-            
-            // ตรวจสอบรูปแบบ token
-            try {
-                const tokenParts = authUser.token.split('.');
-                if (tokenParts.length !== 3) {
-                    console.warn('Invalid token format');
-                    return false;
-                }
-                
-                const payload = JSON.parse(atob(tokenParts[1]));
-                const now = Math.floor(Date.now() / 1000);
-                
-                if (payload.exp && payload.exp < now) {
-                    console.warn('Token expired');
-                    return false;
-                }
-                
-                console.log('Session validation successful');
-                return true;
-            } catch (error) {
-                console.error('Error validating token:', error);
-                return false;
             }
         }
 
@@ -1238,6 +1475,15 @@
             return roles[role] || role;
         }
 
+        function showLoading(show = true) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.remove('d-none');
+            } else {
+                overlay.classList.add('d-none');
+            }
+        }
+
         // Load Looker Studio Configuration
         async function loadLookerConfig() {
             try {
@@ -1260,6 +1506,7 @@
         // Load Dashboard Data
         async function loadDashboardData() {
             try {
+                showLoading(true);
                 showToast('กำลังโหลดข้อมูลระบบ...', 'info');
                 
                 await Promise.all([
@@ -1271,6 +1518,8 @@
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
                 showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
             }
         }
 
@@ -1349,7 +1598,7 @@
                 tbody.innerHTML = recentRequests.map(request => {
                     const fullName = `${request.FIRST_NAME || ''} ${request.LAST_NAME || ''}`.trim() || 'ไม่ระบุ';
                     const statusBadge = getStatusBadge(request.STATUS);
-                    const dateReported = new Date(request.DATE_REPORTED).toLocaleDateString('th-TH');
+                    const dateReported = formatThaiDate(request.DATE_REPORTED);
                     
                     return `
                         <tr>
@@ -1381,6 +1630,25 @@
                         </td>
                     </tr>
                 `;
+            }
+        }
+
+        function formatThaiDate(dateString) {
+            if (!dateString) return 'ไม่ระบุ';
+            
+            try {
+                // Handle Thai format: DD/MM/YYYY, HH:MM:SS
+                if (dateString.includes('/')) {
+                    const parts = dateString.split(',');
+                    const datePart = parts[0].trim();
+                    return datePart; // Return only date part
+                }
+                
+                // Handle ISO format
+                const date = new Date(dateString);
+                return date.toLocaleDateString('th-TH');
+            } catch (error) {
+                return dateString;
             }
         }
 
@@ -1444,7 +1712,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="8" class="text-center">
-                            <div class="spinner-border text-warning" role="status"></div>
+                            <div class="spinner"></div>
                             <p class="mt-2">กำลังโหลดข้อมูลคำขอ...</p>
                         </td>
                     </tr>
@@ -1455,7 +1723,8 @@
                     await loadStats();
                 }
 
-                renderRequestsTable(allRequests);
+                currentRequestsData = [...allRequests];
+                renderRequestsTable(currentRequestsData);
             } catch (error) {
                 console.error('Error loading requests page:', error);
                 showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลคำขอ', 'error');
@@ -1479,7 +1748,7 @@
             tbody.innerHTML = requests.map(request => {
                 const fullName = `${request.FIRST_NAME || ''} ${request.LAST_NAME || ''}`.trim() || 'ไม่ระบุ';
                 const statusBadge = getStatusBadge(request.STATUS);
-                const dateReported = new Date(request.DATE_REPORTED).toLocaleDateString('th-TH');
+                const dateReported = formatThaiDate(request.DATE_REPORTED);
                 
                 return `
                     <tr>
@@ -1510,6 +1779,75 @@
             }).join('');
         }
 
+        // Filter Functions
+        function filterRequests() {
+            const searchTerm = document.getElementById('searchRequestId').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+
+            let filteredRequests = [...allRequests];
+
+            if (searchTerm) {
+                filteredRequests = filteredRequests.filter(r => 
+                    r.REQUEST_ID && r.REQUEST_ID.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (statusFilter) {
+                filteredRequests = filteredRequests.filter(r => r.STATUS === statusFilter);
+            }
+
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                filteredRequests = filteredRequests.filter(r => {
+                    const reqDate = parseThaiDate(r.DATE_REPORTED);
+                    return reqDate >= fromDate;
+                });
+            }
+
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                toDate.setHours(23, 59, 59, 999);
+                filteredRequests = filteredRequests.filter(r => {
+                    const reqDate = parseThaiDate(r.DATE_REPORTED);
+                    return reqDate <= toDate;
+                });
+            }
+
+            currentRequestsData = filteredRequests;
+            renderRequestsTable(filteredRequests);
+            showToast(`พบข้อมูล ${filteredRequests.length} รายการ`, 'success');
+        }
+
+        function clearFilters() {
+            document.getElementById('searchRequestId').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            currentRequestsData = [...allRequests];
+            renderRequestsTable(allRequests);
+            showToast('ล้างตัวกรองแล้ว', 'info');
+        }
+
+        function parseThaiDate(dateString) {
+            if (!dateString) return new Date(0);
+            
+            try {
+                if (dateString.includes('/')) {
+                    const parts = dateString.split(',');
+                    const datePart = parts[0].trim();
+                    const [day, month, year] = datePart.split('/');
+                    let fullYear = parseInt(year);
+                    if (fullYear > 2500) fullYear -= 543;
+                    return new Date(fullYear, parseInt(month) - 1, parseInt(day));
+                }
+                return new Date(dateString);
+            } catch (error) {
+                return new Date(0);
+            }
+        }
+
         // Reports Page Functions
         async function loadReportsPage() {
             try {
@@ -1520,10 +1858,25 @@
                 const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
                 const yearStart = new Date(today.getFullYear(), 0, 1);
 
-                const todayCount = allRequests.filter(r => r.DATE_REPORTED && r.DATE_REPORTED.startsWith(todayStr)).length;
-                const weekCount = allRequests.filter(r => new Date(r.DATE_REPORTED) >= weekStart).length;
-                const monthCount = allRequests.filter(r => new Date(r.DATE_REPORTED) >= monthStart).length;
-                const yearCount = allRequests.filter(r => new Date(r.DATE_REPORTED) >= yearStart).length;
+                const todayCount = allRequests.filter(r => {
+                    const reqDate = parseThaiDate(r.DATE_REPORTED);
+                    return reqDate.toDateString() === today.toDateString();
+                }).length;
+
+                const weekCount = allRequests.filter(r => {
+                    const reqDate = parseThaiDate(r.DATE_REPORTED);
+                    return reqDate >= weekStart;
+                }).length;
+
+                const monthCount = allRequests.filter(r => {
+                    const reqDate = parseThaiDate(r.DATE_REPORTED);
+                    return reqDate >= monthStart;
+                }).length;
+
+                const yearCount = allRequests.filter(r => {
+                    const reqDate = parseThaiDate(r.DATE_REPORTED);
+                    return reqDate >= yearStart;
+                }).length;
 
                 document.getElementById('todayReports').textContent = todayCount;
                 document.getElementById('weekReports').textContent = weekCount;
@@ -1596,7 +1949,8 @@
             }
 
             allRequests.forEach(request => {
-                const month = new Date(request.DATE_REPORTED).toISOString().substring(0, 7);
+                const reqDate = parseThaiDate(request.DATE_REPORTED);
+                const month = reqDate.toISOString().substring(0, 7);
                 if (monthlyData.hasOwnProperty(month)) {
                     monthlyData[month]++;
                 }
@@ -1654,7 +2008,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="7" class="text-center">
-                            <div class="spinner-border text-warning" role="status"></div>
+                            <div class="spinner"></div>
                             <p class="mt-2">กำลังโหลดข้อมูลคลัง...</p>
                         </td>
                     </tr>
@@ -1662,7 +2016,7 @@
 
                 // Load inventory if needed
                 if (allInventory.length === 0) {
-                    const response = await window.AuthUtils.apiCall('/api/admin/inventory');
+                    const response = await safeApiCall('/api/admin/inventory');
                     const data = await response.json();
                     if (data.status === 'success') {
                         allInventory = data.data || [];
@@ -1680,9 +2034,12 @@
 
         function updateInventoryStats() {
             const total = allInventory.length;
-            const inStock = allInventory.filter(item => item.CURRENT_STOCK > 0).length;
-            const lowStock = allInventory.filter(item => item.CURRENT_STOCK > 0 && item.CURRENT_STOCK <= 10).length;
-            const outOfStock = allInventory.filter(item => item.CURRENT_STOCK <= 0).length;
+            const inStock = allInventory.filter(item => (item.CURRENT_STOCK || 0) > 0).length;
+            const lowStock = allInventory.filter(item => {
+                const stock = item.CURRENT_STOCK || 0;
+                return stock > 0 && stock <= 10;
+            }).length;
+            const outOfStock = allInventory.filter(item => (item.CURRENT_STOCK || 0) <= 0).length;
 
             document.getElementById('totalInventoryItems').textContent = total;
             document.getElementById('inStockItems').textContent = inStock;
@@ -1750,7 +2107,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" class="text-center">
-                            <div class="spinner-border text-warning" role="status"></div>
+                            <div class="spinner"></div>
                             <p class="mt-2">กำลังโหลดข้อมูลผู้ใช้...</p>
                         </td>
                     </tr>
@@ -1758,7 +2115,7 @@
 
                 // Load users if needed
                 if (allUsers.length === 0) {
-                    const response = await window.AuthUtils.apiCall('/api/admin/users');
+                    const response = await safeApiCall('/api/admin/users');
                     const data = await response.json();
                     if (data.status === 'success') {
                         allUsers = data.data || [];
@@ -1835,7 +2192,7 @@
         // Settings Page Functions
         async function loadSettingsPage() {
             try {
-                const response = await window.AuthUtils.apiCall('/api/admin/telegram-config');
+                const response = await safeApiCall('/api/admin/telegram-config');
                 const data = await response.json();
                 
                 if (data.status === 'success' && data.data) {
@@ -1864,8 +2221,10 @@
                         <p><strong>🗼 รหัสเสา:</strong> ${request.POLE_ID || 'ไม่ระบุ'}</p>
                         <p><strong>📍 ปัญหา:</strong> ${request.PROBLEM_DESCRIPTION || request.REASON || 'ไม่มีรายละเอียด'}</p>
                         <p><strong>📊 สถานะ:</strong> ${getStatusBadge(request.STATUS)}</p>
-                        <p><strong>📅 วันที่แจ้ง:</strong> ${new Date(request.DATE_REPORTED).toLocaleDateString('th-TH')}</p>
+                        <p><strong>📅 วันที่แจ้ง:</strong> ${formatThaiDate(request.DATE_REPORTED)}</p>
                         ${request.TECHNICIAN_NOTES ? `<p><strong>📝 หมายเหตุ:</strong> ${request.TECHNICIAN_NOTES}</p>` : ''}
+                        ${request.APPROVED_BY ? `<p><strong>✅ ผู้อนุมัติ:</strong> ${request.APPROVED_BY}</p>` : ''}
+                        ${request.APPROVAL_TIMESTAMP ? `<p><strong>📅 วันที่อนุมัติ:</strong> ${request.APPROVAL_TIMESTAMP}</p>` : ''}
                     </div>
                 `,
                 width: '600px',
@@ -1884,7 +2243,44 @@
                 window.open(printUrl, '_blank');
                 showToast(`เปิด Looker Studio สำหรับพิมพ์คำขอ: ${requestId}`, 'success');
             } else {
-                showToast('ไม่พบการตั้งค่า Looker Studio URL', 'error');
+                // Try PDF export instead
+                printRequestAsPDF(requestId);
+            }
+        }
+
+        async function printRequestAsPDF(requestId) {
+            try {
+                showLoading(true);
+                const response = await safeApiCall(`/api/admin/request/${requestId}/pdf`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        templateOptions: {
+                            title: `เอกสารคำขอแจ้งซ่อม #${requestId}`,
+                            showLogo: true
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `คำร้องแจ้งซ่อม_${requestId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showToast('ดาวน์โหลด PDF สำเร็จ! 📄', 'success');
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'ไม่สามารถสร้าง PDF ได้');
+                }
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
             }
         }
 
@@ -1915,55 +2311,6 @@
             }
         }
 
-        // Filter Functions
-        function filterRequests() {
-            const searchTerm = document.getElementById('searchRequestId').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value;
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo = document.getElementById('filterDateTo').value;
-
-            let filteredRequests = allRequests;
-
-            if (searchTerm) {
-                filteredRequests = filteredRequests.filter(r => 
-                    r.REQUEST_ID && r.REQUEST_ID.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            if (statusFilter) {
-                filteredRequests = filteredRequests.filter(r => r.STATUS === statusFilter);
-            }
-
-            if (dateFrom) {
-                const fromDate = new Date(dateFrom);
-                filteredRequests = filteredRequests.filter(r => {
-                    const reqDate = new Date(r.DATE_REPORTED);
-                    return reqDate >= fromDate;
-                });
-            }
-
-            if (dateTo) {
-                const toDate = new Date(dateTo);
-                toDate.setHours(23, 59, 59, 999);
-                filteredRequests = filteredRequests.filter(r => {
-                    const reqDate = new Date(r.DATE_REPORTED);
-                    return reqDate <= toDate;
-                });
-            }
-
-            renderRequestsTable(filteredRequests);
-            showToast(`พบข้อมูล ${filteredRequests.length} รายการ`, 'success');
-        }
-
-        function clearFilters() {
-            document.getElementById('searchRequestId').value = '';
-            document.getElementById('filterStatus').value = '';
-            document.getElementById('filterDateFrom').value = '';
-            document.getElementById('filterDateTo').value = '';
-            renderRequestsTable(allRequests);
-            showToast('ล้างตัวกรองแล้ว', 'info');
-        }
-
         // Export Functions
         function exportRequests() {
             showToast('กำลังเตรียมข้อมูลสำหรับ Export...', 'info');
@@ -1972,14 +2319,14 @@
             const headers = ['เลขที่คำขอ', 'ผู้แจ้ง', 'เบอร์โทร', 'รหัสเสา', 'ปัญหา', 'สถานะ', 'วันที่แจ้ง'];
             const csvContent = [
                 headers.join(','),
-                ...allRequests.map(r => [
+                ...currentRequestsData.map(r => [
                     r.REQUEST_ID,
                     `"${r.FIRST_NAME || ''} ${r.LAST_NAME || ''}"`,
                     r.PHONE || '',
                     r.POLE_ID || '',
                     `"${(r.PROBLEM_DESCRIPTION || r.REASON || '').replace(/"/g, '""')}"`,
                     r.STATUS || '',
-                    new Date(r.DATE_REPORTED).toLocaleDateString('th-TH')
+                    formatThaiDate(r.DATE_REPORTED)
                 ].join(','))
             ].join('\n');
 
@@ -1990,6 +2337,49 @@
             link.click();
             
             showToast('Export ข้อมูลสำเร็จ! 📁', 'success');
+        }
+
+        async function exportRequestsPDF() {
+            try {
+                showLoading(true);
+                showToast('กำลังสร้างรายงาน PDF...', 'info');
+
+                const response = await safeApiCall('/api/admin/reports/repair-requests/pdf', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        filterStatus: document.getElementById('filterStatus').value,
+                        dateRange: {
+                            start: document.getElementById('filterDateFrom').value,
+                            end: document.getElementById('filterDateTo').value
+                        },
+                        templateOptions: {
+                            title: 'รายงานคำขอแจ้งซ่อมไฟฟ้า',
+                            showDate: true
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `รายงานคำขอแจ้งซ่อม_${new Date().toISOString().split('T')[0]}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showToast('สร้างรายงาน PDF สำเร็จ! 📄', 'success');
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'ไม่สามารถสร้างรายงาน PDF ได้');
+                }
+            } catch (error) {
+                console.error('Error generating PDF report:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         function exportInventory() {
@@ -2017,27 +2407,211 @@
             showToast('Export ข้อมูลคลังสำเร็จ! 📁', 'success');
         }
 
-        // Modal Functions (placeholder - implement as needed)
+        // Modal Functions
         function showAddInventoryModal() {
-            showToast('ฟีเจอร์เพิ่มรายการคลังจะพัฒนาในเวอร์ชันถัดไป', 'info');
+            const modal = new bootstrap.Modal(document.getElementById('addInventoryModal'));
+            modal.show();
         }
 
         function showAddUserModal() {
-            showToast('ฟีเจอร์เพิ่มผู้ใช้จะพัฒนาในเวอร์ชันถัดไป', 'info');
+            const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
+            modal.show();
+        }
+
+        async function saveNewInventoryItem() {
+            try {
+                const itemData = {
+                    itemName: document.getElementById('newItemName').value,
+                    unit: document.getElementById('newItemUnit').value,
+                    pricePerUnit: parseFloat(document.getElementById('newItemPrice').value),
+                    currentStock: parseInt(document.getElementById('newItemStock').value)
+                };
+
+                if (!itemData.itemName || !itemData.unit || isNaN(itemData.pricePerUnit) || isNaN(itemData.currentStock)) {
+                    showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+                    return;
+                }
+
+                showLoading(true);
+                const response = await safeApiCall('/api/admin/inventory', {
+                    method: 'POST',
+                    body: JSON.stringify(itemData)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showToast('เพิ่มรายการใหม่สำเร็จ! 📦', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addInventoryModal')).hide();
+                    document.getElementById('addInventoryForm').reset();
+                    // Reload inventory data
+                    allInventory = [];
+                    await loadInventoryPage();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error adding inventory item:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function saveNewUser() {
+            try {
+                const userData = {
+                    username: document.getElementById('newUsername').value,
+                    password: document.getElementById('newPassword').value,
+                    role: document.getElementById('newRole').value,
+                    fullName: document.getElementById('newFullName').value,
+                    email: document.getElementById('newEmail').value,
+                    isActive: document.getElementById('newIsActive').checked
+                };
+
+                if (!userData.username || !userData.password || !userData.role) {
+                    showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                    return;
+                }
+
+                showLoading(true);
+                const response = await safeApiCall('/api/admin/users', {
+                    method: 'POST',
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showToast('เพิ่มผู้ใช้ใหม่สำเร็จ! 👤', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+                    document.getElementById('addUserForm').reset();
+                    // Reload users data
+                    allUsers = [];
+                    await loadUsersPage();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error adding user:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         function editInventoryItem(itemName) {
-            showToast(`แก้ไขรายการ: ${itemName} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+            const item = allInventory.find(i => i.ITEM_NAME === itemName);
+            if (!item) return;
+
+            document.getElementById('editOriginalItemName').value = itemName;
+            document.getElementById('editItemName').value = item.ITEM_NAME;
+            document.getElementById('editItemUnit').value = item.UNIT || '';
+            document.getElementById('editItemPrice').value = item.PRICE_PER_UNIT || 0;
+
+            const modal = new bootstrap.Modal(document.getElementById('editInventoryModal'));
+            modal.show();
+        }
+
+        async function saveEditInventoryItem() {
+            try {
+                const originalName = document.getElementById('editOriginalItemName').value;
+                const itemData = {
+                    itemName: document.getElementById('editItemName').value,
+                    unit: document.getElementById('editItemUnit').value,
+                    pricePerUnit: parseFloat(document.getElementById('editItemPrice').value)
+                };
+
+                if (!itemData.itemName || !itemData.unit || isNaN(itemData.pricePerUnit)) {
+                    showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+                    return;
+                }
+
+                showLoading(true);
+                const response = await safeApiCall(`/api/admin/inventory/${encodeURIComponent(originalName)}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(itemData)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showToast('แก้ไขรายการสำเร็จ! ✏️', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editInventoryModal')).hide();
+                    // Reload inventory data
+                    allInventory = [];
+                    await loadInventoryPage();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error editing inventory item:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         function adjustInventory(itemName, action) {
-            const actionText = action === 'add' ? 'เพิ่ม' : 'เบิก';
-            showToast(`${actionText}สต็อก: ${itemName} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+            const actionText = action === 'add' ? 'เพิ่มสต็อก' : 'เบิกสต็อก';
+            const actionType = action === 'add' ? 'รับเข้า' : 'เบิกจ่าย';
+            
+            document.getElementById('adjustItemName').value = itemName;
+            document.getElementById('adjustItemNameDisplay').value = itemName;
+            document.getElementById('adjustType').value = actionType;
+            document.getElementById('adjustModalTitle').textContent = `📊 ${actionText}`;
+            document.getElementById('adjustQuantity').value = '';
+            document.getElementById('adjustNotes').value = '';
+
+            const modal = new bootstrap.Modal(document.getElementById('adjustInventoryModal'));
+            modal.show();
+        }
+
+        async function saveAdjustInventory() {
+            try {
+                const adjustData = {
+                    itemName: document.getElementById('adjustItemName').value,
+                    quantityChange: parseFloat(document.getElementById('adjustQuantity').value),
+                    transactionType: document.getElementById('adjustType').value
+                };
+
+                if (!adjustData.itemName || isNaN(adjustData.quantityChange) || adjustData.quantityChange <= 0) {
+                    showToast('กรุณากรอกข้อมูลให้ถูกต้อง', 'error');
+                    return;
+                }
+
+                showLoading(true);
+                const response = await safeApiCall('/api/admin/inventory/adjust', {
+                    method: 'POST',
+                    body: JSON.stringify(adjustData)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showToast('ปรับปรุงสต็อกสำเร็จ! 📊', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('adjustInventoryModal')).hide();
+                    // Reload inventory data
+                    allInventory = [];
+                    await loadInventoryPage();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error adjusting inventory:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         function deleteInventoryItem(itemName) {
-            showConfirm(`คุณต้องการลบรายการ "${itemName}" ใช่หรือไม่?`, () => {
-                showToast(`ลบรายการ: ${itemName} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+            showConfirm(`คุณต้องการลบรายการ "${itemName}" ใช่หรือไม่?`, async () => {
+                try {
+                    showLoading(true);
+                    // Note: API endpoint for delete not implemented yet
+                    showToast(`ลบรายการ: ${itemName} (ฟีเจอร์ยังไม่พร้อม)`, 'info');
+                } catch (error) {
+                    showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                } finally {
+                    showLoading(false);
+                }
             });
         }
 
@@ -2046,13 +2620,110 @@
         }
 
         function deleteUser(username) {
-            showConfirm(`คุณต้องการลบผู้ใช้ "${username}" ใช่หรือไม่?`, () => {
-                showToast(`ลบผู้ใช้: ${username} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+            showConfirm(`คุณต้องการลบผู้ใช้ "${username}" ใช่หรือไม่?`, async () => {
+                try {
+                    showLoading(true);
+                    const response = await safeApiCall(`/api/admin/users/${encodeURIComponent(username)}`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        showToast('ลบผู้ใช้สำเร็จ! 🗑️', 'success');
+                        // Reload users data
+                        allUsers = [];
+                        await loadUsersPage();
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                } finally {
+                    showLoading(false);
+                }
             });
         }
 
         function updateRequestStatus(requestId) {
-            showToast(`แก้ไขสถานะคำขอ: ${requestId} (ฟีเจอร์พัฒนาในเวอร์ชันถัดไป)`, 'info');
+            const request = allRequests.find(r => r.REQUEST_ID === requestId);
+            if (!request) return;
+
+            document.getElementById('updateRequestId').value = requestId;
+            document.getElementById('updateRequestIdDisplay').value = requestId;
+            document.getElementById('updateNewStatus').value = request.STATUS || '';
+            document.getElementById('updateTechnicianNotes').value = request.TECHNICIAN_NOTES || '';
+
+            const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
+            modal.show();
+        }
+
+        async function saveUpdateStatus() {
+            try {
+                const updateData = {
+                    newStatus: document.getElementById('updateNewStatus').value,
+                    technicianNotes: document.getElementById('updateTechnicianNotes').value
+                };
+
+                if (!updateData.newStatus) {
+                    showToast('กรุณาเลือกสถานะใหม่', 'error');
+                    return;
+                }
+
+                const requestId = document.getElementById('updateRequestId').value;
+                
+                showLoading(true);
+                const response = await safeApiCall(`/api/admin/repair-request/${requestId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updateData)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showToast('อัปเดตสถานะสำเร็จ! 📊', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('updateStatusModal')).hide();
+                    // Reload requests data
+                    allRequests = [];
+                    await loadStats();
+                    if (document.getElementById('requestsPage').classList.contains('d-none') === false) {
+                        await loadRequestsPage();
+                    } else {
+                        await loadRecentRequests();
+                    }
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Telegram Functions
+        async function sendTelegramReport() {
+            try {
+                showLoading(true);
+                const response = await safeApiCall('/api/admin/notifications/send-report', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        reportType: 'summary',
+                        filters: {}
+                    })
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showToast('ส่งรายงานไป Telegram สำเร็จ! 📱', 'success');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error sending Telegram report:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         // Settings Functions
@@ -2064,7 +2735,8 @@
             const isEnabled = document.getElementById('enableTelegram').checked;
             
             try {
-                const response = await window.AuthUtils.apiCall('/api/admin/telegram-config', {
+                showLoading(true);
+                const response = await safeApiCall('/api/admin/telegram-config', {
                     method: 'POST',
                     body: JSON.stringify({ botToken, chatId, isEnabled })
                 });
@@ -2077,6 +2749,8 @@
                 }
             } catch (error) {
                 showToast('เกิดข้อผิดพลาดในการบันทึก: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
             }
         });
 
@@ -2090,7 +2764,8 @@
             }
             
             try {
-                const response = await window.AuthUtils.apiCall('/api/admin/telegram-test', {
+                showLoading(true);
+                const response = await safeApiCall('/api/admin/telegram-test', {
                     method: 'POST',
                     body: JSON.stringify({ botToken, chatId })
                 });
@@ -2103,6 +2778,8 @@
                 }
             } catch (error) {
                 showToast('เกิดข้อผิดพลาดในการทดสอบ', 'error');
+            } finally {
+                showLoading(false);
             }
         }
 
@@ -2144,8 +2821,6 @@
                 if (window.AuthUtils && typeof window.AuthUtils.logout === 'function') {
                     window.AuthUtils.logout();
                 } else {
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('authUser');
                     window.location.href = '/admin/smart-login.html';
                 }
             });
@@ -2167,7 +2842,7 @@
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 4000,
-                timerProgressBar: false,
+                timerProgressBar: true,
                 background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95))',
                 color: '#f8fafc'
             });
@@ -2182,7 +2857,9 @@
                 confirmButtonText: '✅ ยืนยัน',
                 cancelButtonText: '❌ ยกเลิก',
                 confirmButtonColor: '#10b981',
-                cancelButtonColor: '#ef4444'
+                cancelButtonColor: '#ef4444',
+                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95))',
+                color: '#f8fafc'
             }).then((result) => {
                 if (result.isConfirmed && onConfirm) {
                     onConfirm();
@@ -2198,7 +2875,7 @@
         // Auto refresh data when page becomes visible
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden && currentUser) {
-                loadDashboardData();
+                refreshData();
             }
         });
 
@@ -2209,7 +2886,297 @@
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
+
+            // Initialize modals
+            var modalElements = document.querySelectorAll('.modal');
+            modalElements.forEach(function(modalEl) {
+                new bootstrap.Modal(modalEl);
+            });
         });
+
+        // Additional utility functions for better UX
+        function formatNumber(num) {
+            return new Intl.NumberFormat('th-TH').format(num);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('th-TH', {
+                style: 'currency',
+                currency: 'THB'
+            }).format(amount);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Search functionality with debounce
+        const debouncedSearch = debounce(filterRequests, 500);
+        
+        // Add search event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchRequestId');
+            if (searchInput) {
+                searchInput.addEventListener('input', debouncedSearch);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K for search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.getElementById('searchRequestId');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }
+            
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                const openModals = document.querySelectorAll('.modal.show');
+                openModals.forEach(modal => {
+                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                });
+            }
+        });
+
+        // Print functionality
+        function printPage() {
+            window.print();
+        }
+
+        // Error handling for API calls
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            if (event.reason && event.reason.message) {
+                showToast('เกิดข้อผิดพลาด: ' + event.reason.message, 'error');
+            } else {
+                showToast('เกิดข้อผิดพลาดที่ไม่คาดคิด', 'error');
+            }
+        });
+
+        // Service Worker registration (for future offline support)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // Uncomment when service worker is ready
+                // navigator.serviceWorker.register('/sw.js')
+                //     .then(function(registration) {
+                //         console.log('SW registered: ', registration);
+                //     })
+                //     .catch(function(registrationError) {
+                //         console.log('SW registration failed: ', registrationError);
+                //     });
+            });
+        }
+
+        // Performance monitoring
+        function logPerformance(label, startTime) {
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            console.log(`${label}: ${duration.toFixed(2)}ms`);
+        }
+
+        // Cache management for better performance
+        const cache = {
+            data: new Map(),
+            set: function(key, value, ttl = 300000) { // 5 minutes default TTL
+                const item = {
+                    value: value,
+                    expiry: Date.now() + ttl
+                };
+                this.data.set(key, item);
+            },
+            get: function(key) {
+                const item = this.data.get(key);
+                if (!item) return null;
+                if (Date.now() > item.expiry) {
+                    this.data.delete(key);
+                    return null;
+                }
+                return item.value;
+            },
+            clear: function() {
+                this.data.clear();
+            }
+        };
+
+        // Enhanced error reporting
+        function reportError(error, context = '') {
+            const errorReport = {
+                message: error.message,
+                stack: error.stack,
+                context: context,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString(),
+                user: currentUser ? currentUser.username : 'anonymous'
+            };
+            
+            console.error('Error Report:', errorReport);
+            
+            // Here you could send to an error tracking service
+            // sendToErrorTrackingService(errorReport);
+        }
+
+        // Network status monitoring
+        window.addEventListener('online', function() {
+            showToast('เชื่อมต่ออินเทอร์เน็ตแล้ว', 'success');
+            refreshData();
+        });
+
+        window.addEventListener('offline', function() {
+            showToast('ไม่มีการเชื่อมต่ออินเทอร์เน็ต', 'warning');
+        });
+
+        // Data validation helpers
+        function validateRequestData(data) {
+            const required = ['REQUEST_ID', 'STATUS'];
+            const missing = required.filter(field => !data[field]);
+            return {
+                isValid: missing.length === 0,
+                missingFields: missing
+            };
+        }
+
+        function validateInventoryData(data) {
+            const required = ['ITEM_NAME', 'UNIT', 'PRICE_PER_UNIT'];
+            const missing = required.filter(field => !data[field]);
+            return {
+                isValid: missing.length === 0,
+                missingFields: missing
+            };
+        }
+
+        // Export helper functions
+        function generateCSV(data, headers) {
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => 
+                    headers.map(header => {
+                        const value = row[header] || '';
+                        // Escape quotes and wrap in quotes if contains comma or quote
+                        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                            return `"${value.replace(/"/g, '""')}"`;
+                        }
+                        return value;
+                    }).join(',')
+                )
+            ].join('\n');
+            
+            return '\uFEFF' + csvContent; // Add BOM for Excel compatibility
+        }
+
+        function downloadFile(content, filename, mimeType = 'text/plain') {
+            const blob = new Blob([content], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        // Initialize app when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        // Global error handler
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            reportError(error || new Error(msg), `${url}:${lineNo}:${columnNo}`);
+            return false;
+        };
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            // Cleanup any ongoing operations
+            if (statusChart) statusChart.destroy();
+            if (trendChart) trendChart.destroy();
+            cache.clear();
+        });
+
+        // Custom form validation
+        function validateForm(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return false;
+            
+            const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+            
+            return isValid;
+        }
+
+        // Auto-save functionality for forms
+        function setupAutoSave(formId, storageKey) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+            
+            // Load saved data
+            const savedData = localStorage.getItem(storageKey);
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    Object.keys(data).forEach(key => {
+                        const input = form.querySelector(`[name="${key}"], #${key}`);
+                        if (input) {
+                            input.value = data[key];
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Failed to load saved form data:', e);
+                }
+            }
+            
+            // Save on input
+            form.addEventListener('input', debounce(() => {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                localStorage.setItem(storageKey, JSON.stringify(data));
+            }, 1000));
+            
+            // Clear on submit
+            form.addEventListener('submit', () => {
+                localStorage.removeItem(storageKey);
+            });
+        }
+
+        // Theme management (if needed in future)
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        console.log('🚀 Dashboard initialized successfully!');
     </script>
 </body>
 </html>
