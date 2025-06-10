@@ -885,7 +885,7 @@
                     <div class="role-option" data-target="desktop" onclick="selectRole('desktop')" tabindex="0">
                         <div class="role-icon">🖥️</div>
                         <div class="role-info">
-                            <h3>ระบบ Desktop Dashboard</h3>
+                            <h3>ระบบ Desktop dashboard</h3>
                             <p>ระบบจัดการแบบเต็มรูปแบบสำหรับจอขนาดใหญ่ พร้อมฟีเจอร์ครบครัน</p>
                         </div>
                     </div>
@@ -1045,7 +1045,7 @@
             if (deviceText) {
                 const deviceName = DEVICE_NAMES[deviceType] || DEVICE_NAMES.unknown;
                 if (isDesktop) {
-                    deviceText.innerHTML = `${deviceName} - ระบบ Desktop Dashboard พร้อมใช้งาน`;
+                    deviceText.innerHTML = `${deviceName} - ระบบ Desktop dashboard พร้อมใช้งาน`;
                 } else {
                     deviceText.innerHTML = `${deviceName} - ระบบ Mobile Interface`;
                 }
@@ -1481,7 +1481,7 @@
                 executive: 'ระบบผู้บริหาร (Mobile)',
                 technician: 'ระบบช่างเทคนิค (Mobile)',
                 admin: 'ระบบผู้ดูแลระบบ',
-                desktop: 'ระบบ Desktop Dashboard'
+                desktop: 'ระบบ Desktop dashboard'
             };
             
             const deviceInfo = isDesktop ? '🖥️ Desktop' : `📱 ${DEVICE_NAMES[deviceType]}`;
