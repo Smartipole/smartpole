@@ -141,8 +141,8 @@ function isWorkingHours() {
     console.log(`   └── Thai hour: ${hours}:${minutes.toString().padStart(2, '0')}`);
     
     // เวลาไทย: 05:00-21:00
-    const isWorking = hours >= 5 && hours < 21;
-    console.log(`⚡ Working hours check: ${isWorking} (${hours}:${minutes.toString().padStart(2, '0')} is ${isWorking ? 'within' : 'outside'} 05:00-21:00 Thai time)`);
+    const isWorking = hours >= 4 && hours < 23;
+    console.log(`⚡ Working hours check: ${isWorking} (${hours}:${minutes.toString().padStart(2, '0')} is ${isWorking ? 'within' : 'outside'} 04:00-23:00 Thai time)`);
     
     return isWorking;
 }
@@ -152,10 +152,10 @@ function getNextActiveTime() {
     const thaiTime = getThaiTime();
     const hours = thaiTime.getUTCHours();
     
-    if (hours < 5) {
+    if (hours < 4) {
         // ถ้ายังไม่ถึง 5 โมงเช้าของวันนี้ (เวลาไทย)
         const today = new Date(thaiTime);
-        today.setUTCHours(5, 0, 0, 0);
+        today.setUTCHours(4, 0, 0, 0);
         // แปลงกลับเป็น UTC สำหรับ return
         const utcTime = new Date(today.getTime() - (7 * 60 * 60 * 1000));
         return utcTime.toISOString();
@@ -163,7 +163,7 @@ function getNextActiveTime() {
         // เริ่มทำงานพรุ่งนี้ 5 โมง (เวลาไทย)
         const tomorrow = new Date(thaiTime);
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-        tomorrow.setUTCHours(5, 0, 0, 0);
+        tomorrow.setUTCHours(4, 0, 0, 0);
         // แปลงกลับเป็น UTC สำหรับ return
         const utcTime = new Date(tomorrow.getTime() - (7 * 60 * 60 * 1000));
         return utcTime.toISOString();
@@ -175,17 +175,17 @@ function getNextStandbyTime() {
     const thaiTime = getThaiTime();
     const hours = thaiTime.getUTCHours();
     
-    if (hours >= 21) {
+    if (hours >= 23) {
         // ถ้าเลยเวลาหยุดแล้ว ให้คืนเวลาหยุดของพรุ่งนี้
         const tomorrow = new Date(thaiTime);
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-        tomorrow.setUTCHours(21, 0, 0, 0);
+        tomorrow.setUTCHours(23, 0, 0, 0);
         const utcTime = new Date(tomorrow.getTime() - (7 * 60 * 60 * 1000));
         return utcTime.toISOString();
     } else {
         // หยุดทำงานวันนี้ 21 โมง (เวลาไทย)
         const today = new Date(thaiTime);
-        today.setUTCHours(21, 0, 0, 0);
+        today.setUTCHours(23, 0, 0, 0);
         const utcTime = new Date(today.getTime() - (7 * 60 * 60 * 1000));
         return utcTime.toISOString();
     }
@@ -251,13 +251,13 @@ async function startKeepAlive() {
     console.log('🟢 Starting keep-alive service');
     console.log(`📅 UTC: ${utcTime.toISOString()}`);
     console.log(`📅 Thai: ${formatThaiTime(thaiTime)}`);
-    console.log(`⏰ Working hours: 05:00-21:00 Thai time`);
+    console.log(`⏰ Working hours: 04:00-23:00 Thai time`);
     
     // ส่งแจ้งเตือนไป Telegram
     await sendTelegramNotification(
         `🟢 *ระบบเข้าสู่โหมด Active*\n\n` +
         `📊 สถานะ: กำลังทำงาน Keep-Alive\n` +
-        `🔄 ระยะเวลา: 05:00 - 21:00 (Thai time)\n` +
+        `🔄 ระยะเวลา: 04:00 - 23:00 (Thai time)\n` +
         `⚡ ระบบพร้อมใช้งาน\n` +
         `🌐 UptimeRobot: จะได้รับ HTTP 200`
     );
@@ -268,7 +268,7 @@ async function startKeepAlive() {
             keepAlivePing();
         } else {
             console.log('😴 Outside working hours, skipping ping');
-            console.log('🔄 Will auto-stop at next scheduled time (21:00 Thai = 14:00 UTC)');
+            console.log('🔄 Will auto-stop at next scheduled time (23:00 Thai = 16:00 UTC)');
         }
     }, 14 * 60 * 1000); // ทุก 14 นาที
 }
@@ -295,7 +295,7 @@ async function stopKeepAlive() {
         `🔴 *สิ้นสุดเวลาทำงาน*\n\n` +
         `😴 สถานะ: ระบบเข้าสู่โหมด Sleep\n` +
         `🌙 โหมด: Sleep Mode\n` +
-        `⏰ เวลาเริ่มใหม่: 05:00 น. วันถัดไป (Thai time)\n` +
+        `⏰ เวลาเริ่มใหม่: 04:00 น. วันถัดไป (Thai time)\n` +
         `🌐 UptimeRobot: จะได้รับ HTTP 503`
     );
 }
@@ -333,7 +333,7 @@ app.get('/', (req, res) => {
     thaiTime: formatThaiTime(thaiTime),
     uptime: process.uptime(),
     monitoringActive: isWorking,
-    workingHours: '05:00-21:00 Thai time (UTC+7)',
+    workingHours: '04:00-23:00 Thai time (UTC+7)',
     platform: 'Render.com (UTC timezone)',
     endpoints: {
       personal_info_form: `${config.BASE_URL}/form?userId=TEST_USER_ID`,
@@ -354,7 +354,7 @@ app.get('/', (req, res) => {
       lookerStudio: lookerStudioService.healthCheck(),
       notifications: notificationService.healthCheck(),
       uptimeRobot: {
-        workingHours: '05:00-21:00 Thai time (UTC+7)',
+        workingHours: '04:00-23:00 Thai time (UTC+7)',
         currentlyActive: isWorking,
         telegramNotifications: !!TELEGRAM_BOT_TOKEN,
         httpStatus: isWorking ? 200 : 503
@@ -385,13 +385,13 @@ app.get('/health', (req, res) => {
     if (!isWorking) {
         return res.status(503).json({ 
             status: 'sleeping', 
-            message: 'Outside working hours (05:00-21:00 Thai time)',
+            message: 'Outside working hours (04:00-23:00 Thai time)',
             serverTime: {
                 utc: utcTime.toISOString(),
                 thai: formatThaiTime(thaiTime),
                 thaiHour: thaiTime.getUTCHours()
             },
-            workingHours: '05:00-21:00 Thai time (UTC+7)',
+            workingHours: '04:00-23:00 Thai time (UTC+7)',
             platform: 'Render.com (UTC timezone)',
             nextActiveTime: getNextActiveTime(),
             note: 'Server in sleep mode - returns HTTP 503 for UptimeRobot'
@@ -406,7 +406,7 @@ app.get('/health', (req, res) => {
             thai: formatThaiTime(thaiTime),
             thaiHour: thaiTime.getUTCHours()
         },
-        workingHours: '05:00-21:00 Thai time (UTC+7)',
+        workingHours: '04:00-23:00 Thai time (UTC+7)',
         platform: 'Render.com (UTC timezone)',
         uptime: process.uptime(),
         nextStandbyTime: getNextStandbyTime()
@@ -427,7 +427,7 @@ app.get('/uptime-status', (req, res) => {
         status: status,
         active: isActive,
         message: isActive ? 'System is active and monitoring' : 'System in standby mode',
-        workingHours: '05:00-21:00 Thai time (UTC+7)',
+        workingHours: '04:00-23:00 Thai time (UTC+7)',
         platform: 'Render.com (UTC timezone)',
         serverTime: {
             utc: utcTime.toISOString(),
@@ -456,7 +456,7 @@ app.post('/api/monitoring/uptime-webhook', async (req, res) => {
                      `⏰ Alert Time: ${alertDateTime}\n` +
                      `📊 Working Hours: ${isWorkingHours() ? 'Active' : 'Standby'}\n` +
                      `🔄 Total Alerts: ${monitoringStats.downtimeAlerts}\n` +
-                     `💡 Note: ถ้าเป็นเวลา 21:00-05:00 Thai time = Sleep mode (ปกติ)`;
+                     `💡 Note: ถ้าเป็นเวลา 23:00-04:00 Thai time = Sleep mode (ปกติ)`;
         } else if (alertType === 'up') {
             message = `✅ *RECOVERY: Server Back Online*\n\n` +
                      `📍 Monitor: ${monitorFriendlyName}\n` +
@@ -511,7 +511,7 @@ app.get('/api/monitoring/stats', (req, res) => {
         },
         monitoring: {
             ...monitoringStats,
-            workingHours: '05:00-21:00 Thai time (UTC+7)',
+            workingHours: '04:00-23:00 Thai time (UTC+7)',
             currentlyInWorkingHours: isWorkingHours(),
             keepAliveActive: !!keepAliveInterval,
             telegramNotifications: !!TELEGRAM_BOT_TOKEN,
@@ -1593,10 +1593,10 @@ app.get('/api/health', async (req, res) => {
             platform: 'Render.com (UTC timezone)',
             workingHours: {
                 active: isWorking,
-                schedule: '05:00-21:00 Thai time (UTC+7)',
+                schedule: '04:00-23:00 Thai time (UTC+7)',
                 cronSchedule: {
-                    start: '22:00 UTC (05:00 Thai)',
-                    stop: '14:00 UTC (21:00 Thai)'
+                    start: '23:00 UTC (04:00 Thai)',
+                    stop: '16:00 UTC (23:00 Thai)'
                 },
                 nextActiveTime: isWorking ? null : getNextActiveTime(),
                 nextStandbyTime: isWorking ? getNextStandbyTime() : null,
@@ -1632,7 +1632,7 @@ app.get('/api/health', async (req, res) => {
             platform: 'Render.com (UTC timezone)',
             workingHours: {
                 active: isWorkingHours(),
-                schedule: '05:00-21:00 Thai time (UTC+7)'
+                schedule: '04:00-23:00 Thai time (UTC+7)'
             }
         });
     }
@@ -1656,21 +1656,21 @@ app.use((err, req, res, next) => {
 // ⏰ CRON SCHEDULE (แก้ไขสำหรับ RENDER.COM)
 // =====================================
 
-// เวลาไทย 05:00 = UTC 22:00 (คืนก่อน)
-schedule.scheduleJob('0 22 * * *', async () => {
+// เวลาไทย 04:00 = UTC 21:00 (คืนก่อน)
+schedule.scheduleJob('0 21 * * *', async () => {
     console.log('🌅 [SCHEDULED] Starting daily keep-alive service');
     console.log(`   ├── UTC: ${new Date().toISOString()}`);
     console.log(`   └── Thai: ${formatThaiTime()}`);
-    console.log('   (05:00 Thai time = 22:00 UTC)');
+    console.log('   (04:00 Thai time = 21:00 UTC)');
     await startKeepAlive();
 });
 
-// เวลาไทย 21:00 = UTC 14:00 
-schedule.scheduleJob('0 14 * * *', async () => {
+// เวลาไทย 23:00 = UTC 16:00 
+schedule.scheduleJob('0 16 * * *', async () => {
     console.log('🌙 [SCHEDULED] Stopping daily keep-alive service');
     console.log(`   ├── UTC: ${new Date().toISOString()}`);
     console.log(`   └── Thai: ${formatThaiTime()}`);
-    console.log('   (21:00 Thai time = 14:00 UTC)');
+    console.log('   (23:00 Thai time = 16:00 UTC)');
     await stopKeepAlive();
 });
 
@@ -1692,11 +1692,11 @@ async function initializeMonitoringSystem() {
     console.log(`   ├── UTC: ${utcTime.toISOString()}`);
     console.log(`   └── Thai: ${formatThaiTime(thaiTime)}`);
     console.log(`⏰ Current Thai hour: ${thaiTime.getUTCHours()}:${thaiTime.getUTCMinutes().toString().padStart(2, '0')}`);
-    console.log(`├── Working Hours: 05:00-21:00 (Thai time)`);
+    console.log(`├── Working Hours: 04:00-23:00 (Thai time)`);
     console.log(`├── Current Status: ${isWorking ? 'ACTIVE' : 'SLEEP MODE'}`);
     console.log(`├── Platform: Render.com (UTC timezone)`);
     console.log(`├── UptimeRobot will receive: HTTP ${isWorking ? '200' : '503'}`);
-    console.log(`└── Cron jobs: 22:00 UTC (start) / 14:00 UTC (stop)`);
+    console.log(`└── Cron jobs: 21:00 UTC (start) / 16:00 UTC (stop)`);
     
     // เริ่มทำงานทันทีถ้าอยู่ในเวลาทำงาน
     if (isWorking) {
@@ -1711,7 +1711,7 @@ async function initializeMonitoringSystem() {
             `😴 *Server Started in Sleep Mode*\n\n` +
             `📊 สถานะ: นอกเวลาทำงาน\n` +
             `🌙 โหมด: Sleep Mode (HTTP 503)\n` +
-            `⏰ เวลาเริ่มงาน: 05:00-21:00 Thai time\n` +
+            `⏰ เวลาเริ่มงาน: 04:00-23:00 Thai time\n` +
             `🌐 Platform: Render.com (UTC timezone)`
         );
     }
@@ -1830,7 +1830,7 @@ app.listen(PORT, async () => {
       `🚀 *Server Started Successfully*\n\n` +
       `🌐 Port: ${PORT}\n` +
       `📊 Status: ${isWorkingHours() ? 'Active Monitoring' : 'Sleep Mode'}\n` +
-      `🔄 Keep-Alive: ${isWorkingHours() ? 'Running' : 'Scheduled for 05:00 Thai'}\n` +
+      `🔄 Keep-Alive: ${isWorkingHours() ? 'Running' : 'Scheduled for 04:00 Thai'}\n` +
       `🔍 UptimeRobot: Ready for monitoring\n` +
       `🌐 Platform: Render.com (UTC timezone)\n` +
       `✅ All services operational`
