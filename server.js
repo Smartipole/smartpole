@@ -1,4 +1,4 @@
-// server.js (ปรับปรุงหลังแยก LINE Bot Handler + UptimeRobot Integration)
+// server.js (ปรับปรุงหลังแยก LINE Bot Handler + UptimeRobot Integration + Timezone Fix สำหรับ Render.com)
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -93,7 +93,7 @@ function authenticateAdminToken(req, res, next) {
 }
 
 // =====================================
-// 🔄 KEEP-ALIVE & MONITORING SYSTEM
+// 🔄 KEEP-ALIVE & MONITORING SYSTEM (แก้ไข Timezone สำหรับ Render.com)
 // =====================================
 
 let keepAliveInterval = null;
@@ -110,21 +110,100 @@ let monitoringStats = {
 const TELEGRAM_BOT_TOKEN = '7610983723:AAEFXDbDlq5uTHeyID8Fc5XEmIUx-LT6rJM';
 const TELEGRAM_CHAT_ID = '7809169283';
 
-// ฟังก์ชันเช็คว่าอยู่ในช่วงเวลาทำงานหรือไม่
-function isWorkingHours() {
+// ===============================================
+// 🕐 TIMEZONE FUNCTIONS สำหรับ RENDER.COM
+// ===============================================
+
+// ฟังก์ชันสำหรับแปลงเวลา UTC เป็นเวลาไทย
+function getThaiTime() {
     const now = new Date();
-    const hours = now.getHours();
-    // เวลาไทย: 05:00-21:00
-    return hours >= 5 && hours < 21;
+    // เพิ่ม 7 ชั่วโมง (25200000 มิลลิวินาที = 7 * 60 * 60 * 1000)
+    const thaiTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    return thaiTime;
 }
 
-// ฟังก์ชันส่งข้อความไป Telegram
+// ฟังก์ชันสำหรับแสดงเวลาไทยในรูปแบบที่อ่านง่าย
+function formatThaiTime(date = null) {
+    const thaiTime = date || getThaiTime();
+    return thaiTime.toISOString().replace('T', ' ').substring(0, 19) + ' (Thai)';
+}
+
+// ฟังก์ชันเช็คว่าอยู่ในช่วงเวลาทำงานหรือไม่ (แก้ไขแล้วสำหรับ Render)
+function isWorkingHours() {
+    const thaiTime = getThaiTime();
+    const hours = thaiTime.getUTCHours(); // ใช้ getUTCHours เพราะเราได้ปรับเวลาแล้ว
+    const minutes = thaiTime.getUTCMinutes();
+    
+    // Debug log
+    console.log(`🕐 Current times:`);
+    console.log(`   ├── UTC: ${new Date().toISOString()}`);
+    console.log(`   └── Thai: ${formatThaiTime(thaiTime)}`);
+    console.log(`   └── Thai hour: ${hours}:${minutes.toString().padStart(2, '0')}`);
+    
+    // เวลาไทย: 05:00-21:00
+    const isWorking = hours >= 5 && hours < 21;
+    console.log(`⚡ Working hours check: ${isWorking} (${hours}:${minutes.toString().padStart(2, '0')} is ${isWorking ? 'within' : 'outside'} 05:00-21:00 Thai time)`);
+    
+    return isWorking;
+}
+
+// ปรับปรุงฟังก์ชันคำนวณเวลาทำงานถัดไป
+function getNextActiveTime() {
+    const thaiTime = getThaiTime();
+    const hours = thaiTime.getUTCHours();
+    
+    if (hours < 5) {
+        // ถ้ายังไม่ถึง 5 โมงเช้าของวันนี้ (เวลาไทย)
+        const today = new Date(thaiTime);
+        today.setUTCHours(5, 0, 0, 0);
+        // แปลงกลับเป็น UTC สำหรับ return
+        const utcTime = new Date(today.getTime() - (7 * 60 * 60 * 1000));
+        return utcTime.toISOString();
+    } else {
+        // เริ่มทำงานพรุ่งนี้ 5 โมง (เวลาไทย)
+        const tomorrow = new Date(thaiTime);
+        tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+        tomorrow.setUTCHours(5, 0, 0, 0);
+        // แปลงกลับเป็น UTC สำหรับ return
+        const utcTime = new Date(tomorrow.getTime() - (7 * 60 * 60 * 1000));
+        return utcTime.toISOString();
+    }
+}
+
+// ฟังก์ชันคำนวณเวลาหยุดถัดไป
+function getNextStandbyTime() {
+    const thaiTime = getThaiTime();
+    const hours = thaiTime.getUTCHours();
+    
+    if (hours >= 21) {
+        // ถ้าเลยเวลาหยุดแล้ว ให้คืนเวลาหยุดของพรุ่งนี้
+        const tomorrow = new Date(thaiTime);
+        tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+        tomorrow.setUTCHours(21, 0, 0, 0);
+        const utcTime = new Date(tomorrow.getTime() - (7 * 60 * 60 * 1000));
+        return utcTime.toISOString();
+    } else {
+        // หยุดทำงานวันนี้ 21 โมง (เวลาไทย)
+        const today = new Date(thaiTime);
+        today.setUTCHours(21, 0, 0, 0);
+        const utcTime = new Date(today.getTime() - (7 * 60 * 60 * 1000));
+        return utcTime.toISOString();
+    }
+}
+
+// ฟังก์ชันส่งข้อความไป Telegram (ปรับปรุงให้แสดงเวลาทั้ง UTC และไทย)
 async function sendTelegramNotification(message) {
     try {
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        
+        // เพิ่มข้อมูลเวลาใน message
+        const thaiTime = getThaiTime();
+        const utcTime = new Date();
+        const timeInfo = `\n\n⏰ UTC: ${utcTime.toISOString()}\n🇹🇭 Thai: ${formatThaiTime(thaiTime)}`;
+        
         const response = await axios.post(url, {
             chat_id: TELEGRAM_CHAT_ID,
-            text: message,
+            text: message + timeInfo,
             parse_mode: 'Markdown'
         });
         
@@ -138,87 +217,124 @@ async function sendTelegramNotification(message) {
     }
 }
 
-// ฟังก์ชัน Keep-Alive ping
+// ฟังก์ชัน Keep-Alive ping (ปรับปรุง)
 function keepAlivePing() {
-    console.log(`🏓 Keep alive ping at ${new Date().toLocaleString('th-TH')}`);
+    const thaiTime = getThaiTime();
+    const utcTime = new Date();
+    
+    console.log(`🏓 Keep alive ping:`);
+    console.log(`   ├── UTC: ${utcTime.toISOString()}`);
+    console.log(`   └── Thai: ${formatThaiTime(thaiTime)}`);
     
     // Optional: ping ตัวเอง
     if (config.BASE_URL) {
         axios.get(`${config.BASE_URL}/health`)
-            .then(() => console.log('✅ Self ping successful'))
-            .catch(err => console.warn('⚠️ Self ping failed:', err.message));
+            .then((response) => {
+                console.log(`✅ Self ping successful: ${response.data.status}`);
+            })
+            .catch(err => {
+                console.warn(`⚠️ Self ping failed: ${err.message}`);
+            });
     }
 }
 
-// เริ่ม Keep-Alive
+// เริ่ม Keep-Alive (ปรับปรุง)
 async function startKeepAlive() {
-    if (keepAliveInterval) return; // ป้องกันการสร้างซ้ำ
+    if (keepAliveInterval) {
+        console.log('⚠️ Keep-alive already running, skipping start');
+        return;
+    }
     
-    const currentTime = new Date().toLocaleString('th-TH', { 
-        timeZone: 'Asia/Bangkok',
-        year: 'numeric',
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    const utcTime = new Date();
+    const thaiTime = getThaiTime();
     
-    console.log('🟢 Starting keep-alive service (Working hours: 05:00-21:00)');
+    console.log('🟢 Starting keep-alive service');
+    console.log(`📅 UTC: ${utcTime.toISOString()}`);
+    console.log(`📅 Thai: ${formatThaiTime(thaiTime)}`);
+    console.log(`⏰ Working hours: 05:00-21:00 Thai time`);
     
     // ส่งแจ้งเตือนไป Telegram
     await sendTelegramNotification(
-        `🟢 *ระบบเข้าสู่โหมด Standby*\n\n` +
-        `⏰ เวลา: ${currentTime}\n` +
-        `🔄 ระยะเวลา: 05:00 - 21:00\n` +
+        `🟢 *ระบบเข้าสู่โหมด Active*\n\n` +
         `📊 สถานะ: กำลังทำงาน Keep-Alive\n` +
-        `⚡ ระบบพร้อมใช้งาน`
+        `🔄 ระยะเวลา: 05:00 - 21:00 (Thai time)\n` +
+        `⚡ ระบบพร้อมใช้งาน\n` +
+        `🌐 UptimeRobot: จะได้รับ HTTP 200`
     );
     
     keepAliveInterval = setInterval(() => {
-        if (isWorkingHours()) {
+        const currentWorking = isWorkingHours();
+        if (currentWorking) {
             keepAlivePing();
         } else {
             console.log('😴 Outside working hours, skipping ping');
+            console.log('🔄 Will auto-stop at next scheduled time (21:00 Thai = 14:00 UTC)');
         }
     }, 14 * 60 * 1000); // ทุก 14 นาที
 }
 
-// หยุด Keep-Alive
+// หยุด Keep-Alive (ปรับปรุง)
 async function stopKeepAlive() {
-    if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-        keepAliveInterval = null;
-        
-        const currentTime = new Date().toLocaleString('th-TH', { 
-            timeZone: 'Asia/Bangkok',
-            year: 'numeric',
-            month: '2-digit', 
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        console.log('🔴 Keep-alive service stopped');
-        
-        // ส่งแจ้งเตือนไป Telegram
-        await sendTelegramNotification(
-            `🔴 *สิ้นสุดเวลา Standby*\n\n` +
-            `⏰ เวลา: ${currentTime}\n` +
-            `😴 สถานะ: ระบบหยุดพักการทำงาน\n` +
-            `🌙 โหมด: Sleep Mode\n` +
-            `⏰ เวลาเริ่มใหม่: 05:00 น. วันถัดไป`
-        );
+    if (!keepAliveInterval) {
+        console.log('⚠️ Keep-alive not running, skipping stop');
+        return;
+    }
+    
+    clearInterval(keepAliveInterval);
+    keepAliveInterval = null;
+    
+    const utcTime = new Date();
+    const thaiTime = getThaiTime();
+    
+    console.log('🔴 Keep-alive service stopped');
+    console.log(`📅 UTC: ${utcTime.toISOString()}`);
+    console.log(`📅 Thai: ${formatThaiTime(thaiTime)}`);
+    
+    // ส่งแจ้งเตือนไป Telegram
+    await sendTelegramNotification(
+        `🔴 *สิ้นสุดเวลาทำงาน*\n\n` +
+        `😴 สถานะ: ระบบเข้าสู่โหมด Sleep\n` +
+        `🌙 โหมด: Sleep Mode\n` +
+        `⏰ เวลาเริ่มใหม่: 05:00 น. วันถัดไป (Thai time)\n` +
+        `🌐 UptimeRobot: จะได้รับ HTTP 503`
+    );
+}
+
+// ตรวจสอบและแก้ไขสถานะอัตโนมัติ
+function validateAndFixKeepAliveState() {
+    const isWorking = isWorkingHours();
+    const isRunning = !!keepAliveInterval;
+    
+    console.log(`🔍 State validation:`);
+    console.log(`   ├── Should be working: ${isWorking}`);
+    console.log(`   ├── Currently running: ${isRunning}`);
+    console.log(`   └── Thai time: ${formatThaiTime()}`);
+    
+    if (isWorking && !isRunning) {
+        console.log('🔧 Auto-fixing: Should be working but not running → Starting keep-alive');
+        startKeepAlive();
+    } else if (!isWorking && isRunning) {
+        console.log('🔧 Auto-fixing: Should be sleeping but still running → Stopping keep-alive');
+        stopKeepAlive();
+    } else {
+        console.log('✅ State is correct - no action needed');
     }
 }
 
 // --- General Routes ---
 app.get('/', (req, res) => {
+  const thaiTime = getThaiTime();
+  const isWorking = isWorkingHours();
+  
   res.json({
     status: 'success',
     message: `LINE Bot API & Admin API for ${config.ORG_NAME} is running!`,
     timestamp: new Date().toISOString(),
+    thaiTime: formatThaiTime(thaiTime),
     uptime: process.uptime(),
-    monitoringActive: isWorkingHours(),
+    monitoringActive: isWorking,
+    workingHours: '05:00-21:00 Thai time (UTC+7)',
+    platform: 'Render.com (UTC timezone)',
     endpoints: {
       personal_info_form: `${config.BASE_URL}/form?userId=TEST_USER_ID`,
       repair_form: `${config.BASE_URL}/repair-form.html?userId=TEST_USER_ID`,
@@ -238,45 +354,72 @@ app.get('/', (req, res) => {
       lookerStudio: lookerStudioService.healthCheck(),
       notifications: notificationService.healthCheck(),
       uptimeRobot: {
-        workingHours: '05:00-21:00 (GMT+7)',
-        currentlyActive: isWorkingHours(),
-        telegramNotifications: !!TELEGRAM_BOT_TOKEN
+        workingHours: '05:00-21:00 Thai time (UTC+7)',
+        currentlyActive: isWorking,
+        telegramNotifications: !!TELEGRAM_BOT_TOKEN,
+        httpStatus: isWorking ? 200 : 503
       }
     }
   });
 });
 
 // =====================================
-// 🔍 UPTIMEROBOT MONITORING ENDPOINTS
+// 🔍 UPTIMEROBOT MONITORING ENDPOINTS (ปรับปรุงสำหรับ Timezone)
 // =====================================
 
-// Basic health check สำหรับ UptimeRobot
+// Basic health check สำหรับ UptimeRobot (ปรับปรุงแล้ว)
 app.get('/health', (req, res) => {
     monitoringStats.healthChecks++;
     
-    // ถ้าอยู่นอกเวลาทำงาน ให้ส่ง status พิเศษ
-    if (!isWorkingHours()) {
-        return res.status(200).json({ 
+    const utcTime = new Date();
+    const thaiTime = getThaiTime();
+    const isWorking = isWorkingHours();
+    
+    console.log(`🔍 Health check received:`);
+    console.log(`   ├── UTC Time: ${utcTime.toISOString()}`);
+    console.log(`   ├── Thai Time: ${formatThaiTime(thaiTime)}`);
+    console.log(`   ├── Working Status: ${isWorking ? 'ACTIVE' : 'SLEEPING'}`);
+    console.log(`   └── Will return: HTTP ${isWorking ? '200' : '503'}`);
+    
+    // ถ้าอยู่นอกเวลาทำงาน ให้ส่ง HTTP 503 สำหรับ UptimeRobot
+    if (!isWorking) {
+        return res.status(503).json({ 
             status: 'sleeping', 
-            message: 'Outside working hours (05:00-21:00 GMT+7)',
-            timestamp: new Date().toISOString(),
-            nextActiveTime: getNextActiveTime()
+            message: 'Outside working hours (05:00-21:00 Thai time)',
+            serverTime: {
+                utc: utcTime.toISOString(),
+                thai: formatThaiTime(thaiTime),
+                thaiHour: thaiTime.getUTCHours()
+            },
+            workingHours: '05:00-21:00 Thai time (UTC+7)',
+            platform: 'Render.com (UTC timezone)',
+            nextActiveTime: getNextActiveTime(),
+            note: 'Server in sleep mode - returns HTTP 503 for UptimeRobot'
         });
     }
     
     res.status(200).json({ 
         status: 'healthy', 
-        timestamp: new Date().toISOString(),
+        message: 'Server is active during working hours',
+        serverTime: {
+            utc: utcTime.toISOString(),
+            thai: formatThaiTime(thaiTime),
+            thaiHour: thaiTime.getUTCHours()
+        },
+        workingHours: '05:00-21:00 Thai time (UTC+7)',
+        platform: 'Render.com (UTC timezone)',
         uptime: process.uptime(),
-        workingHours: true
+        nextStandbyTime: getNextStandbyTime()
     });
 });
 
-// Status endpoint เฉพาะสำหรับ UptimeRobot
+// Status endpoint เฉพาะสำหรับ UptimeRobot (ปรับปรุงแล้ว)
 app.get('/uptime-status', (req, res) => {
     monitoringStats.uptimeChecks++;
     monitoringStats.lastUptimeCheck = new Date().toISOString();
     
+    const utcTime = new Date();
+    const thaiTime = getThaiTime();
     const isActive = isWorkingHours();
     const status = isActive ? 'active' : 'standby';
     
@@ -284,47 +427,18 @@ app.get('/uptime-status', (req, res) => {
         status: status,
         active: isActive,
         message: isActive ? 'System is active and monitoring' : 'System in standby mode',
-        workingHours: '05:00-21:00 GMT+7',
-        timestamp: new Date().toISOString(),
+        workingHours: '05:00-21:00 Thai time (UTC+7)',
+        platform: 'Render.com (UTC timezone)',
+        serverTime: {
+            utc: utcTime.toISOString(),
+            thai: formatThaiTime(thaiTime)
+        },
         uptime: process.uptime(),
         nextActiveTime: isActive ? null : getNextActiveTime(),
-        nextStandbyTime: isActive ? getNextStandbyTime() : null
+        nextStandbyTime: isActive ? getNextStandbyTime() : null,
+        httpHealthStatus: isActive ? 200 : 503
     });
 });
-
-// ฟังก์ชันคำนวณเวลาทำงานถัดไป
-function getNextActiveTime() {
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(5, 0, 0, 0);
-    
-    if (now.getHours() < 5) {
-        // ถ้ายังไม่ถึง 5 โมงเช้าของวันนี้
-        const today = new Date(now);
-        today.setHours(5, 0, 0, 0);
-        return today.toISOString();
-    }
-    
-    return tomorrow.toISOString();
-}
-
-// ฟังก์ชันคำนวณเวลาหยุดถัดไป
-function getNextStandbyTime() {
-    const now = new Date();
-    const today = new Date(now);
-    today.setHours(21, 0, 0, 0);
-    
-    if (now.getHours() >= 21) {
-        // ถ้าเลยเวลาหยุดแล้ว ให้คืนเวลาหยุดของพรุ่งนี้
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(21, 0, 0, 0);
-        return tomorrow.toISOString();
-    }
-    
-    return today.toISOString();
-}
 
 // UptimeRobot webhook receiver
 app.post('/api/monitoring/uptime-webhook', async (req, res) => {
@@ -339,14 +453,15 @@ app.post('/api/monitoring/uptime-webhook', async (req, res) => {
             message = `🚨 *ALERT: Server Down*\n\n` +
                      `📍 Monitor: ${monitorFriendlyName}\n` +
                      `🔗 URL: ${monitorURL}\n` +
-                     `⏰ Time: ${alertDateTime}\n` +
+                     `⏰ Alert Time: ${alertDateTime}\n` +
                      `📊 Working Hours: ${isWorkingHours() ? 'Active' : 'Standby'}\n` +
-                     `🔄 Total Alerts: ${monitoringStats.downtimeAlerts}`;
+                     `🔄 Total Alerts: ${monitoringStats.downtimeAlerts}\n` +
+                     `💡 Note: ถ้าเป็นเวลา 21:00-05:00 Thai time = Sleep mode (ปกติ)`;
         } else if (alertType === 'up') {
             message = `✅ *RECOVERY: Server Back Online*\n\n` +
                      `📍 Monitor: ${monitorFriendlyName}\n` +
                      `🔗 URL: ${monitorURL}\n` +
-                     `⏰ Time: ${alertDateTime}\n` +
+                     `⏰ Recovery Time: ${alertDateTime}\n` +
                      `🎉 Status: Server recovered successfully`;
         }
         
@@ -370,11 +485,13 @@ app.post('/api/monitoring/uptime-webhook', async (req, res) => {
     }
 });
 
-// Monitoring statistics
+// Monitoring statistics (ปรับปรุงแล้ว)
 app.get('/api/monitoring/stats', (req, res) => {
     const uptimeSeconds = process.uptime();
     const uptimeHours = Math.floor(uptimeSeconds / 3600);
     const uptimeMinutes = Math.floor((uptimeSeconds % 3600) / 60);
+    const utcTime = new Date();
+    const thaiTime = getThaiTime();
     
     res.json({
         server: {
@@ -384,18 +501,29 @@ app.get('/api/monitoring/stats', (req, res) => {
                 formatted: `${uptimeHours}h ${uptimeMinutes}m`,
                 days: Math.floor(uptimeSeconds / 86400)
             },
-            status: isWorkingHours() ? 'active' : 'standby'
+            status: isWorkingHours() ? 'active' : 'standby',
+            platform: 'Render.com (UTC timezone)'
+        },
+        time: {
+            utc: utcTime.toISOString(),
+            thai: formatThaiTime(thaiTime),
+            thaiHour: thaiTime.getUTCHours()
         },
         monitoring: {
             ...monitoringStats,
-            workingHours: '05:00-21:00 GMT+7',
+            workingHours: '05:00-21:00 Thai time (UTC+7)',
             currentlyInWorkingHours: isWorkingHours(),
             keepAliveActive: !!keepAliveInterval,
-            telegramNotifications: !!TELEGRAM_BOT_TOKEN
+            telegramNotifications: !!TELEGRAM_BOT_TOKEN,
+            httpHealthStatus: isWorkingHours() ? 200 : 503
         },
         schedule: {
             nextActiveTime: isWorkingHours() ? null : getNextActiveTime(),
-            nextStandbyTime: isWorkingHours() ? getNextStandbyTime() : null
+            nextStandbyTime: isWorkingHours() ? getNextStandbyTime() : null,
+            cronJobs: {
+                start: '22:00 UTC (05:00 Thai)',
+                stop: '14:00 UTC (21:00 Thai)'
+            }
         }
     });
 });
@@ -406,7 +534,8 @@ app.post('/api/admin/monitoring/start', authenticateAdminToken, async (req, res)
         await startKeepAlive();
         res.json({ 
             status: 'success', 
-            message: 'Keep-alive monitoring started manually' 
+            message: 'Keep-alive monitoring started manually',
+            thaiTime: formatThaiTime()
         });
     } catch (error) {
         res.status(500).json({ 
@@ -421,7 +550,8 @@ app.post('/api/admin/monitoring/stop', authenticateAdminToken, async (req, res) 
         await stopKeepAlive();
         res.json({ 
             status: 'success', 
-            message: 'Keep-alive monitoring stopped manually' 
+            message: 'Keep-alive monitoring stopped manually',
+            thaiTime: formatThaiTime()
         });
     } catch (error) {
         res.status(500).json({ 
@@ -435,15 +565,16 @@ app.post('/api/admin/monitoring/stop', authenticateAdminToken, async (req, res) 
 app.post('/api/admin/monitoring/test-notification', authenticateAdminToken, async (req, res) => {
     try {
         const testMessage = `🧪 *UptimeRobot Test Notification*\n\n` +
-                           `⏰ Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
                            `📊 Status: ${isWorkingHours() ? 'Active' : 'Standby'}\n` +
                            `🔄 Uptime: ${Math.floor(process.uptime() / 60)} minutes\n` +
+                           `🌐 Platform: Render.com (UTC timezone)\n` +
                            `✅ Telegram integration working correctly`;
         
         await sendTelegramNotification(testMessage);
         res.json({ 
             status: 'success', 
-            message: 'Test notification sent to Telegram successfully' 
+            message: 'Test notification sent to Telegram successfully',
+            thaiTime: formatThaiTime()
         });
     } catch (error) {
         res.status(500).json({ 
@@ -1087,7 +1218,7 @@ app.post('/api/admin/telegram-config', authenticateAdminToken, async (req, res) 
             // ส่งข้อความทดสอบเพิ่มเติมถ้าร้องขอ
             if (testMessage && isEnabled) {
                 await notificationService.sendCustomNotification(
-                    `✅ *การตั้งค่า Telegram สำเร็จ!*\n\nระบบแจ้งเตือนพร้อมใช้งานแล้ว\n📅 ${new Date().toLocaleString('th-TH', { timeZone: config.TIMEZONE })}`,
+                    `✅ *การตั้งค่า Telegram สำเร็จ!*\n\nระบบแจ้งเตือนพร้อมใช้งานแล้ว`,
                     true,
                     'general',
                     true
@@ -1430,7 +1561,7 @@ app.post('/api/admin/test-flex-message', authenticateAdminToken, async (req, res
     }
 });
 
-// เพิ่มใน server.js
+// เพิ่มใน server.js (ปรับปรุงแล้ว)
 app.get('/api/health', async (req, res) => {
     try {
         // ตรวจสอบ Google Sheets connection
@@ -1450,15 +1581,26 @@ app.get('/api/health', async (req, res) => {
         const lookerHealth = lookerStudioService.healthCheck();
         const notificationHealth = notificationService.healthCheck();
         
+        const utcTime = new Date();
+        const thaiTime = getThaiTime();
+        const isWorking = isWorkingHours();
+        
         res.json({
             status: 'healthy',
-            timestamp: new Date().toISOString(),
+            timestamp: utcTime.toISOString(),
+            thaiTime: formatThaiTime(thaiTime),
             uptime: process.uptime(),
+            platform: 'Render.com (UTC timezone)',
             workingHours: {
-                active: isWorkingHours(),
-                schedule: '05:00-21:00 GMT+7',
-                nextActiveTime: isWorkingHours() ? null : getNextActiveTime(),
-                nextStandbyTime: isWorkingHours() ? getNextStandbyTime() : null
+                active: isWorking,
+                schedule: '05:00-21:00 Thai time (UTC+7)',
+                cronSchedule: {
+                    start: '22:00 UTC (05:00 Thai)',
+                    stop: '14:00 UTC (21:00 Thai)'
+                },
+                nextActiveTime: isWorking ? null : getNextActiveTime(),
+                nextStandbyTime: isWorking ? getNextStandbyTime() : null,
+                httpHealthStatus: isWorking ? 200 : 503
             },
             services: {
                 googleSheets: 'connected',
@@ -1486,9 +1628,11 @@ app.get('/api/health', async (req, res) => {
             status: 'unhealthy',
             error: error.message,
             timestamp: new Date().toISOString(),
+            thaiTime: formatThaiTime(),
+            platform: 'Render.com (UTC timezone)',
             workingHours: {
                 active: isWorkingHours(),
-                schedule: '05:00-21:00 GMT+7'
+                schedule: '05:00-21:00 Thai time (UTC+7)'
             }
         });
     }
@@ -1508,25 +1652,69 @@ app.use((err, req, res, next) => {
     }
 });
 
-// ตั้งเวลาอัตโนมัติ
-// เริ่มทำงาน 05:00 ทุกวัน
-schedule.scheduleJob('0 5 * * *', async () => {
-    console.log('🌅 Starting daily keep-alive service');
+// =====================================
+// ⏰ CRON SCHEDULE (แก้ไขสำหรับ RENDER.COM)
+// =====================================
+
+// เวลาไทย 05:00 = UTC 22:00 (คืนก่อน)
+schedule.scheduleJob('0 22 * * *', async () => {
+    console.log('🌅 [SCHEDULED] Starting daily keep-alive service');
+    console.log(`   ├── UTC: ${new Date().toISOString()}`);
+    console.log(`   └── Thai: ${formatThaiTime()}`);
+    console.log('   (05:00 Thai time = 22:00 UTC)');
     await startKeepAlive();
 });
 
-// หยุดทำงาน 21:00 ทุกวัน  
-schedule.scheduleJob('0 21 * * *', async () => {
-    console.log('🌙 Stopping daily keep-alive service');
+// เวลาไทย 21:00 = UTC 14:00 
+schedule.scheduleJob('0 14 * * *', async () => {
+    console.log('🌙 [SCHEDULED] Stopping daily keep-alive service');
+    console.log(`   ├── UTC: ${new Date().toISOString()}`);
+    console.log(`   └── Thai: ${formatThaiTime()}`);
+    console.log('   (21:00 Thai time = 14:00 UTC)');
     await stopKeepAlive();
 });
 
-// เริ่มทำงานทันทีถ้าอยู่ในเวลาทำงาน
-if (isWorkingHours()) {
-    startKeepAlive();
-    console.log('🟢 Started keep-alive (currently in working hours)');
-} else {
-    console.log('😴 Not starting keep-alive (outside working hours)');
+// ตรวจสอบและแก้ไขสถานะทุก 30 นาที
+setInterval(validateAndFixKeepAliveState, 30 * 60 * 1000);
+
+// =====================================
+// 🚀 SERVER INITIALIZATION (ปรับปรุงแล้ว)
+// =====================================
+
+async function initializeMonitoringSystem() {
+    console.log('\n🔄 Monitoring & Keep-Alive System (Render.com + Thai Timezone):');
+    
+    const utcTime = new Date();
+    const thaiTime = getThaiTime();
+    const isWorking = isWorkingHours();
+    
+    console.log(`📅 Server startup times:`);
+    console.log(`   ├── UTC: ${utcTime.toISOString()}`);
+    console.log(`   └── Thai: ${formatThaiTime(thaiTime)}`);
+    console.log(`⏰ Current Thai hour: ${thaiTime.getUTCHours()}:${thaiTime.getUTCMinutes().toString().padStart(2, '0')}`);
+    console.log(`├── Working Hours: 05:00-21:00 (Thai time)`);
+    console.log(`├── Current Status: ${isWorking ? 'ACTIVE' : 'SLEEP MODE'}`);
+    console.log(`├── Platform: Render.com (UTC timezone)`);
+    console.log(`├── UptimeRobot will receive: HTTP ${isWorking ? '200' : '503'}`);
+    console.log(`└── Cron jobs: 22:00 UTC (start) / 14:00 UTC (stop)`);
+    
+    // เริ่มทำงานทันทีถ้าอยู่ในเวลาทำงาน
+    if (isWorking) {
+        console.log('🟢 Auto-starting keep-alive (currently in Thai working hours)');
+        await startKeepAlive();
+    } else {
+        console.log('😴 Not starting keep-alive (outside Thai working hours)');
+        console.log(`⏰ Next start time: ${getNextActiveTime()}`);
+        
+        // ส่งแจ้งเตือนว่าระบบเริ่มในโหมด sleep
+        await sendTelegramNotification(
+            `😴 *Server Started in Sleep Mode*\n\n` +
+            `📊 สถานะ: นอกเวลาทำงาน\n` +
+            `🌙 โหมด: Sleep Mode (HTTP 503)\n` +
+            `⏰ เวลาเริ่มงาน: 05:00-21:00 Thai time\n` +
+            `🌐 Platform: Render.com (UTC timezone)`
+        );
+    }
 }
 
 // เพิ่มในส่วนการปิด server (รวม keep-alive และ services)
@@ -1539,10 +1727,10 @@ process.on('SIGINT', async () => {
         // ส่งแจ้งเตือนปิดระบบ
         await sendTelegramNotification(
             `🛑 *Server Shutdown*\n\n` +
-            `⏰ Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
             `📊 Uptime: ${Math.floor(process.uptime() / 60)} minutes\n` +
             `🔄 Total Requests: ${monitoringStats.totalRequests}\n` +
-            `⚠️ Reason: Manual shutdown (SIGINT)`
+            `⚠️ Reason: Manual shutdown (SIGINT)\n` +
+            `🌐 Platform: Render.com`
         );
         
         // ปิด PDF Service
@@ -1570,10 +1758,10 @@ process.on('SIGTERM', async () => {
         // ส่งแจ้งเตือนปิดระบบ
         await sendTelegramNotification(
             `🛑 *Server Shutdown*\n\n` +
-            `⏰ Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
             `📊 Uptime: ${Math.floor(process.uptime() / 60)} minutes\n` +
             `🔄 Total Requests: ${monitoringStats.totalRequests}\n` +
-            `⚠️ Reason: Process termination (SIGTERM)`
+            `⚠️ Reason: Process termination (SIGTERM)\n` +
+            `🌐 Platform: Render.com`
         );
         
         // ปิด PDF Service
@@ -1633,23 +1821,18 @@ app.listen(PORT, async () => {
     console.log(`🔕 Auto Reports: Disabled`);
   }
   
-  // ✅ แสดงสถานะ Keep-Alive System
-  console.log(`\n🔄 Monitoring & Keep-Alive System:`);
-  console.log(`├── Working Hours: 05:00-21:00 (GMT+7)`);
-  console.log(`├── Current Status: ${isWorkingHours() ? 'Active' : 'Standby'}`);
-  console.log(`├── Keep-Alive: ${keepAliveInterval ? 'Running' : 'Stopped'}`);
-  console.log(`├── Telegram Notifications: ${TELEGRAM_BOT_TOKEN ? 'Configured' : 'Not configured'}`);
-  console.log(`└── UptimeRobot Integration: Ready`);
+  // ✅ Initialize monitoring system (ปรับปรุงแล้ว)
+  await initializeMonitoringSystem();
   
-  // ส่งแจ้งเตือนเริ่มระบบ
+  // ส่งแจ้งเตือนเริ่มระบบ (ปรับปรุงแล้ว)
   if (TELEGRAM_BOT_TOKEN) {
     await sendTelegramNotification(
       `🚀 *Server Started Successfully*\n\n` +
-      `⏰ Time: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n` +
       `🌐 Port: ${PORT}\n` +
-      `📊 Status: ${isWorkingHours() ? 'Active Monitoring' : 'Standby Mode'}\n` +
-      `🔄 Keep-Alive: ${isWorkingHours() ? 'Running' : 'Scheduled for 05:00'}\n` +
+      `📊 Status: ${isWorkingHours() ? 'Active Monitoring' : 'Sleep Mode'}\n` +
+      `🔄 Keep-Alive: ${isWorkingHours() ? 'Running' : 'Scheduled for 05:00 Thai'}\n` +
       `🔍 UptimeRobot: Ready for monitoring\n` +
+      `🌐 Platform: Render.com (UTC timezone)\n` +
       `✅ All services operational`
     );
   }
