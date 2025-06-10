@@ -672,19 +672,6 @@
             line-height: 1.4;
         }
 
-        /* Device Type Display */
-        .device-info {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
-            border: 2px solid rgba(16, 185, 129, 0.3);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            color: #86efac;
-            font-size: 0.85rem;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-
         /* Mobile optimizations */
         @media (max-width: 640px) {
             body {
@@ -802,12 +789,6 @@
 
         <!-- Login Form -->
         <div id="loginForm" class="login-form">
-            <!-- Device Info -->
-            <div id="deviceInfo" class="device-info">
-                <span style="font-size: 1rem; margin-right: 0.5rem;">📱</span>
-                <span id="deviceText">กำลังตรวจสอบอุปกรณ์...</span>
-            </div>
-
             <!-- Logout/Info Messages -->
             <div id="logoutMessage" class="logout-message hidden">
                 <span style="font-size: 1.2rem;">✅</span>
@@ -874,26 +855,26 @@
             </div>
         </div>
 
-        <!-- Role Selection (for admin on desktop) -->
+        <!-- Role Selection (for admin) -->
         <div id="roleSelection" class="login-form hidden">
             <div class="role-selection">
                 <div class="role-title">
-                    🖥️ เลือกระบบที่ต้องการเข้าใช้งาน (Desktop)
+                    🎯 เลือกระบบที่ต้องการเข้าใช้งาน
                 </div>
                 
                 <div class="role-options">
-                    <div class="role-option" data-target="desktop" onclick="selectRole('desktop')" tabindex="0">
-                        <div class="role-icon">🖥️</div>
+                    <div class="role-option" data-target="admin" onclick="selectRole('admin')" tabindex="0">
+                        <div class="role-icon">⚙️</div>
                         <div class="role-info">
-                            <h3>ระบบ Desktop dashboard</h3>
-                            <p>ระบบจัดการแบบเต็มรูปแบบสำหรับจอขนาดใหญ่ พร้อมฟีเจอร์ครบครัน</p>
+                            <h3>ระบบผู้ดูแลระบบ</h3>
+                            <p>จัดการผู้ใช้ ระบบ และข้อมูลทั้งหมด พร้อม Dashboard และรายงาน</p>
                         </div>
                     </div>
                     
                     <div class="role-option" data-target="executive" onclick="selectRole('executive')" tabindex="0">
                         <div class="role-icon">👑</div>
                         <div class="role-info">
-                            <h3>ระบบผู้บริหาร (Mobile)</h3>
+                            <h3>ระบบผู้บริหาร</h3>
                             <p>อนุมัติคำขอแจ้งซ่อม ลงลายเซ็นดิจิทัล และติดตามสถานะงาน</p>
                         </div>
                     </div>
@@ -901,7 +882,7 @@
                     <div class="role-option" data-target="technician" onclick="selectRole('technician')" tabindex="0">
                         <div class="role-icon">🔧</div>
                         <div class="role-info">
-                            <h3>ระบบช่างเทคนิค (Mobile)</h3>
+                            <h3>ระบบช่างเทคนิค</h3>
                             <p>จัดการงานซ่อม คลังอุปกรณ์ เสาไฟฟ้า และอัปเดตสถานะงาน</p>
                         </div>
                     </div>
@@ -939,80 +920,16 @@
         // Global variables
         let currentUser = null;
         let selectedRole = null;
-        let deviceType = 'unknown';
-        let isDesktop = false;
 
         // API Base URL
         const API_BASE = '';
 
-        // Device Detection
-        function detectDevice() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const screenWidth = window.screen.width;
-            const screenHeight = window.screen.height;
-            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            
-            // More comprehensive device detection
-            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-            const isTablet = /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP))))/i.test(userAgent);
-            
-            // Screen size detection (more accurate)
-            const isLargeScreen = screenWidth >= 1024 && screenHeight >= 768;
-            const isSmallScreen = screenWidth < 768;
-            
-            // Touch capability
-            const isTouchDevice = hasTouch;
-            
-            // Detect if it's likely a desktop
-            isDesktop = !isMobile && !isTablet && isLargeScreen && !isTouchDevice;
-            
-            // Determine device type
-            if (isMobile && isSmallScreen) {
-                deviceType = 'mobile';
-            } else if (isTablet || (isTouchDevice && !isSmallScreen)) {
-                deviceType = 'tablet';
-            } else if (isDesktop) {
-                deviceType = 'desktop';
-            } else {
-                deviceType = 'unknown';
-            }
-            
-            console.log('Device Detection:', {
-                userAgent: userAgent,
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-                hasTouch: hasTouch,
-                isMobile: isMobile,
-                isTablet: isTablet,
-                isLargeScreen: isLargeScreen,
-                isSmallScreen: isSmallScreen,
-                isTouchDevice: isTouchDevice,
-                isDesktop: isDesktop,
-                deviceType: deviceType
-            });
-            
-            return deviceType;
-        }
-
-        // System URLs based on device type
-        function getSystemUrls(deviceType, isDesktop) {
-            if (isDesktop) {
-                // Desktop URLs - all go to desktop dashboard
-                return {
-                    executive: '/admin/dashboard',
-                    technician: '/admin/dashboard', 
-                    admin: '/admin/dashboard',
-                    desktop: '/admin/dashboard'  // New desktop option
-                };
-            } else {
-                // Mobile/Tablet URLs - go to respective mobile interfaces
-                return {
-                    executive: '/admin/mobile-executive.html',
-                    technician: '/admin/mobile-technician.html',
-                    admin: '/admin/mobile-admin.html'
-                };
-            }
-        }
+        // System URLs
+        const SYSTEM_URLS = {
+            executive: '/admin/mobile-executive.html',
+            technician: '/admin/mobile-technician.html',
+            admin: '/admin/mobile-admin.html'
+        };
 
         // Role display names
         const ROLE_NAMES = {
@@ -1021,36 +938,12 @@
             admin: 'ผู้ดูแลระบบ'
         };
 
-        // Device display names
-        const DEVICE_NAMES = {
-            mobile: '📱 โทรศัพท์มือถือ',
-            tablet: '📱 แท็บเล็ต', 
-            desktop: '🖥️ เดสก์ทอป',
-            unknown: '❓ อุปกรณ์ไม่ระบุ'
-        };
-
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Detect device first
-            const detectedDevice = detectDevice();
-            updateDeviceDisplay(detectedDevice);
-            
             setupEventListeners();
             handleUrlParameters();
             checkExistingSession();
         });
-
-        function updateDeviceDisplay(deviceType) {
-            const deviceText = document.getElementById('deviceText');
-            if (deviceText) {
-                const deviceName = DEVICE_NAMES[deviceType] || DEVICE_NAMES.unknown;
-                if (isDesktop) {
-                    deviceText.innerHTML = `${deviceName} - ระบบ Desktop dashboard พร้อมใช้งาน`;
-                } else {
-                    deviceText.innerHTML = `${deviceName} - ระบบ Mobile Interface`;
-                }
-            }
-        }
 
         function setupEventListeners() {
             // Login form submission
@@ -1111,10 +1004,9 @@
         }
 
         async function checkExistingSession() {
-            // Get appropriate token storage keys based on device
-            const tokenKeys = isDesktop ? 
-                ['authToken', 'executive_token', 'technician_token'] : 
-                ['executive_token', 'technician_token'];
+            // Check for existing sessions
+            const executiveToken = localStorage.getItem('executive_token');
+            const technicianToken = localStorage.getItem('technician_token');
             
             // Function to validate and redirect to existing session
             const validateAndRedirect = (token, userKey, systemUrl, systemName) => {
@@ -1132,19 +1024,25 @@
                                 
                                 if (payload.exp && payload.exp < now) {
                                     // Token expired, clear session
-                                    clearAllSessions();
+                                    localStorage.removeItem('executive_token');
+                                    localStorage.removeItem('executive_user');
+                                    localStorage.removeItem('technician_token');
+                                    localStorage.removeItem('technician_user');
                                     showInfoMessage('⏰ เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
                                     return false;
                                 }
                             }
                         } catch (e) {
                             // If token parsing fails, clear session
-                            clearAllSessions();
+                            localStorage.removeItem('executive_token');
+                            localStorage.removeItem('executive_user');
+                            localStorage.removeItem('technician_token');
+                            localStorage.removeItem('technician_user');
                             return false;
                         }
                         
                         // Valid session found, redirect
-                        showRedirectInfo(systemName.toLowerCase(), user.role, systemUrl);
+                        showRedirectInfo(systemName.toLowerCase(), user.role);
                         setTimeout(() => {
                             window.location.href = systemUrl;
                         }, 2000);
@@ -1158,43 +1056,19 @@
                 return false;
             };
             
-            // Check desktop auth token first (for desktop devices)
-            if (isDesktop) {
-                const authToken = localStorage.getItem('authToken');
-                if (authToken) {
-                    const authUser = localStorage.getItem('authUser');
-                    if (validateAndRedirect(authToken, 'authUser', '/admin/dashboard', 'desktop')) {
-                        return;
-                    }
-                }
-            }
-            
-            // Check executive session
-            const executiveToken = localStorage.getItem('executive_token');
+            // Check executive session first
             if (executiveToken) {
-                const executiveUrl = isDesktop ? '/admin/dashboard' : '/admin/mobile-executive.html';
-                if (validateAndRedirect(executiveToken, 'executive_user', executiveUrl, 'executive')) {
+                if (validateAndRedirect(executiveToken, 'executive_user', SYSTEM_URLS.executive, 'executive')) {
                     return;
                 }
             }
             
             // Check technician session
-            const technicianToken = localStorage.getItem('technician_token');
             if (technicianToken) {
-                const technicianUrl = isDesktop ? '/admin/dashboard' : '/admin/mobile-technician.html';
-                if (validateAndRedirect(technicianToken, 'technician_user', technicianUrl, 'technician')) {
+                if (validateAndRedirect(technicianToken, 'technician_user', SYSTEM_URLS.technician, 'technician')) {
                     return;
                 }
             }
-        }
-
-        function clearAllSessions() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('authUser');
-            localStorage.removeItem('executive_token');
-            localStorage.removeItem('executive_user');
-            localStorage.removeItem('technician_token');
-            localStorage.removeItem('technician_user');
         }
 
         async function handleLogin(e) {
@@ -1229,7 +1103,7 @@
                     
                     showSuccess(`🎉 เข้าสู่ระบบสำเร็จ! สวัสดี ${ROLE_NAMES[data.role] || 'ผู้ใช้'} ${data.username}`);
                     
-                    // Determine target system based on role and device
+                    // Determine target system based on role
                     await determineTargetSystem(data.role);
                 } else {
                     showError(data.message || '❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
@@ -1245,42 +1119,22 @@
         async function determineTargetSystem(role) {
             await new Promise(resolve => setTimeout(resolve, 1500)); // Show success message briefly
             
-            if (isDesktop) {
-                // Desktop Logic
-                switch (role) {
-                    case 'executive':
-                    case 'technician':
-                        // Non-admin roles on desktop go directly to desktop dashboard
-                        redirectToSystem('desktop', role);
-                        break;
-                        
-                    case 'admin':
-                        // Admin on desktop can choose between desktop dashboard or mobile interfaces
-                        showRoleSelection();
-                        break;
-                        
-                    default:
-                        showError('🚫 ไม่พบสิทธิ์การเข้าถึงระบบ กรุณาติดต่อผู้ดูแลระบบ');
-                }
-            } else {
-                // Mobile/Tablet Logic (original behavior)
-                switch (role) {
-                    case 'executive':
-                        redirectToSystem('executive', role);
-                        break;
-                        
-                    case 'technician':
-                        redirectToSystem('technician', role);
-                        break;
-                        
-                    case 'admin':
-                        // Admin on mobile goes to technician interface (or could show selection)
-                        redirectToSystem('technician', role);
-                        break;
-                        
-                    default:
-                        showError('🚫 ไม่พบสิทธิ์การเข้าถึงระบบ กรุณาติดต่อผู้ดูแลระบบ');
-                }
+            switch (role) {
+                case 'executive':
+                    redirectToSystem('executive', role);
+                    break;
+                    
+                case 'technician':
+                    redirectToSystem('technician', role);
+                    break;
+                    
+                case 'admin':
+                    // Admin can access all systems - show selection
+                    showRoleSelection();
+                    break;
+                    
+                default:
+                    showError('🚫 ไม่พบสิทธิ์การเข้าถึงระบบ กรุณาติดต่อผู้ดูแลระบบ');
             }
         }
 
@@ -1316,186 +1170,58 @@
         }
 
         function redirectToSystem(targetSystem, userRole) {
-            const systemUrls = getSystemUrls(deviceType, isDesktop);
-            const targetUrl = systemUrls[targetSystem];
-            
-            if (!targetUrl) {
-                showError('❌ ไม่พบระบบที่ร้องขอ');
-                return;
-            }
-            
-            // Save session data based on target system and device
+            // Save session data based on target system
             const userData = {
                 username: currentUser.username,
                 role: userRole
             };
             
-            console.log('Saving session for:', { targetSystem, userRole, targetUrl, userData });
-            
-            // Clear all existing sessions first
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('authUser');
-            localStorage.removeItem('executive_token');
-            localStorage.removeItem('executive_user');
-            localStorage.removeItem('technician_token');
-            localStorage.removeItem('technician_user');
-            
-            if (targetSystem === 'desktop' || (isDesktop && ['executive', 'technician', 'admin'].includes(targetSystem))) {
-                // Desktop dashboard - use main auth token for all roles on desktop
-                console.log('Saving desktop session');
-                localStorage.setItem('authToken', currentUser.token);
-                localStorage.setItem('authUser', JSON.stringify(userData));
-            } else {
-                // Mobile interfaces
-                if (targetSystem === 'executive') {
-                    console.log('Saving executive session');
-                    localStorage.setItem('executive_token', currentUser.token);
-                    localStorage.setItem('executive_user', JSON.stringify(userData));
-                } else if (targetSystem === 'technician') {
-                    console.log('Saving technician session');
-                    localStorage.setItem('technician_token', currentUser.token);
-                    localStorage.setItem('technician_user', JSON.stringify(userData));
-                } else if (targetSystem === 'admin') {
-                    // Admin on mobile goes to technician interface
-                    console.log('Saving admin session as technician');
-                    localStorage.setItem('technician_token', currentUser.token);
-                    localStorage.setItem('technician_user', JSON.stringify(userData));
-                }
-            }
-            
-            // Verify session was saved
-            const savedToken = localStorage.getItem(targetSystem === 'desktop' || isDesktop ? 'authToken' : 
-                                                targetSystem === 'executive' ? 'executive_token' : 'technician_token');
-            const savedUser = localStorage.getItem(targetSystem === 'desktop' || isDesktop ? 'authUser' : 
-                                                targetSystem === 'executive' ? 'executive_user' : 'technician_user');
-            
-            console.log('Session verification:', { 
-                savedToken: !!savedToken, 
-                savedUser: !!savedUser,
-                savedUserData: savedUser ? JSON.parse(savedUser) : null
-            });
-            
-            if (!savedToken || !savedUser) {
-                showError('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูลเซสชัน');
-                return;
+            if (targetSystem === 'executive') {
+                localStorage.setItem('executive_token', currentUser.token);
+                localStorage.setItem('executive_user', JSON.stringify(userData));
+                // Clear other sessions
+                localStorage.removeItem('technician_token');
+                localStorage.removeItem('technician_user');
+            } else if (targetSystem === 'technician') {
+                localStorage.setItem('technician_token', currentUser.token);
+                localStorage.setItem('technician_user', JSON.stringify(userData));
+                // Clear other sessions
+                localStorage.removeItem('executive_token');
+                localStorage.removeItem('executive_user');
+            } else if (targetSystem === 'admin') {
+                // For admin, we can use either executive or technician token
+                // Let's use executive token for admin dashboard access
+                localStorage.setItem('executive_token', currentUser.token);
+                localStorage.setItem('executive_user', JSON.stringify(userData));
+                // Clear technician session
+                localStorage.removeItem('technician_token');
+                localStorage.removeItem('technician_user');
             }
             
             // Show redirect info
-            showRedirectInfo(targetSystem, userRole, targetUrl);
+            showRedirectInfo(targetSystem, userRole);
             
             // Redirect after delay
             setTimeout(() => {
-                console.log('Redirecting to:', targetUrl);
-                window.location.href = targetUrl;
+                window.location.href = SYSTEM_URLS[targetSystem];
             }, 3000);
         }
 
-        // Also update the checkExistingSession function to handle desktop sessions properly
-        async function checkExistingSession() {
-            console.log('Checking existing sessions...');
-            
-            // Function to validate and redirect to existing session
-            const validateAndRedirect = (token, userKey, systemUrl, systemName) => {
-                const userData = localStorage.getItem(userKey);
-                console.log('Validating session:', { token: !!token, userData: !!userData, systemName });
-                
-                if (userData) {
-                    try {
-                        const user = JSON.parse(userData);
-                        
-                        // Check if token is expired (simple check)
-                        try {
-                            const tokenParts = token.split('.');
-                            if (tokenParts.length === 3) {
-                                const payload = JSON.parse(atob(tokenParts[1]));
-                                const now = Math.floor(Date.now() / 1000);
-                                
-                                if (payload.exp && payload.exp < now) {
-                                    console.log('Token expired for', systemName);
-                                    // Token expired, clear session
-                                    clearAllSessions();
-                                    showInfoMessage('⏰ เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
-                                    return false;
-                                }
-                            }
-                        } catch (e) {
-                            console.error('Error parsing token for', systemName, e);
-                            // If token parsing fails, clear session
-                            clearAllSessions();
-                            return false;
-                        }
-                        
-                        console.log('Valid session found for', systemName, 'redirecting...');
-                        // Valid session found, redirect
-                        showRedirectInfo(systemName.toLowerCase(), user.role, systemUrl);
-                        setTimeout(() => {
-                            window.location.href = systemUrl;
-                        }, 2000);
-                        return true;
-                    } catch (e) {
-                        console.error('Error parsing user data for', systemName, e);
-                        // Invalid user data, clear session
-                        localStorage.removeItem(userKey);
-                        localStorage.removeItem(userKey.replace('_user', '_token').replace('User', 'Token'));
-                    }
-                }
-                return false;
-            };
-            
-            // Check desktop auth token first (for desktop devices)
-            if (isDesktop) {
-                const authToken = localStorage.getItem('authToken');
-                if (authToken) {
-                    console.log('Found desktop session');
-                    if (validateAndRedirect(authToken, 'authUser', '/admin/dashboard', 'desktop')) {
-                        return;
-                    }
-                }
-            }
-            
-            // Check executive session
-            const executiveToken = localStorage.getItem('executive_token');
-            if (executiveToken) {
-                console.log('Found executive session');
-                const executiveUrl = isDesktop ? '/admin/dashboard' : '/admin/mobile-executive.html';
-                if (validateAndRedirect(executiveToken, 'executive_user', executiveUrl, 'executive')) {
-                    return;
-                }
-            }
-            
-            // Check technician session
-            const technicianToken = localStorage.getItem('technician_token');
-            if (technicianToken) {
-                console.log('Found technician session');
-                const technicianUrl = isDesktop ? '/admin/dashboard' : '/admin/mobile-technician.html';
-                if (validateAndRedirect(technicianToken, 'technician_user', technicianUrl, 'technician')) {
-                    return;
-                }
-            }
-            
-            console.log('No valid existing sessions found');
-        }
-
-        function showRedirectInfo(targetSystem, userRole, targetUrl) {
+        function showRedirectInfo(targetSystem, userRole) {
             const systemNames = {
-                executive: 'ระบบผู้บริหาร (Mobile)',
-                technician: 'ระบบช่างเทคนิค (Mobile)',
-                admin: 'ระบบผู้ดูแลระบบ',
-                desktop: 'ระบบ Desktop dashboard'
+                executive: 'ระบบผู้บริหาร',
+                technician: 'ระบบช่างเทคนิค',
+                admin: 'ระบบผู้ดูแลระบบ'
             };
-            
-            const deviceInfo = isDesktop ? '🖥️ Desktop' : `📱 ${DEVICE_NAMES[deviceType]}`;
             
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('roleSelection').classList.add('hidden');
             document.getElementById('redirectInfo').classList.remove('hidden');
             
             document.getElementById('redirectTitle').innerHTML = 
-                `⚡ เข้าสู่${systemNames[targetSystem] || 'ระบบ'}`;
+                `⚡ กำลังเข้าสู่${systemNames[targetSystem]}`;
             document.getElementById('redirectMessage').innerHTML = 
-                `🎯 สวัสดี ${ROLE_NAMES[userRole]} ${currentUser?.username || ''}<br>` +
-                `${deviceInfo} - กำลังโหลดระบบ...<br>` +
-                `<small style="opacity: 0.8;">URL: ${targetUrl}</small>`;
+                `🎯 สวัสดี ${ROLE_NAMES[userRole]} ${currentUser?.username || ''}<br>กำลังโหลดระบบ...`;
         }
 
         function setLoginLoading(loading) {
@@ -1624,7 +1350,7 @@
             setTimeout(() => {
                 if (!document.querySelector('.logout-message:not(.hidden)') && 
                     !document.querySelector('.info-message:not(.hidden)')) {
-                    showToast(`🌟 ยินดีต้อนรับสู่ระบบจัดการ อบต.ข่าใหญ่ (${DEVICE_NAMES[deviceType]})`, 'info');
+                    showToast('🌟 ยินดีต้อนรับสู่ระบบจัดการ อบต.ข่าใหญ่', 'info');
                 }
             }, 1000);
         });
@@ -1652,15 +1378,6 @@
                 }
             });
         }
-
-        // Debug info for testing
-        console.log('Device Detection Result:', {
-            deviceType: deviceType,
-            isDesktop: isDesktop,
-            userAgent: navigator.userAgent,
-            screenSize: `${window.screen.width}x${window.screen.height}`,
-            touchSupport: 'ontouchstart' in window
-        });
     </script>
 </body>
 </html>
