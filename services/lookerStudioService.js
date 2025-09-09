@@ -29,11 +29,12 @@ class LookerStudioService {
     }
 
     if (filters.status) {
-      params.append('filter', `status:${filters.status}`);
+      // ✅ แก้ไข: ใช้ encodeURIComponent สำหรับภาษาไทย
+      params.append('filter', `status:${encodeURIComponent(filters.status)}`);
     }
 
     if (filters.requestId) {
-      params.append('filter', `request_id:${filters.requestId}`);
+      params.append('filter', `request_id:${encodeURIComponent(filters.requestId)}`);
     }
 
     if (params.toString()) {
@@ -67,11 +68,12 @@ class LookerStudioService {
     }
 
     if (filters.status) {
-      params.append('filter', `status:${filters.status}`);
+      // ✅ แก้ไข: ใช้ encodeURIComponent สำหรับภาษาไทย
+      params.append('filter', `status:${encodeURIComponent(filters.status)}`);
     }
 
     if (filters.requestId) {
-      params.append('filter', `request_id:${filters.requestId}`);
+      params.append('filter', `request_id:${encodeURIComponent(filters.requestId)}`);
     }
 
     if (params.toString()) {
