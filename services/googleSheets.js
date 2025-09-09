@@ -250,26 +250,6 @@ async generateRequestId() {
     }
   }
 
-  /**
-   * ทดสอบระบบ Request ID ใหม่
-   */
-  async testNewRequestIdSystem() {
-    console.log('🧪 Testing new request ID system...');
-    
-    // ทดสอบสร้าง ID หลายตัว
-    for (let i = 0; i < 5; i++) {
-      const requestId = await this.generateRequestId();
-      console.log(`✅ Generated: ${requestId}`);
-    }
-
-    // ทดสอบการเปลี่ยนเดือน
-    const testMonth = '2507'; // เดือนกรกฎาคม
-    const testCounter = await this.getNextRequestCounter(testMonth);
-    console.log(`✅ Test July counter: ${testMonth}-${testCounter.toString().padStart(3, '0')}`);
-    
-    return true;
-  }
-
   // ===== ฟังก์ชันเดิมที่ปรับปรุงแล้ว =====
 
   async getOrCreateSheet(sheetTitle) {
@@ -1249,6 +1229,76 @@ async saveRepairRequestFromForm(requestData) {
     }
   }
 
+  // ✅ เพิ่มฟังก์ชันบันทึกลายเซ็นใน Google Sheets
+  async saveSignatureData(signatureData) {
+    try {
+      const SIGNATURES_SHEET_NAME = 'Signatures';
+      
+      // กำหนด mapping สำหรับ Signatures sheet ก่อนสร้างชีท
+      if (!this.columnMappings[SIGNATURES_SHEET_NAME]) {
+        this.columnMappings[SIGNATURES_SHEET_NAME] = {
+          FILE_NAME: 'FILE_NAME',
+          MIME_TYPE: 'MIME_TYPE', 
+          BASE64_DATA: 'BASE64_DATA',
+          UPLOADED_BY: 'UPLOADED_BY',
+          UPLOADED_AT: 'UPLOADED_AT',
+          FILE_SIZE: 'FILE_SIZE',
+          USAGE_COUNT: 'USAGE_COUNT'
+        };
+      }
+
+      const sheet = await this.getOrCreateSheet(SIGNATURES_SHEET_NAME);
+      const mapping = this.columnMappings[SIGNATURES_SHEET_NAME];
+      
+      const sheetRowData = {
+        [mapping.FILE_NAME]: signatureData.fileName,
+        [mapping.MIME_TYPE]: signatureData.mimeType,
+        [mapping.BASE64_DATA]: signatureData.base64Data,
+        [mapping.UPLOADED_BY]: signatureData.uploadedBy,
+        [mapping.UPLOADED_AT]: signatureData.uploadedAt,
+        [mapping.FILE_SIZE]: signatureData.fileSize,
+        [mapping.USAGE_COUNT]: 0 // เริ่มต้น
+      };
+
+      await sheet.addRow(sheetRowData);
+      console.log(`✅ Signature data saved to Signatures sheet: ${signatureData.fileName}`);
+      return true;
+
+    } catch (error) {
+      console.error('❌ Error saving signature data:', error.message, error.stack);
+      return false;
+    }
+  }
+
+  // ✅ เพิ่มฟังก์ชันดึงลายเซ็นจาก Google Sheets
+  async getSignatureByFileName(fileName) {
+    try {
+      const SIGNATURES_SHEET_NAME = 'Signatures';
+      const sheet = await this.getOrCreateSheet(SIGNATURES_SHEET_NAME);
+      const rows = await sheet.getRows();
+      const mapping = this.columnMappings[SIGNATURES_SHEET_NAME];
+
+      for (const row of rows) {
+        if (row.get(mapping.FILE_NAME) === fileName) {
+          return {
+            fileName: row.get(mapping.FILE_NAME),
+            mimeType: row.get(mapping.MIME_TYPE),
+            base64Data: row.get(mapping.BASE64_DATA),
+            uploadedBy: row.get(mapping.UPLOADED_BY),
+            uploadedAt: row.get(mapping.UPLOADED_AT),
+            fileSize: row.get(mapping.FILE_SIZE),
+            usageCount: parseInt(row.get(mapping.USAGE_COUNT) || '0')
+          };
+        }
+      }
+      return null;
+
+    } catch (error) {
+      console.error('❌ Error fetching signature data:', error.message);
+      return null;
+    }
+  }
+
   // --- ฟังก์ชันเพิ่มเติมสำหรับ Request ID System ---
 
   /**
@@ -1474,47 +1524,6 @@ async saveRepairRequestFromForm(requestData) {
     }
   }
 
-  /**
-   * ฟังก์ชันทดสอบระบบครบถ้วน
-   */
-  async runFullSystemTest() {
-    console.log('🧪 Running comprehensive Request ID system test...');
-    
-    try {
-      // 1. ทดสอบการสร้าง Request ID
-      console.log('\n1. Testing Request ID generation:');
-      for (let i = 0; i < 3; i++) {
-        const requestId = await this.generateRequestId();
-        console.log(`   Generated: ${requestId}`);
-      }
-      
-      // 2. ทดสอบการดูสถิติ
-      console.log('\n2. Testing statistics:');
-      const stats = await this.getRequestIdStatistics();
-      console.log(`   Found ${stats.length} periods with data`);
-      stats.forEach(stat => {
-        console.log(`   ${stat.displayName}: ${stat.totalRequests} requests (Last: ${stat.lastRequestId})`);
-      });
-      
-      // 3. ทดสอบการ backup
-      console.log('\n3. Testing backup:');
-      const backup = await this.backupCounters();
-      console.log(`   Backed up ${backup.length} records`);
-      
-      // 4. ทดสอบการ validate Request ID
-      console.log('\n4. Testing validation:');
-      const testId = await this.generateRequestId();
-      const isValid = await this.isValidRequestId(testId);
-      console.log(`   Request ID ${testId} validation: ${isValid ? 'VALID' : 'INVALID'}`);
-      
-      console.log('\n✅ All tests completed successfully!');
-      return true;
-      
-    } catch (error) {
-      console.error('\n❌ Test failed:', error.message);
-      return false;
-    }
-  }
 }
 
 // แก้ไข module.exports ให้ถูกต้อง

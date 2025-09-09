@@ -336,8 +336,8 @@ app.get('/', (req, res) => {
     workingHours: '04:00-23:00 Thai time (UTC+7)',
     platform: 'Render.com (UTC timezone)',
     endpoints: {
-      personal_info_form: `${config.BASE_URL}/form?userId=TEST_USER_ID`,
-      repair_form: `${config.BASE_URL}/repair-form.html?userId=TEST_USER_ID`,
+      personal_info_form: `${config.BASE_URL}/form?userId=EXAMPLE_USER_ID`,
+      repair_form: `${config.BASE_URL}/repair-form.html?userId=EXAMPLE_USER_ID`,
       line_webhook: `${config.BASE_URL}/webhook`,
       react_admin_app: `${config.BASE_URL}/mobile`,
       admin_login_page_html: `${config.BASE_URL}/admin/login`,
@@ -557,29 +557,6 @@ app.post('/api/admin/monitoring/stop', authenticateAdminToken, async (req, res) 
         res.status(500).json({ 
             status: 'error', 
             message: error.message 
-        });
-    }
-});
-
-// Test UptimeRobot notification
-app.post('/api/admin/monitoring/test-notification', authenticateAdminToken, async (req, res) => {
-    try {
-        const testMessage = `🧪 *UptimeRobot Test Notification*\n\n` +
-                           `📊 Status: ${isWorkingHours() ? 'Active' : 'Standby'}\n` +
-                           `🔄 Uptime: ${Math.floor(process.uptime() / 60)} minutes\n` +
-                           `🌐 Platform: Render.com (UTC timezone)\n` +
-                           `✅ Telegram integration working correctly`;
-        
-        await sendTelegramNotification(testMessage);
-        res.json({ 
-            status: 'success', 
-            message: 'Test notification sent to Telegram successfully',
-            thaiTime: formatThaiTime()
-        });
-    } catch (error) {
-        res.status(500).json({ 
-            status: 'error', 
-            message: 'Failed to send test notification: ' + error.message 
         });
     }
 });
@@ -1136,46 +1113,80 @@ app.delete('/api/admin/users/:username', authenticateAdminToken, async (req, res
     }
 });
 
-// API Endpoint for uploading signature to Google Drive
+// API Endpoint for uploading signature - Alternative methods due to Service Account limitations
 app.post('/api/admin/upload-signature', authenticateAdminToken, async (req, res) => {
     try {
         const { imageDataUrl, fileNamePrefix } = req.body;
         const username = req.user ? req.user.username : 'unknown_user';
-        if (!imageDataUrl) return res.status(400).json({ status: 'error', message: 'No image data provided.' });
-        if (!config.GOOGLE_DRIVE_SIGNATURE_FOLDER_ID) {
-            console.error('❌ GOOGLE_DRIVE_SIGNATURE_FOLDER_ID is not configured');
-            return res.status(500).json({ status: 'error', message: 'Server configuration error for Google Drive.' });
+        
+        if (!imageDataUrl) {
+            return res.status(400).json({ status: 'error', message: 'No image data provided.' });
         }
+
         const matches = imageDataUrl.match(/^data:(.+);base64,(.+)$/);
-        if (!matches || matches.length !== 3) return res.status(400).json({ status: 'error', message: 'Invalid image data format.' });
+        if (!matches || matches.length !== 3) {
+            return res.status(400).json({ status: 'error', message: 'Invalid image data format.' });
+        }
 
         const mimeType = matches[1];
         const base64Data = matches[2];
-        const imageBuffer = Buffer.from(base64Data, 'base64');
-        const bufferStream = new stream.PassThrough();
-        bufferStream.end(imageBuffer);
         const anonyfileNamePrefix = fileNamePrefix ? fileNamePrefix.replace(/[^a-zA-Z0-9-_]/g, '') : 'signature';
         const fileName = `${anonyfileNamePrefix}_${username}_${Date.now()}.png`;
 
-        // ✅ แก้ไขตรงนี้: ใช้ JWT แทน jwt.JWT
-        const serviceAccountAuthForDrive = new JWT({
-            email: config.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-            key: config.GOOGLE_PRIVATE_KEY,
-            scopes: ['https://www.googleapis.com/auth/drive.file'],
+        // Method 1: Try Google Sheets as file storage (fallback)
+        try {
+            const signatureData = {
+                fileName: fileName,
+                mimeType: mimeType,
+                base64Data: base64Data,
+                uploadedBy: username,
+                uploadedAt: new Date().toLocaleString('th-TH', { timeZone: config.TIMEZONE }),
+                fileSize: Math.round(base64Data.length * 0.75) // approximate file size
+            };
+
+            // Store signature data in Google Sheets (Signatures sheet)
+            const success = await googleSheetsService.saveSignatureData(signatureData);
+            
+            if (success) {
+                // Return a data URL that can be used directly
+                const dataUrl = `data:${mimeType};base64,${base64Data}`;
+                
+                res.json({ 
+                    status: 'success', 
+                    message: 'ลายเซ็นบันทึกสำเร็จ! (เก็บในระบบฐานข้อมูล)', 
+                    signatureUrl: dataUrl,
+                    fileName: fileName,
+                    method: 'sheets_storage',
+                    note: 'ลายเซ็นถูกเก็บในฐานข้อมูล Google Sheets เนื่องจาก Service Account ไม่สามารถใช้ Google Drive ส่วนตัวได้'
+                });
+                return;
+            }
+        } catch (sheetsError) {
+            console.warn('⚠️ Sheets storage failed, trying alternative method:', sheetsError.message);
+        }
+
+        // Method 2: Store as base64 in response for immediate use
+        const dataUrl = `data:${mimeType};base64,${base64Data}`;
+        
+        console.log(`📝 Signature stored as data URL for user: ${username}, file: ${fileName}`);
+        
+        res.json({ 
+            status: 'success', 
+            message: 'ลายเซ็นพร้อมใช้งาน (ไม่ได้บันทึกถาวร)', 
+            signatureUrl: dataUrl,
+            fileName: fileName,
+            method: 'data_url',
+            note: 'Service Account ไม่สามารถอัปโหลดไฟล์ไปยัง Google Drive ส่วนตัวได้ กรุณาใช้ Shared Drive หรือ OAuth แทน',
+            suggestion: 'สำหรับการใช้งานจริง แนะนำให้ตั้งค่า Google Shared Drive หรือใช้ OAuth 2.0'
         });
-        const drive = google.drive({ version: 'v3', auth: serviceAccountAuthForDrive });
-        const fileMetadata = { name: fileName, parents: [config.GOOGLE_DRIVE_SIGNATURE_FOLDER_ID], mimeType: mimeType, };
-        const media = { mimeType: mimeType, body: bufferStream, };
-        const driveResponse = await drive.files.create({ requestBody: fileMetadata, media: media, fields: 'id, webViewLink, webContentLink', });
-        const fileId = driveResponse.data.id;
-        const webViewLink = driveResponse.data.webViewLink;
-        if (!fileId) throw new Error('Failed to upload to Google Drive, no file ID returned.');
-        await drive.permissions.create({ fileId: fileId, requestBody: { role: 'reader', type: 'anyone', }, });
-        res.json({ status: 'success', message: 'ลายเซ็นอัปโหลดสำเร็จ!', signatureUrl: webViewLink, fileId: fileId });
+
     } catch (error) {
-        console.error('❌ Error uploading signature to Google Drive:', error.message, error.stack);
-        if (error.response && error.response.data) console.error('Google API Error Details:', JSON.stringify(error.response.data, null, 2));
-        res.status(500).json({ status: 'error', message: 'เกิดข้อผิดพลาดในการอัปโหลดลายเซ็น: ' + error.message });
+        console.error('❌ Error processing signature:', error.message);
+        res.status(500).json({ 
+            status: 'error', 
+            message: 'เกิดข้อผิดพลาดในการประมวลผลลายเซ็น: ' + error.message,
+            suggestion: 'ปัญหา: Service Account ไม่สามารถใช้ Google Drive ส่วนตัวได้ ต้องใช้ Shared Drive หรือ OAuth'
+        });
     }
 });
 
@@ -1240,38 +1251,6 @@ app.post('/api/admin/telegram-config', authenticateAdminToken, async (req, res) 
         res.status(500).json({ 
             status: 'error', 
             message: 'เกิดข้อผิดพลาดในการบันทึกการตั้งค่า Telegram: ' + error.message 
-        });
-    }
-});
-
-app.post('/api/admin/telegram-test', authenticateAdminToken, async (req, res) => {
-    try {
-        const { botToken, chatId } = req.body;
-        
-        if (!botToken || !chatId) {
-            return res.status(400).json({ 
-                status: 'error', 
-                message: 'กรุณาระบุ Bot Token และ Chat ID' 
-            });
-        }
-
-        const testResult = await notificationService.testTelegramNotification(botToken, chatId);
-        
-        if (testResult) {
-            res.json({ 
-                status: 'success', 
-                message: 'การทดสอบ Telegram สำเร็จ!' 
-            });
-        } else {
-            res.status(400).json({ 
-                status: 'error', 
-                message: 'การทดสอบ Telegram ล้มเหลว กรุณาตรวจสอบการตั้งค่า' 
-            });
-        }
-    } catch (error) {
-        res.status(500).json({ 
-            status: 'error', 
-            message: 'เกิดข้อผิดพลาดในการทดสอบ: ' + error.message 
         });
     }
 });
@@ -1522,45 +1501,6 @@ app.post('/api/admin/flex-settings', authenticateAdminToken, async (req, res) =>
     }
 });
 
-app.post('/api/admin/test-flex-message', authenticateAdminToken, async (req, res) => {
-    try {
-        const { messageType, settings } = req.body;
-        const testUserId = 'TEST_USER_ID'; // หรือใช้ userId ของ admin
-        
-        // สร้างข้อความทดสอบ
-        let testMessage;
-        switch(messageType) {
-            case 'welcome':
-                testMessage = lineBotHandler.createWelcomeFlexMessage(settings);
-                break;
-            case 'form':
-                testMessage = lineBotHandler.createPersonalInfoFormFlexMessage(testUserId, settings);
-                break;
-            // เพิ่มกรณีอื่นๆ ตามต้องการ
-        }
-        
-        if (testMessage) {
-            // ส่งข้อความทดสอบ (สามารถส่งไปยัง admin หรือ log ไว้)
-            console.log('🧪 Test Flex Message:', JSON.stringify(testMessage, null, 2));
-            res.json({ 
-                status: 'success', 
-                message: 'สร้างข้อความทดสอบสำเร็จ',
-                preview: testMessage 
-            });
-        } else {
-            res.status(400).json({ 
-                status: 'error', 
-                message: 'ไม่สามารถสร้างข้อความทดสอบได้' 
-            });
-        }
-    } catch (error) {
-        res.status(500).json({ 
-            status: 'error', 
-            message: 'เกิดข้อผิดพลาดในการทดสอบ: ' + error.message 
-        });
-    }
-});
-
 // เพิ่มใน server.js (ปรับปรุงแล้ว)
 app.get('/api/health', async (req, res) => {
     try {
@@ -1785,8 +1725,8 @@ const PORT = config.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`🚀 Server is running on port ${PORT} in ${config.NODE_ENV} mode.`);
   console.log(`🔗 LINE Webhook URL: ${config.BASE_URL}/webhook`);
-  console.log(`📝 Personal Info Form URL: ${config.BASE_URL}/form?userId=TEST_USER_ID`);
-  console.log(`🔧 Repair Form URL: ${config.BASE_URL}/repair-form.html?userId=TEST_USER_ID`);
+  console.log(`📝 Personal Info Form URL: ${config.BASE_URL}/form?userId=EXAMPLE_USER_ID`);
+  console.log(`🔧 Repair Form URL: ${config.BASE_URL}/repair-form.html?userId=EXAMPLE_USER_ID`);
   console.log(`📱 React App (Mobile Admin): ${config.BASE_URL}/mobile`);
   console.log(`🔑 Admin Login (HTML): ${config.BASE_URL}/admin/login`);
   console.log(`👑 Executive Dashboard (HTML): ${config.BASE_URL}/admin/executive-dashboard`);
