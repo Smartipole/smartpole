@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ ระบบแจ้งซ่อมไฟฟ้า - Desktop Dashboard</title>
     
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#fbbf24">
+    <!-- Removed PWA-specific meta tags for iOS/Windows -->
+    
+    <!-- PWA Manifest -->
+    <!-- PWA removed -->
+    <!-- <link rel="manifest" href="/manifest.json"> -->
+    
+    <!-- Apple Touch Icons -->
+    <!-- Removed apple-touch-icon -->
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI2ZiYmYyNCIvPgo8dGV4dCB4PSIxNiIgeT0iMTkiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzBmMTcyYSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPuKaoTwvdGV4dD4KPC9zdmc+Cg==">
+    
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.css">
     
@@ -2238,9 +2252,8 @@
 
         function printRequest(requestId) {
             if (lookerStudioUrl && lookerStudioUrl !== '#') {
-                const separator = lookerStudioUrl.includes('?') ? '&' : '?';
-                const printUrl = `${lookerStudioUrl}${separator}REQUEST_ID=${encodeURIComponent(requestId)}`;
-                window.open(printUrl, '_blank');
+                // เปิด Looker Studio หน้าหลักให้ผู้ใช้เลือกข้อมูลเองเพื่อพิมพ์
+                window.open(lookerStudioUrl, '_blank');
                 showToast(`เปิด Looker Studio สำหรับพิมพ์คำขอ: ${requestId}`, 'success');
             } else {
                 // Try PDF export instead

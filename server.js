@@ -49,6 +49,15 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/admin', express.static(path.join(__dirname, 'admin_dashboard')));
 
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'public', 'sw.js'));
+});
+
 app.use('/mobile', express.static(path.join(__dirname, 'mobile', 'build')));
 app.get('/mobile/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'mobile', 'build', 'index.html'), (err) => {

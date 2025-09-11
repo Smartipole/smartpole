@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ เข้าสู่ระบบ - อบต.ข่าใหญ่</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#fbbf24">
+    <!-- Removed PWA-specific meta tags for iOS/Windows -->
+    
+    <!-- Removed PWA manifest and install capability -->
+    <!-- <link rel="manifest" href="/manifest.json"> -->
+    <!-- <meta name="mobile-web-app-capable" content="yes"> -->
+    <!-- <link rel="apple-touch-icon" href="/icons/icon-192.png"> -->
+    
+    <!-- Apple Touch Icons -->
+    <!-- Removed apple-touch-icon -->
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI2ZiYmYyNCIvPgo8dGV4dCB4PSIxNiIgeT0iMTkiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzBmMTcyYSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPuKaoTwvdGV4dD4KPC9zdmc+Cg==">
+    
     <!-- SweetAlert2 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
     <style>
@@ -1378,6 +1394,89 @@
                 }
             });
         }
+
+        // PWA functionality removed
+        // (deferredPrompt, install button, and PWA helpers are no longer used)
+
+        // PWA installation removed
+
+        // Manual install instructions removed
+        function showManualInstallInstructions() { }
+
+        // Service worker registration removed
+
+        // PWA Event listeners
+        // PWA event listeners removed
+
+        // Initialize PWA on login page
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔧 PWA System initializing...');
+
+            // ไม่บังคับแสดงปุ่มติดตั้งทันทีอีกต่อไป
+            // รอให้เบราว์เซอร์ยิงอีเวนต์ beforeinstallprompt ก่อน แล้วค่อยแสดงปุ่ม
+            // เพื่อให้คลิกแล้วเรียก native prompt ได้จริง
+            // PWA install polling removed
+        });
+
+        // Add visual install indicator
+        function addInstallIndicator() {
+            const indicator = document.createElement('div');
+            indicator.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem; animation: bounce 1s infinite;">
+                    <span>👇</span>
+                    <span style="font-size: 0.8rem;">กดติดตั้ง!</span>
+                </div>
+            `;
+            indicator.style.cssText = `
+                position: fixed;
+                bottom: 180px;
+                right: 60px;
+                background: rgba(59, 130, 246, 0.9);
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                z-index: 3001;
+                font-size: 0.8rem;
+                backdrop-filter: blur(10px);
+                animation: fadeInDown 1s ease-out;
+            `;
+
+            document.body.appendChild(indicator);
+
+            // Remove indicator after 8 seconds
+            setTimeout(() => {
+                indicator.style.opacity = '0';
+                setTimeout(() => indicator.remove(), 500);
+            }, 8000);
+        }
+
+        // Enhanced PWA detection with better browser support
+        function detectInstallSupport() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isChrome = userAgent.includes('chrome') && !userAgent.includes('edg');
+            const isEdge = userAgent.includes('edg');
+            const isSafari = userAgent.includes('safari') && !userAgent.includes('chrome');
+            const isFirefox = userAgent.includes('firefox');
+            
+            console.log('🔍 Browser detection:', {
+                isChrome,
+                isEdge,
+                isSafari,
+                isFirefox,
+                userAgent: userAgent.substring(0, 50) + '...'
+            });
+            
+            return {
+                isChrome,
+                isEdge,
+                isSafari,
+                isFirefox,
+                supportsInstall: isChrome || isEdge || isSafari
+            };
+        }
+
+        // Enhanced create install button with better positioning
+        function createInstallButton() { /* removed */ }
     </script>
 </body>
 </html>

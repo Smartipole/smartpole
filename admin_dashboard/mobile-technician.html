@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ ระบบช่างเทคนิค - อบต.ข่าใหญ่</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#fbbf24">
+    <!-- Removed PWA-specific meta tags for iOS/Windows -->
+    
+    <!-- PWA removed -->
+    <!-- <link rel="manifest" href="/manifest.json"> -->
+    
+    <!-- Apple Touch Icons -->
+    <!-- Removed apple-touch-icon -->
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI2ZiYmYyNCIvPgo8dGV4dCB4PSIxNiIgeT0iMTkiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzBmMTcyYSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPuKaoTwvdGV4dD4KPC9zdmc+Cg==">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Chart.js for Reports -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
@@ -4499,6 +4513,22 @@
         function closeAddPoleModal() { document.getElementById('addPoleModal').classList.remove('show'); document.getElementById('addPoleForm').reset(); }
         function showEditPoleModal() { document.getElementById('editPoleModal').classList.add('show'); }
         function closeEditPoleModal() { document.getElementById('editPoleModal').classList.remove('show'); document.getElementById('editPoleForm').reset(); }
+
+        // PWA removed
+        // let deferredPrompt = null;
+        // let pwaInstallButton = null;
+
+        // Check if running as PWA
+        function isPWA() { return false; }
+
+        // Create PWA install button for Technician (removed)
+        function createInstallButton() { }
+
+        // Install PWA function for Technician (removed)\n        async function installPWA() { }\n\n// Service worker registration removed
+
+        // PWA event listeners removed
+
+        // PWA initialization removed
 
         async function editPole(poleId) {
             try {

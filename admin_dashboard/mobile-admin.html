@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ ระบบผู้ดูแลแจ้งซ่อมไฟฟ้า - อบต.ข่าใหญ่</title>
     
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#fbbf24">
+    <!-- Removed PWA-specific meta tags for iOS/Windows -->
+    
+    <!-- PWA removed -->
+    <!-- <link rel="manifest" href="/manifest.json"> -->
+    
+    <!-- Apple Touch Icons -->
+    <!-- Removed apple-touch-icon -->
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI2ZiYmYyNCIvPgo8dGV4dCB4PSIxNiIgeT0iMTkiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzBmMTcyYSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPuKaoTwvdGV4dD4KPC9zdmc+Cg==">
+    
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.css">
     
@@ -321,7 +334,7 @@
         }
 
         .activity-list {
-            space-y: 1rem;
+            margin-bottom: 1rem;
         }
 
         .activity-item {
@@ -1802,6 +1815,105 @@
     <!-- SweetAlert2 JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.min.js"></script>
     <script src="/auth-utils.js"></script>
+    
+    <!-- PWA Install Script -->
+    <script>
+        // PWA Installation
+        // PWA removed
+        // let deferredPrompt;
+        // let pwaInstallButton = null;
+
+        // ตรวจสอบว่าเป็น PWA หรือไม่
+        function isPWA() { return false; }
+
+        // สร้างปุ่มติดตั้ง PWA
+        function createInstallButton() { /* removed */ }
+
+        // แสดงปุ่มติดตั้งทันที (เพื่อการทดสอบ)
+        function showInstallButtonAnyway() { /* removed */ }
+
+        // ติดตั้ง PWA
+        async function installPWA() { /* removed */ }
+
+        // คำแนะนำการติดตั้งแบบแมนนวล
+        function getManualInstallInstructions() { return ''; }
+
+        // ลงทะเบียน Service Worker
+        async function registerServiceWorker() { /* removed */ }
+
+        // แสดงการแจ้งเตือนการอัปเดต
+        function showUpdateAvailable() {
+            const updateBanner = document.createElement('div');
+            updateBanner.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 1rem; text-align: center; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    <span style="margin-right: 1rem;">🆕 มีการอัปเดตแอปใหม่!</span>
+                    <button onclick="updateApp()" style="background: white; color: #059669; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; font-weight: 600; margin-right: 0.5rem; cursor: pointer;">อัปเดต</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: transparent; color: white; border: 1px solid white; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;">ปิด</button>
+                </div>
+            `;
+            document.body.appendChild(updateBanner);
+        }
+
+        // อัปเดตแอป
+        function updateApp() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    if (registration.waiting) {
+                        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+
+        // อัปเดตสถานะออนไลน์
+        function updateOnlineStatus() {
+            const isOnline = navigator.onLine;
+            const statusEl = document.querySelector('.online-status') || createOnlineStatus();
+            
+            statusEl.innerHTML = isOnline 
+                ? '<span style="color: #10b981;">🟢 ออนไลน์</span>'
+                : '<span style="color: #ef4444;">🔴 ออฟไลน์</span>';
+        }
+
+        function createOnlineStatus() {
+            const statusEl = document.createElement('div');
+            statusEl.className = 'online-status';
+            statusEl.style.cssText = `
+                position: fixed;
+                top: 1rem;
+                right: 1rem;
+                z-index: 1000;
+                background: rgba(15, 23, 42, 0.9);
+                padding: 0.5rem 1rem;
+                border-radius: 50px;
+                font-size: 0.8rem;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(251, 191, 36, 0.3);
+            `;
+            document.body.appendChild(statusEl);
+            return statusEl;
+        }
+
+        // Event Listeners สำหรับ PWA
+        // PWA beforeinstallprompt removed
+
+        // PWA appinstalled removed
+
+        // เริ่มต้น PWA เมื่อโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', () => {
+            // Service Worker removed
+            
+            // ตรวจสอบว่าเป็น PWA แล้วหรือไม่
+            // PWA UI removed
+
+            // แสดงข้อความต้อนรับ PWA
+            setTimeout(() => {
+                // PWA welcome removed
+            }, 1000);
+        });
+    </script>
+    
     <script>
         let currentUser = null;
         let statsData = {
@@ -2558,10 +2670,8 @@
                 return;
             }
             
-            // เปิด Looker Studio พร้อมกรองข้อมูลตามเลขคำขอ
-            const separator = lookerBaseUrl.includes('?') ? '&' : '?';
-            const lookerUrl = `${lookerBaseUrl}${separator}REQUEST_ID=${encodeURIComponent(requestId)}`;
-            window.open(lookerUrl, '_blank');
+            // เปิด Looker Studio หน้าหลักให้ผู้ใช้เลือกข้อมูลเองเพื่อพิมพ์
+            window.open(lookerBaseUrl, '_blank');
             showToast(`เปิด Looker Studio สำหรับคำขอ: ${requestId} 🖨️`, 'success');
         }
 

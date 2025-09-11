@@ -10,77 +10,27 @@ class LookerStudioService {
   }
 
   /**
-   * ✅ สร้าง URL สำหรับ Dashboard พร้อม filter parameters
+   * ✅ สร้าง URL สำหรับ Dashboard (แบบง่าย ไม่มี parameters)
    */
   createDashboardUrl(filters = {}) {
     if (!this.isEnabled || !this.dashboardUrl) {
       return null;
     }
 
-    let url = this.dashboardUrl;
-    const params = new URLSearchParams();
-
-    // เพิ่ม filters ถ้ามี
-    if (filters.dateFrom) {
-      params.append('config', JSON.stringify({
-        'df146': `${filters.dateFrom}`,
-        'df147': `${filters.dateTo || filters.dateFrom}`
-      }));
-    }
-
-    if (filters.status) {
-      // ✅ แก้ไข: ใช้ encodeURIComponent สำหรับภาษาไทย
-      params.append('filter', `status:${encodeURIComponent(filters.status)}`);
-    }
-
-    if (filters.requestId) {
-      params.append('filter', `request_id:${encodeURIComponent(filters.requestId)}`);
-    }
-
-    if (params.toString()) {
-      url += (url.includes('?') ? '&' : '?') + params.toString();
-    }
-
-    return url;
+    // ส่งคืน URL พื้นฐานโดยไม่เพิ่ม parameters
+    return this.dashboardUrl;
   }
 
   /**
-   * ✅ สร้าง URL สำหรับ Embed Dashboard
+   * ✅ สร้าง URL สำหรับ Embed Dashboard (แบบง่าย)
    */
   createEmbedUrl(filters = {}) {
     if (!this.isEnabled || !this.embedUrl) {
       return this.createDashboardUrl(filters);
     }
 
-    let url = this.embedUrl;
-    const params = new URLSearchParams();
-
-    // เพิ่มการตั้งค่าสำหรับ embed
-    params.append('embed', 'true');
-    params.append('theme', 'light');
-    params.append('chrome', 'false'); // ซ่อนส่วน navigation ของ Looker Studio
-
-    if (filters.dateFrom) {
-      params.append('config', JSON.stringify({
-        'df146': `${filters.dateFrom}`,
-        'df147': `${filters.dateTo || filters.dateFrom}`
-      }));
-    }
-
-    if (filters.status) {
-      // ✅ แก้ไข: ใช้ encodeURIComponent สำหรับภาษาไทย
-      params.append('filter', `status:${encodeURIComponent(filters.status)}`);
-    }
-
-    if (filters.requestId) {
-      params.append('filter', `request_id:${encodeURIComponent(filters.requestId)}`);
-    }
-
-    if (params.toString()) {
-      url += (url.includes('?') ? '&' : '?') + params.toString();
-    }
-
-    return url;
+    // ส่งคืน URL พื้นฐานโดยไม่เพิ่ม parameters
+    return this.embedUrl;
   }
 
   /**
@@ -259,30 +209,11 @@ class LookerStudioService {
   }
 
   /**
-   * ✅ สร้างลิงก์ Dashboard สำหรับ Telegram
+   * ✅ สร้างลิงก์ Dashboard สำหรับ Telegram (แบบง่าย)
    */
   getDashboardLinkForTelegram(type = 'general', filters = {}) {
-    const urls = {
-      general: this.createDashboardUrl(),
-      today: this.createDashboardUrl({
-        dateFrom: new Date().toISOString().split('T')[0],
-        dateTo: new Date().toISOString().split('T')[0]
-      }),
-      thisWeek: this.createDashboardUrl({
-        dateFrom: this.getWeekStart().toISOString().split('T')[0],
-        dateTo: new Date().toISOString().split('T')[0]
-      }),
-      thisMonth: this.createDashboardUrl({
-        dateFrom: this.getMonthStart().toISOString().split('T')[0],
-        dateTo: new Date().toISOString().split('T')[0]
-      }),
-      pending: this.createDashboardUrl({ status: 'รอดำเนินการ' }),
-      inProgress: this.createDashboardUrl({ status: 'กำลังดำเนินการ' }),
-      completed: this.createDashboardUrl({ status: 'เสร็จสิ้น' }),
-      custom: this.createDashboardUrl(filters)
-    };
-
-    return urls[type] || urls.general;
+    // ส่งคืน URL พื้นฐานเดียวกันทุกประเภท
+    return this.createDashboardUrl();
   }
 
   /**
@@ -410,20 +341,40 @@ class LookerStudioService {
   }
 
   /**
-   * ✅ สร้างข้อความแจ้งเตือนใหม่พร้อม Dashboard link
+   * ✅ สร้างข้อความแจ้งเตือนใหม่พร้อม Dashboard link และ Print link
    */
   createNewRequestNotificationWithDashboard(requestData) {
     const baseMessage = this.formatNewRequestMessage(requestData);
-    return this.createTelegramMessageWithDashboard(baseMessage, 'today');
+    const messageWithDashboard = this.createTelegramMessageWithDashboard(baseMessage, 'today');
+    
+    // เพิ่มลิงค์พิมพ์รายงานโดยตรง
+    const printUrl = this.dashboardUrl; // ใช้ URL ที่กำหนดใน .env
+    if (printUrl && this.isEnabled) {
+      return `${messageWithDashboard}
+
+🖨️ [พิมพ์รายงานคำขอ](${printUrl})`;
+    }
+    
+    return messageWithDashboard;
   }
 
   /**
-   * ✅ สร้างข้อความอัปเดตสถานะพร้อม Dashboard link
+   * ✅ สร้างข้อความอัปเดตสถานะพร้อม Dashboard link และ Print link
    */
   createStatusUpdateNotificationWithDashboard(requestData, newStatus, technicianNotes) {
     const baseMessage = this.formatStatusUpdateMessage(requestData, newStatus, technicianNotes);
     const dashboardType = this.getDashboardTypeByStatus(newStatus);
-    return this.createTelegramMessageWithDashboard(baseMessage, dashboardType);
+    const messageWithDashboard = this.createTelegramMessageWithDashboard(baseMessage, dashboardType);
+    
+    // เพิ่มลิงค์พิมพ์รายงานสำหรับคำขอเฉพาะ
+    const printUrl = this.dashboardUrl;
+    if (printUrl && this.isEnabled) {
+      return `${messageWithDashboard}
+
+🖨️ [พิมพ์รายงานคำขอ](${printUrl})`;
+    }
+    
+    return messageWithDashboard;
   }
 
   /**
