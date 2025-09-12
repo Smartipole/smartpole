@@ -2,12 +2,12 @@
   "name": "Smart Pole Executive - ระบบผู้บริหาร",
   "short_name": "SP Executive",
   "description": "ระบบแจ้งซ่อมไฟฟ้าส่องสว่าง - สำหรับผู้บริหาร",
-  "start_url": "/admin_dashboard/mobile-executive.html",
+  "start_url": "/admin/mobile-executive.html",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#2563eb",
   "background_color": "#ffffff",
-  "scope": "/admin_dashboard/",
+  "scope": "/admin/",
   "categories": [
     "business",
     "utilities"

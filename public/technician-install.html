@@ -5,9 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#059669">
     <title>ติดตั้งแอป Smart Pole Technician</title>
-    <link rel="manifest" href="/public/technician-manifest.json">
-    <link rel="apple-touch-icon" href="/public/icons/technician-icon-192.svg">
+    <link rel="manifest" href="/technician-manifest.json">
+    <link rel="apple-touch-icon" href="/icons/technician-icon-192.png">
     <style>
+        .quick-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .quick-overlay.visible { display: flex; }
+        .quick-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px 24px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+        }
+        .quick-title { font-size: 18px; font-weight: 700; color: #111827; }
+        .quick-subtitle { font-size: 14px; color: #4b5563; margin-top: 6px; }
+        .quick-cta { margin-top: 16px; background: #059669; color: #fff; border: 0; padding: 12px 16px; border-radius: 9999px; font-weight: 600; width: 100%; }
+        .quick-note { font-size: 12px; color: #6b7280; margin-top: 10px; }
+        .ios-tip { font-size: 14px; color: #374151; background: #f9fafb; padding: 10px; border-radius: 10px; margin-top: 10px; display: none; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #059669 0%, #10b981 100%);
@@ -240,7 +264,7 @@
     </style>
 </head>
 <body>
-    <a href="/admin_dashboard/smart-login.html" class="back-link">
+    <a href="/admin/smart-login.html" class="back-link">
         <span>←</span>
         <span>กลับไปหน้าเข้าสู่ระบบ</span>
     </a>
@@ -293,10 +317,32 @@
         </div>
     </div>
 
+    <!-- Quick install overlay -->
+    <div id="quickOverlay" class="quick-overlay" role="dialog" aria-modal="true">
+        <div class="quick-card">
+            <div class="quick-title">แตะเพื่อติดตั้งแอปช่างเทคนิค</div>
+            <div class="quick-subtitle">กดปุ่มด้านล่างเพื่อเริ่มติดตั้ง (Android/Chrome)</div>
+            <button id="quickInstallCta" class="quick-cta">ติดตั้งทันที</button>
+            <div id="iosTip" class="ios-tip">iOS: เปิดเมนูแชร์ แล้วเลือก “Add to Home Screen”</div>
+            <div class="quick-note">ถ้าไม่ขึ้นปุ่ม ให้รอสักครู่หรือรีเฟรช</div>
+        </div>
+    </div>
+
     <script>
         let deferredPrompt = null;
         let installBtn = document.getElementById('installBtn');
         let statusDiv = document.getElementById('status');
+        const quickOverlay = document.getElementById('quickOverlay');
+        const quickInstallCta = document.getElementById('quickInstallCta');
+        const iosTip = document.getElementById('iosTip');
+
+        function isQuickMode() {
+            return new URLSearchParams(location.search).get('quick') === '1';
+        }
+
+        function isIOS() {
+            return /iphone|ipad|ipod/i.test(navigator.userAgent);
+        }
         
         function checkInstallStatus() {
             if (window.navigator.standalone === true || 
@@ -320,7 +366,7 @@
             statusDiv.innerHTML = '🎉 แอปช่างเทคนิคติดตั้งแล้ว!';
             installBtn.innerHTML = '🚀 เปิดแอปช่างเทคนิค';
             installBtn.onclick = () => {
-                window.location.href = '/admin_dashboard/mobile-technician.html';
+                window.location.href = '/admin/mobile-technician.html';
             };
         }
         
@@ -337,7 +383,7 @@
             installBtn.disabled = false;
             installBtn.innerHTML = '🚀 เปิดแอปช่างเทคนิค';
             installBtn.onclick = () => {
-                window.location.href = '/admin_dashboard/mobile-technician.html';
+                window.location.href = '/admin/mobile-technician.html';
             };
         }
         
@@ -387,6 +433,16 @@
             e.preventDefault();
             deferredPrompt = e;
             showReadyToInstall();
+
+            // Quick mode: แสดง overlay เพื่อให้ผู้ใช้กดติดตั้งทันที
+            if (isQuickMode() && !isIOS()) {
+                quickOverlay.classList.add('visible');
+            }
+            if (isQuickMode() && isIOS()) {
+                quickOverlay.classList.add('visible');
+                iosTip.style.display = 'block';
+                quickInstallCta.style.display = 'none';
+            }
         });
         
         window.addEventListener('appinstalled', () => {
@@ -397,7 +453,7 @@
         
         // Service Worker Registration
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/public/technician-sw.js')
+            navigator.serviceWorker.register('/technician-sw.js')
                 .then(registration => {
                     console.log('✅ Technician Service Worker registered:', registration.scope);
                 })
@@ -417,6 +473,16 @@
                 }
             }, 2000);
         });
+
+        // Quick install handlers
+        if (quickInstallCta) {
+            quickInstallCta.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    await installApp();
+                    quickOverlay.classList.remove('visible');
+                }
+            });
+        }
     </script>
 </body>
 </html>

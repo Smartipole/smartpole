@@ -78,6 +78,30 @@ app.get('/pwa', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'pwa-center.html'));
 });
 
+// Convenience redirects for legacy/deep links
+app.get('/admin/login', (req, res) => {
+  res.redirect('/admin/smart-login.html');
+});
+app.get('/admin_dashboard/*', (req, res) => {
+  const rest = req.params[0] || '';
+  res.redirect(`/admin/${rest}`);
+});
+app.get('/public/*', (req, res) => {
+  const rest = req.params[0] || '';
+  res.redirect(`/${rest}`);
+});
+
+// Short install links
+app.get('/install', (req, res) => {
+  res.redirect('/pwa');
+});
+app.get('/install/executive', (req, res) => {
+  res.redirect('/executive-install.html?quick=1');
+});
+app.get('/install/technician', (req, res) => {
+  res.redirect('/technician-install.html?quick=1');
+});
+
 app.use('/mobile', express.static(path.join(__dirname, 'mobile', 'build')));
 app.get('/mobile/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'mobile', 'build', 'index.html'), (err) => {

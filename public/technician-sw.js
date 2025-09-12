@@ -1,10 +1,10 @@
-const CACHE_NAME = 'smart-pole-technician-v1.0';
-const OFFLINE_PAGE = '/admin_dashboard/mobile-technician.html';
+const CACHE_NAME = 'smart-pole-technician-v1.1';
+const OFFLINE_PAGE = '/admin/mobile-technician.html';
 
 // ไฟล์ที่ต้องการ cache สำหรับหน้าช่าง
 const STATIC_CACHE_URLS = [
-  '/admin_dashboard/mobile-technician.html',
-  '/public/auth-utils.js',
+  '/admin/mobile-technician.html',
+  '/auth-utils.js',
   '/technician-manifest.json',
   '/icons/technician-icon-192.png',
   '/icons/technician-icon-512.png',

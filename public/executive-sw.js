@@ -1,10 +1,10 @@
-const CACHE_NAME = 'smart-pole-executive-v1.0';
-const OFFLINE_PAGE = '/admin_dashboard/mobile-executive.html';
+const CACHE_NAME = 'smart-pole-executive-v1.1';
+const OFFLINE_PAGE = '/admin/mobile-executive.html';
 
 // ไฟล์ที่ต้องการ cache สำหรับหน้าผู้บริหาร
 const STATIC_CACHE_URLS = [
-  '/admin_dashboard/mobile-executive.html',
-  '/public/auth-utils.js',
+  '/admin/mobile-executive.html',
+  '/auth-utils.js',
   '/executive-manifest.json',
   '/icons/executive-icon-192.png',
   '/icons/executive-icon-512.png',

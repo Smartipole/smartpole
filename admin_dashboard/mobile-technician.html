@@ -14,11 +14,11 @@
     <meta name="msapplication-tap-highlight" content="no">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/public/technician-manifest.json">
+    <link rel="manifest" href="/technician-manifest.json">
     
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="/public/icons/technician-icon-192.svg">
-    <link rel="apple-touch-icon" sizes="180x180" href="/public/icons/technician-icon-192.svg">
+    <link rel="apple-touch-icon" href="/icons/technician-icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/technician-icon-192.png">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI2ZiYmYyNCIvPgo8dGV4dCB4PSIxNiIgeT0iMTkiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzBmMTcyYSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPuKaoTwvdGV4dD4KPC9zdmc+Cg==">
@@ -4769,7 +4769,7 @@
 
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/public/technician-sw.js')
+            navigator.serviceWorker.register('/technician-sw.js')
                 .then((registration) => {
                     console.log('✅ Technician Service Worker registered:', registration.scope);
                     

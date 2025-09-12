@@ -2,12 +2,12 @@
   "name": "Smart Pole Technician - ระบบช่างเทคนิค",
   "short_name": "SP Technician",
   "description": "ระบบแจ้งซ่อมไฟฟ้าส่องสว่าง - สำหรับช่างเทคนิค",
-  "start_url": "/admin_dashboard/mobile-technician.html",
+  "start_url": "/admin/mobile-technician.html",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#059669",
   "background_color": "#ffffff",
-  "scope": "/admin_dashboard/",
+  "scope": "/admin/",
   "categories": [
     "utilities",
     "productivity"
