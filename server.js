@@ -58,6 +58,26 @@ app.get('/sw.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'sw.js'));
 });
 
+// PWA Service Workers Routes
+app.get('/executive-sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'executive-sw.js'));
+});
+
+app.get('/technician-sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'technician-sw.js'));
+});
+
+// PWA Center Route
+app.get('/pwa', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'pwa-center.html'));
+});
+
 app.use('/mobile', express.static(path.join(__dirname, 'mobile', 'build')));
 app.get('/mobile/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'mobile', 'build', 'index.html'), (err) => {

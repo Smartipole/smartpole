@@ -6,14 +6,19 @@
     <title>⚡ ระบบช่างเทคนิค - อบต.ข่าใหญ่</title>
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#fbbf24">
-    <!-- Removed PWA-specific meta tags for iOS/Windows -->
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SP Technician">
+    <meta name="msapplication-TileColor" content="#059669">
+    <meta name="msapplication-tap-highlight" content="no">
     
-    <!-- PWA removed -->
-    <!-- <link rel="manifest" href="/manifest.json"> -->
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/public/technician-manifest.json">
     
     <!-- Apple Touch Icons -->
-    <!-- Removed apple-touch-icon -->
+    <link rel="apple-touch-icon" href="/public/icons/technician-icon-192.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/icons/technician-icon-192.svg">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI2ZiYmYyNCIvPgo8dGV4dCB4PSIxNiIgeT0iMTkiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzBmMTcyYSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPuKaoTwvdGV4dD4KPC9zdmc+Cg==">
@@ -4760,6 +4765,73 @@
             if (e.target.classList.contains('report-modal')) {
                 closeWorkSummaryReportModal();
             }
+        });
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/public/technician-sw.js')
+                .then((registration) => {
+                    console.log('✅ Technician Service Worker registered:', registration.scope);
+                    
+                    // ตรวจสอบการอัปเดต
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                showToast('🔄 มีการอัปเดตใหม่ กรุณารีเฟรชหน้า', 'info');
+                            }
+                        });
+                    });
+                })
+                .catch((error) => {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // แสดงปุ่มติดตั้งหรือ banner
+            showInstallBanner();
+        });
+
+        function showInstallBanner() {
+            const banner = document.createElement('div');
+            banner.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+                    <div style="max-width: 400px; margin: 0 auto;">
+                        <p style="margin: 0 0 10px 0; font-weight: 600;">🔧 ติดตั้งแอป Smart Pole Technician</p>
+                        <button onclick="installPWA()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 20px; margin: 0 5px; cursor: pointer; backdrop-filter: blur(10px);">ติดตั้ง</button>
+                        <button onclick="this.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 20px; margin: 0 5px; cursor: pointer;">ปิด</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(banner);
+        }
+
+        window.installPWA = async function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
+                
+                if (result.outcome === 'accepted') {
+                    showToast('🎉 กำลังติดตั้งแอป...', 'success');
+                } else {
+                    showToast('😔 การติดตั้งถูกยกเลิก', 'warning');
+                }
+                
+                deferredPrompt = null;
+                document.querySelector('[style*="position: fixed"]')?.remove();
+            }
+        };
+
+        // ตรวจสอบว่าแอปถูกติดตั้งแล้วหรือไม่
+        window.addEventListener('appinstalled', () => {
+            showToast('🎉 ติดตั้งแอปสำเร็จแล้ว!', 'success');
+            document.querySelector('[style*="position: fixed"]')?.remove();
         });
     </script>
 </body>

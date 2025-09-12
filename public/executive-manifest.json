@@ -1,0 +1,52 @@
+{
+  "name": "Smart Pole Executive - ระบบผู้บริหาร",
+  "short_name": "SP Executive",
+  "description": "ระบบแจ้งซ่อมไฟฟ้าส่องสว่าง - สำหรับผู้บริหาร",
+  "start_url": "/admin_dashboard/mobile-executive.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "scope": "/admin_dashboard/",
+  "categories": [
+    "business",
+    "utilities"
+  ],
+  "lang": "th",
+  "icons": [
+    {
+      "src": "/icons/executive-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/executive-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ดูรายงาน",
+      "url": "/admin_dashboard/mobile-executive.html#reports",
+      "description": "ดูรายงานสรุป",
+      "icons": [
+        {
+          "src": "/icons/report-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "สถิติ",
+      "url": "/admin_dashboard/mobile-executive.html#stats",
+      "description": "ดูสถิติการซ่อม",
+      "icons": [
+        {
+          "src": "/icons/stats-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

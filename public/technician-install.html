@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#059669">
+    <title>ติดตั้งแอป Smart Pole Technician</title>
+    <link rel="manifest" href="/public/technician-manifest.json">
+    <link rel="apple-touch-icon" href="/public/icons/technician-icon-192.svg">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            backdrop-filter: blur(20px);
+        }
+        
+        .icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #059669, #10b981);
+            border-radius: 25px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            animation: glow 2s infinite alternate;
+            position: relative;
+        }
+        
+        .icon::before {
+            content: '🔧';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 24px;
+            background: #fbbf24;
+            padding: 5px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(251,191,36,0.4);
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 30px rgba(5,150,105,0.3); }
+            to { box-shadow: 0 0 40px rgba(16,185,129,0.6); }
+        }
+        
+        h1 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-size: 26px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .install-btn {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(5,150,105,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .install-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(5,150,105,0.4);
+        }
+        
+        .install-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .status.ready {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #166534;
+            border: 2px solid #10b981;
+        }
+        
+        .status.installing {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 2px solid #f59e0b;
+        }
+        
+        .status.success {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #166534;
+            border: 2px solid #10b981;
+        }
+        
+        .features {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 20px;
+        }
+        
+        .features h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .feature:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 28px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #059669, #10b981);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(-5px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .icon {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            .back-link {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 20px;
+                display: inline-flex;
+                background: rgba(0,0,0,0.1);
+                color: #4b5563;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/admin_dashboard/smart-login.html" class="back-link">
+        <span>←</span>
+        <span>กลับไปหน้าเข้าสู่ระบบ</span>
+    </a>
+    
+    <div class="container">
+        <div class="icon">
+            🔧
+        </div>
+        <h1>Smart Pole Technician</h1>
+        <div class="subtitle">ระบบช่างเทคนิค - องค์การบริหารส่วนตำบลข่าใหญ่</div>
+        
+        <div id="status" class="status ready">
+            ✅ พร้อมติดตั้งแอปช่างเทคนิคแล้ว!
+        </div>
+        
+        <button id="installBtn" class="install-btn">
+            🔧 ติดตั้งแอปช่างเทคนิค
+        </button>
+        
+        <div class="features">
+            <h3>🛠️ ฟีเจอร์สำหรับช่างเทคนิค</h3>
+            <div class="feature">
+                <div class="feature-icon">🔔</div>
+                <div>
+                    <strong>รับงานซ่อมใหม่</strong><br>
+                    <small>แจ้งเตือนงานซ่อมที่ได้รับมอบหมาย</small>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🗺️</div>
+                <div>
+                    <strong>แผนที่และนำทาง</strong><br>
+                    <small>ดูตำแหน่งและเส้นทางไปจุดซ่อม</small>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📸</div>
+                <div>
+                    <strong>ถ่ายภาพหลักฐาน</strong><br>
+                    <small>บันทึกภาพก่อนและหลังซ่อม</small>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📱</div>
+                <div>
+                    <strong>ทำงาน Offline</strong><br>
+                    <small>บันทึกข้อมูลได้แม้ไม่มีสัญญาณ</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let deferredPrompt = null;
+        let installBtn = document.getElementById('installBtn');
+        let statusDiv = document.getElementById('status');
+        
+        function checkInstallStatus() {
+            if (window.navigator.standalone === true || 
+                window.matchMedia('(display-mode: standalone)').matches ||
+                window.matchMedia('(display-mode: fullscreen)').matches) {
+                showAlreadyInstalled();
+                return;
+            }
+            showReadyToInstall();
+        }
+        
+        function showReadyToInstall() {
+            statusDiv.className = 'status ready';
+            statusDiv.innerHTML = '✅ พร้อมติดตั้งแอปช่างเทคนิคแล้ว!';
+            installBtn.disabled = false;
+            installBtn.innerHTML = '🔧 ติดตั้งแอปช่างเทคนิค';
+        }
+        
+        function showAlreadyInstalled() {
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = '🎉 แอปช่างเทคนิคติดตั้งแล้ว!';
+            installBtn.innerHTML = '🚀 เปิดแอปช่างเทคนิค';
+            installBtn.onclick = () => {
+                window.location.href = '/admin_dashboard/mobile-technician.html';
+            };
+        }
+        
+        function showInstalling() {
+            statusDiv.className = 'status installing';
+            statusDiv.innerHTML = '<div class="spinner"></div>กำลังติดตั้งแอปช่างเทคนิค...';
+            installBtn.disabled = true;
+            installBtn.innerHTML = '<div class="spinner"></div>กำลังติดตั้ง...';
+        }
+        
+        function showInstallSuccess() {
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = '🎉 ติดตั้งแอปช่างเทคนิคสำเร็จแล้ว!';
+            installBtn.disabled = false;
+            installBtn.innerHTML = '🚀 เปิดแอปช่างเทคนิค';
+            installBtn.onclick = () => {
+                window.location.href = '/admin_dashboard/mobile-technician.html';
+            };
+        }
+        
+        async function installApp() {
+            console.log('🚀 เริ่มการติดตั้งแอปช่างเทคนิค...');
+            showInstalling();
+            
+            try {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const result = await deferredPrompt.userChoice;
+                    
+                    if (result.outcome === 'accepted') {
+                        console.log('🎉 ผู้ใช้ยอมรับการติดตั้ง');
+                        setTimeout(() => showInstallSuccess(), 1000);
+                    } else {
+                        console.log('😔 ผู้ใช้ปฏิเสธการติดตั้ง');
+                        statusDiv.className = 'status ready';
+                        statusDiv.innerHTML = '😔 การติดตั้งถูกยกเลิก';
+                        installBtn.disabled = false;
+                        installBtn.innerHTML = '🔧 ลองติดตั้งอีกครั้ง';
+                    }
+                    
+                    deferredPrompt = null;
+                } else {
+                    // Fallback สำหรับเบราว์เซอร์ที่ไม่รองรับ
+                    statusDiv.className = 'status ready';
+                    statusDiv.innerHTML = '📱 กรุณาใช้เมนูเบราว์เซอร์เพื่อติดตั้งแอป';
+                    installBtn.disabled = false;
+                    installBtn.innerHTML = '🌐 ใช้เว็บเบราว์เซอร์แทน';
+                    installBtn.onclick = () => {
+                        window.location.href = '/admin_dashboard/mobile-technician.html';
+                    };
+                }
+            } catch (error) {
+                console.error('❌ ติดตั้งผิดพลาด:', error);
+                statusDiv.className = 'status ready';
+                statusDiv.innerHTML = '❌ เกิดข้อผิดพลาด กรุณาลองใหม่';
+                installBtn.disabled = false;
+                installBtn.innerHTML = '🔄 ลองใหม่';
+            }
+        }
+        
+        // Event Listeners
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('🎯 beforeinstallprompt event สำหรับแอปช่างเทคนิค!');
+            e.preventDefault();
+            deferredPrompt = e;
+            showReadyToInstall();
+        });
+        
+        window.addEventListener('appinstalled', () => {
+            console.log('🎉 แอปช่างเทคนิคติดตั้งสำเร็จแล้ว!');
+            showInstallSuccess();
+            deferredPrompt = null;
+        });
+        
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/public/technician-sw.js')
+                .then(registration => {
+                    console.log('✅ Technician Service Worker registered:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+        }
+        
+        // Setup
+        installBtn.addEventListener('click', installApp);
+        document.addEventListener('DOMContentLoaded', () => {
+            checkInstallStatus();
+            
+            setTimeout(() => {
+                if (!deferredPrompt && installBtn.disabled) {
+                    showReadyToInstall();
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

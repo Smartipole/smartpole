@@ -1,0 +1,63 @@
+{
+  "name": "Smart Pole Technician - ระบบช่างเทคนิค",
+  "short_name": "SP Technician",
+  "description": "ระบบแจ้งซ่อมไฟฟ้าส่องสว่าง - สำหรับช่างเทคนิค",
+  "start_url": "/admin_dashboard/mobile-technician.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#059669",
+  "background_color": "#ffffff",
+  "scope": "/admin_dashboard/",
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
+  "lang": "th",
+  "icons": [
+    {
+      "src": "/icons/technician-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/technician-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "งานซ่อมใหม่",
+      "url": "/admin_dashboard/mobile-technician.html#new-repairs",
+      "description": "ดูงานซ่อมที่รอดำเนินการ",
+      "icons": [
+        {
+          "src": "/icons/repair-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "งานในระหว่างดำเนินการ",
+      "url": "/admin_dashboard/mobile-technician.html#in-progress",
+      "description": "งานที่กำลังทำอยู่",
+      "icons": [
+        {
+          "src": "/icons/progress-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "แผนที่",
+      "url": "/admin_dashboard/mobile-technician.html#map",
+      "description": "ดูตำแหน่งงานซ่อม",
+      "icons": [
+        {
+          "src": "/icons/map-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
