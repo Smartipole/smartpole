@@ -1524,6 +1524,317 @@ async saveRepairRequestFromForm(requestData) {
     }
   }
 
+  // ===== Rating System Functions =====
+
+  /**
+   * บันทึกคะแนนประเมินลง Google Sheets (RATINGS sheet)
+   */
+  async saveRating(ratingData) {
+    try {
+      await this.authenticate();
+      const RATINGS_SHEET_NAME = 'RATINGS';
+      
+      // กำหนด mapping สำหรับ RATINGS sheet
+      if (!this.columnMappings[RATINGS_SHEET_NAME]) {
+        this.columnMappings[RATINGS_SHEET_NAME] = {
+          REQUEST_ID: 'REQUEST_ID',
+          LINE_USER_ID: 'LINE_USER_ID',
+          LINE_DISPLAY_NAME: 'LINE_DISPLAY_NAME',
+          RATING_DATE: 'RATING_DATE',
+          OVERALL_RATING: 'OVERALL_RATING',
+          SPEED_RATING: 'SPEED_RATING',
+          QUALITY_RATING: 'QUALITY_RATING',
+          COMMENT: 'COMMENT',
+          TIME_TO_COMPLETE_DAYS: 'TIME_TO_COMPLETE_DAYS',
+          EXPECTATION_MET: 'EXPECTATION_MET',
+          PHONE: 'PHONE'
+        };
+      }
+
+      const sheet = await this.getOrCreateSheet(RATINGS_SHEET_NAME);
+      const mapping = this.columnMappings[RATINGS_SHEET_NAME];
+      
+      // ดึงข้อมูล Request เพื่อหา Display Name และ Phone
+      const requestData = await this.findRepairRequestById(ratingData.requestId);
+      
+      if (!requestData) {
+        throw new Error(`ไม่พบข้อมูลการแจ้งซ่อมหมายเลข ${ratingData.requestId}`);
+      }
+
+      // คำนวณเวลาที่ใช้ทั้งหมด (วัน)
+      let daysToComplete = 0;
+      if (requestData.DATE_REPORTED) {
+        try {
+          const dateReportedStr = requestData.DATE_REPORTED;
+          const parts = dateReportedStr.split(/[,\s/:]/).filter(p => p);
+          
+          if (parts.length >= 3) {
+            const day = parseInt(parts[0]);
+            const month = parseInt(parts[1]);
+            let year = parseInt(parts[2]);
+            
+            if (year > 2500) year -= 543; // แปลงจาก พ.ศ. เป็น ค.ศ.
+            
+            const dateReported = new Date(year, month - 1, day);
+            const dateCompleted = new Date();
+            daysToComplete = ((dateCompleted - dateReported) / (1000 * 60 * 60 * 24)).toFixed(1);
+          }
+        } catch (parseError) {
+          console.warn('⚠️ Cannot parse date for calculating completion time:', parseError.message);
+        }
+      }
+
+      // เตรียมข้อมูลสำหรับบันทึก
+      const sheetRowData = {
+        [mapping.REQUEST_ID]: ratingData.requestId,
+        [mapping.LINE_USER_ID]: ratingData.lineUserId,
+        [mapping.LINE_DISPLAY_NAME]: requestData.LINE_DISPLAY_NAME || 'N/A',
+        [mapping.RATING_DATE]: ratingData.ratingDate,
+        [mapping.OVERALL_RATING]: ratingData.overallRating || '',
+        [mapping.SPEED_RATING]: ratingData.speedRating || '',
+        [mapping.QUALITY_RATING]: ratingData.qualityRating || '',
+        [mapping.COMMENT]: ratingData.comment || '',
+        [mapping.TIME_TO_COMPLETE_DAYS]: daysToComplete,
+        [mapping.EXPECTATION_MET]: ratingData.expectationMet || '',
+        [mapping.PHONE]: requestData.PHONE || ''
+      };
+
+      await sheet.addRow(sheetRowData);
+      console.log(`✅ Rating saved for request ${ratingData.requestId}: ${ratingData.overallRating}⭐`);
+      return true;
+
+    } catch (error) {
+      console.error('❌ Error saving rating:', error.message, error.stack);
+      return false;
+    }
+  }
+
+  /**
+   * ดึงคะแนนประเมินตาม Request ID
+   */
+  async getRatingByRequestId(requestId) {
+    try {
+      await this.authenticate();
+      const RATINGS_SHEET_NAME = 'RATINGS';
+      const sheet = await this.getOrCreateSheet(RATINGS_SHEET_NAME);
+      const rows = await sheet.getRows();
+      const mapping = this.columnMappings[RATINGS_SHEET_NAME];
+
+      for (const row of rows) {
+        if (row.get(mapping.REQUEST_ID) === requestId) {
+          const rating = {};
+          for (const internalKey in mapping) {
+            rating[internalKey] = row.get(mapping[internalKey]) || '';
+          }
+          console.log(`✅ Found rating for request: ${requestId}`);
+          return rating;
+        }
+      }
+      
+      console.log(`ℹ️ No rating found for request: ${requestId}`);
+      return null;
+
+    } catch (error) {
+      console.error('❌ Error getting rating:', error.message);
+      return null;
+    }
+  }
+
+  /**
+   * คำนวณคะแนนเฉลี่ยทั้งหมด
+   */
+  async getAverageRatings() {
+    try {
+      await this.authenticate();
+      const RATINGS_SHEET_NAME = 'RATINGS';
+      const sheet = await this.getOrCreateSheet(RATINGS_SHEET_NAME);
+      const rows = await sheet.getRows();
+      const mapping = this.columnMappings[RATINGS_SHEET_NAME];
+
+      if (rows.length === 0) {
+        return { 
+          overall: 0, 
+          speed: 0, 
+          quality: 0, 
+          count: 0,
+          averageCompletionDays: 0
+        };
+      }
+
+      let totalOverall = 0, totalSpeed = 0, totalQuality = 0;
+      let countOverall = 0, countSpeed = 0, countQuality = 0;
+      let totalCompletionDays = 0, countCompletionDays = 0;
+
+      for (const row of rows) {
+        const overall = parseFloat(row.get(mapping.OVERALL_RATING));
+        const speed = parseFloat(row.get(mapping.SPEED_RATING));
+        const quality = parseFloat(row.get(mapping.QUALITY_RATING));
+        const completionDays = parseFloat(row.get(mapping.TIME_TO_COMPLETE_DAYS));
+
+        if (!isNaN(overall) && overall > 0) {
+          totalOverall += overall;
+          countOverall++;
+        }
+        if (!isNaN(speed) && speed > 0) {
+          totalSpeed += speed;
+          countSpeed++;
+        }
+        if (!isNaN(quality) && quality > 0) {
+          totalQuality += quality;
+          countQuality++;
+        }
+        if (!isNaN(completionDays) && completionDays > 0) {
+          totalCompletionDays += completionDays;
+          countCompletionDays++;
+        }
+      }
+
+      const result = {
+        overall: countOverall > 0 ? (totalOverall / countOverall).toFixed(2) : 0,
+        speed: countSpeed > 0 ? (totalSpeed / countSpeed).toFixed(2) : 0,
+        quality: countQuality > 0 ? (totalQuality / countQuality).toFixed(2) : 0,
+        count: countOverall,
+        averageCompletionDays: countCompletionDays > 0 ? (totalCompletionDays / countCompletionDays).toFixed(1) : 0
+      };
+
+      console.log(`✅ Average ratings calculated:`, result);
+      return result;
+
+    } catch (error) {
+      console.error('❌ Error calculating average ratings:', error.message);
+      return { overall: 0, speed: 0, quality: 0, count: 0, averageCompletionDays: 0 };
+    }
+  }
+
+  /**
+   * ดึงคะแนนประเมินทั้งหมด (สำหรับ Dashboard)
+   */
+  async getAllRatings(options = {}) {
+    const { limit, sortBy = 'newest', minRating, maxRating } = options;
+    
+    try {
+      await this.authenticate();
+      const RATINGS_SHEET_NAME = 'RATINGS';
+      const sheet = await this.getOrCreateSheet(RATINGS_SHEET_NAME);
+      let rows = await sheet.getRows();
+      const mapping = this.columnMappings[RATINGS_SHEET_NAME];
+
+      let allRatings = rows.map(row => {
+        const ratingData = {};
+        for (const internalKey in mapping) {
+          ratingData[internalKey] = row.get(mapping[internalKey]) || '';
+        }
+        return ratingData;
+      });
+
+      // Filter by rating range
+      if (minRating || maxRating) {
+        allRatings = allRatings.filter(rating => {
+          const overall = parseFloat(rating.OVERALL_RATING);
+          if (isNaN(overall)) return false;
+          if (minRating && overall < minRating) return false;
+          if (maxRating && overall > maxRating) return false;
+          return true;
+        });
+      }
+
+      // Sort
+      allRatings.sort((a, b) => {
+        if (sortBy === 'rating-high') {
+          return parseFloat(b.OVERALL_RATING || 0) - parseFloat(a.OVERALL_RATING || 0);
+        } else if (sortBy === 'rating-low') {
+          return parseFloat(a.OVERALL_RATING || 0) - parseFloat(b.OVERALL_RATING || 0);
+        } else {
+          // Sort by date (newest first)
+          return new Date(b.RATING_DATE) - new Date(a.RATING_DATE);
+        }
+      });
+
+      // Apply limit
+      if (limit && limit > 0) {
+        allRatings = allRatings.slice(0, limit);
+      }
+
+      console.log(`✅ Fetched ${allRatings.length} ratings`);
+      return allRatings;
+
+    } catch (error) {
+      console.error('❌ Error fetching all ratings:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * ตรวจสอบว่า Request ID นี้ได้รับการให้คะแนนแล้วหรือยัง
+   */
+  async hasRating(requestId) {
+    try {
+      const rating = await this.getRatingByRequestId(requestId);
+      return rating !== null;
+    } catch (error) {
+      console.error(`❌ Error checking rating for ${requestId}:`, error.message);
+      return false;
+    }
+  }
+
+  /**
+   * ดึงสถิติคะแนนประเมินรายเดือน
+   */
+  async getRatingStatisticsByMonth() {
+    try {
+      await this.authenticate();
+      const RATINGS_SHEET_NAME = 'RATINGS';
+      const sheet = await this.getOrCreateSheet(RATINGS_SHEET_NAME);
+      const rows = await sheet.getRows();
+      const mapping = this.columnMappings[RATINGS_SHEET_NAME];
+
+      const monthlyStats = {};
+
+      for (const row of rows) {
+        const ratingDate = row.get(mapping.RATING_DATE);
+        const overall = parseFloat(row.get(mapping.OVERALL_RATING));
+
+        if (ratingDate && !isNaN(overall)) {
+          // Extract month from date (format: DD/MM/YYYY, HH:MM:SS)
+          const dateParts = ratingDate.split(/[,\s/]/);
+          if (dateParts.length >= 3) {
+            const month = dateParts[1]; // MM
+            const year = dateParts[2];  // YYYY
+            const monthKey = `${year}-${month}`;
+
+            if (!monthlyStats[monthKey]) {
+              monthlyStats[monthKey] = {
+                totalRating: 0,
+                count: 0,
+                period: monthKey
+              };
+            }
+
+            monthlyStats[monthKey].totalRating += overall;
+            monthlyStats[monthKey].count++;
+          }
+        }
+      }
+
+      // คำนวณค่าเฉลี่ย
+      const statistics = Object.values(monthlyStats).map(stat => ({
+        period: stat.period,
+        averageRating: (stat.totalRating / stat.count).toFixed(2),
+        count: stat.count
+      }));
+
+      // เรียงตาม period
+      statistics.sort((a, b) => b.period.localeCompare(a.period));
+
+      console.log(`✅ Monthly rating statistics calculated`);
+      return statistics;
+
+    } catch (error) {
+      console.error('❌ Error calculating monthly statistics:', error.message);
+      return [];
+    }
+  }
+
 }
 
 // แก้ไข module.exports ให้ถูกต้อง

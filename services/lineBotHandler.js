@@ -175,6 +175,17 @@ function createWelcomeFlexMessage(customSettings = null) {
                             text: "ติดตามการซ่อม"
                         },
                         flex: 1
+                    },
+                    {
+                        type: "button",
+                        style: "link",
+                        height: "sm",
+                        action: {
+                            type: "message",
+                            label: "🔄 เริ่มใหม่",
+                            text: "เริ่มใหม่"
+                        },
+                        color: "#64748b"
                     }
                 ],
                 paddingAll: "20px",
@@ -381,6 +392,7 @@ function createPersonalInfoFormFlexMessage(userId, customSettings = null) {
             footer: {
                 type: "box",
                 layout: "vertical",
+                spacing: "sm",
                 contents: [
                     {
                         type: "button",
@@ -392,6 +404,16 @@ function createPersonalInfoFormFlexMessage(userId, customSettings = null) {
                         },
                         color: settings.primaryColor,
                         height: "md"
+                    },
+                    {
+                        type: "button",
+                        style: "link",
+                        action: {
+                            type: "message",
+                            label: "❌ ยกเลิก",
+                            text: "ยกเลิก"
+                        },
+                        color: "#ef4444"
                     }
                 ],
                 paddingAll: "20px",
@@ -880,10 +902,118 @@ function createPersonalInfoConfirmationFlexMessage(userData, customSettings = nu
                             label: "✏️ แก้ไขข้อมูล",
                             text: "แก้ไขข้อมูล"
                         }
+                    },
+                    {
+                        type: "button",
+                        style: "link",
+                        action: {
+                            type: "message",
+                            label: "❌ ยกเลิก",
+                            text: "ยกเลิก"
+                        },
+                        color: "#ef4444",
+                        height: "sm"
                     }
                 ],
                 paddingAll: "20px",
                 backgroundColor: settings.bgColor
+            }
+        }
+    };
+}
+
+// Flex Message for Invalid Action - Show buttons instead of typing
+function createInvalidActionFlexMessage() {
+    return {
+        type: "flex",
+        altText: "❓ กรุณาเลือกจากตัวเลือกที่ให้ไว้",
+        contents: {
+            type: "bubble",
+            size: "kilo",
+            header: {
+                type: "box",
+                layout: "vertical",
+                contents: [
+                    {
+                        type: "text",
+                        text: "❓ คำสั่งไม่ถูกต้อง",
+                        weight: "bold",
+                        size: "lg",
+                        color: "#ffffff",
+                        align: "center"
+                    }
+                ],
+                backgroundColor: "#ef4444",
+                paddingAll: "15px"
+            },
+            body: {
+                type: "box",
+                layout: "vertical",
+                contents: [
+                    {
+                        type: "text",
+                        text: "กรุณาเลือกจากตัวเลือกด้านล่าง",
+                        size: "sm",
+                        color: "#64748b",
+                        wrap: true,
+                        align: "center",
+                        margin: "md"
+                    },
+                    {
+                        type: "separator",
+                        margin: "lg"
+                    },
+                    {
+                        type: "text",
+                        text: "เลือกการดำเนินการ:",
+                        weight: "bold",
+                        size: "sm",
+                        color: "#0f172a",
+                        margin: "lg"
+                    }
+                ],
+                paddingAll: "20px"
+            },
+            footer: {
+                type: "box",
+                layout: "vertical",
+                spacing: "sm",
+                contents: [
+                    {
+                        type: "button",
+                        style: "primary",
+                        action: {
+                            type: "message",
+                            label: "✅ ยืนยันข้อมูล",
+                            text: "ยืนยันข้อมูล"
+                        },
+                        color: "#10b981",
+                        height: "md"
+                    },
+                    {
+                        type: "button",
+                        style: "secondary",
+                        action: {
+                            type: "message",
+                            label: "✏️ แก้ไขข้อมูล",
+                            text: "แก้ไขข้อมูล"
+                        },
+                        color: "#3b82f6"
+                    },
+                    {
+                        type: "button",
+                        style: "link",
+                        action: {
+                            type: "message",
+                            label: "❌ ยกเลิก",
+                            text: "ยกเลิก"
+                        },
+                        color: "#ef4444",
+                        height: "sm"
+                    }
+                ],
+                paddingAll: "20px",
+                backgroundColor: "#f8fafc"
             }
         }
     };
@@ -1468,10 +1598,271 @@ function createTrackingMethodFlexMessage(customSettings = null) {
                             label: "📱 ใช้เบอร์โทรศัพท์",
                             text: "ติดตามด้วยเบอร์โทร"
                         }
+                    },
+                    {
+                        type: "button",
+                        style: "link",
+                        action: {
+                            type: "message",
+                            label: "🔄 กลับหน้าแรก",
+                            text: "เริ่มใหม่"
+                        },
+                        color: "#64748b"
                     }
                 ],
                 paddingAll: "20px",
                 backgroundColor: "#fff7ed"
+            }
+        }
+    };
+}
+
+function createCompletionWithRatingFlexMessage(requestData, customSettings = null) {
+    const settings = customSettings || currentFlexSettings.confirm;
+    
+    return {
+        type: "flex",
+        altText: "🎉 งานซ่อมเสร็จสิ้น - ประเมินความพึงพอใจ",
+        contents: {
+            type: "bubble",
+            header: {
+                type: "box",
+                layout: "vertical",
+                contents: [
+                    {
+                        type: "text",
+                        text: "🎉 งานซ่อมเสร็จสิ้น!",
+                        weight: "bold",
+                        size: "xl",
+                        color: "#ffffff",
+                        align: "center"
+                    }
+                ],
+                backgroundColor: "#10b981",
+                paddingAll: "20px"
+            },
+            body: {
+                type: "box",
+                layout: "vertical",
+                contents: [
+                    {
+                        type: "box",
+                        layout: "horizontal",
+                        contents: [
+                            {
+                                type: "box",
+                                layout: "vertical",
+                                contents: [
+                                    {
+                                        type: "text",
+                                        text: "🎫",
+                                        size: "xxl",
+                                        color: "#10b981",
+                                        align: "center"
+                                    }
+                                ],
+                                flex: 0,
+                                paddingAll: "10px",
+                                backgroundColor: "#f0fdf4",
+                                cornerRadius: "15px"
+                            },
+                            {
+                                type: "box",
+                                layout: "vertical",
+                                contents: [
+                                    {
+                                        type: "text",
+                                        text: "เลขที่การแจ้งซ่อม",
+                                        size: "sm",
+                                        color: "#64748b"
+                                    },
+                                    {
+                                        type: "text",
+                                        text: requestData.REQUEST_ID || 'N/A',
+                                        weight: "bold",
+                                        size: "xl",
+                                        color: "#10b981",
+                                        margin: "xs"
+                                    }
+                                ],
+                                flex: 1,
+                                margin: "md"
+                            }
+                        ],
+                        margin: "lg"
+                    },
+                    {
+                        type: "separator",
+                        margin: "xl",
+                        color: "#10b981"
+                    },
+                    {
+                        type: "box",
+                        layout: "vertical",
+                        contents: [
+                            {
+                                type: "text",
+                                text: "⭐ ประเมินความพึงพอใจ",
+                                weight: "bold",
+                                size: "lg",
+                                color: "#0f172a",
+                                margin: "lg"
+                            },
+                            {
+                                type: "text",
+                                text: "ความคิดเห็นของท่านมีค่ามากต่อการพัฒนาบริการของเรา",
+                                size: "sm",
+                                color: "#64748b",
+                                wrap: true,
+                                margin: "sm"
+                            },
+                            {
+                                type: "box",
+                                layout: "horizontal",
+                                contents: [
+                                    {
+                                        type: "text",
+                                        text: "⚡",
+                                        size: "md",
+                                        flex: 0,
+                                        color: "#f59e0b"
+                                    },
+                                    {
+                                        type: "text",
+                                        text: "ใช้เวลาเพียง 30 วินาที",
+                                        size: "xs",
+                                        color: "#64748b",
+                                        flex: 1,
+                                        margin: "sm"
+                                    }
+                                ],
+                                backgroundColor: "#fffbeb",
+                                paddingAll: "8px",
+                                cornerRadius: "8px",
+                                margin: "md"
+                            }
+                        ]
+                    }
+                ],
+                paddingAll: "20px",
+                backgroundColor: "#ffffff"
+            },
+            footer: {
+                type: "box",
+                layout: "vertical",
+                spacing: "md",
+                contents: [
+                    {
+                        type: "text",
+                        text: "กดเลือกคะแนนด้านล่าง:",
+                        size: "sm",
+                        color: "#0f172a",
+                        weight: "bold",
+                        align: "center"
+                    },
+                    {
+                        type: "box",
+                        layout: "horizontal",
+                        spacing: "xs",
+                        contents: [
+                            {
+                                type: "button",
+                                style: "primary",
+                                action: {
+                                    type: "postback",
+                                    label: "⭐",
+                                    data: `rating_${requestData.REQUEST_ID}_1`,
+                                    displayText: "ให้ 1 ดาว"
+                                },
+                                color: "#ef4444",
+                                height: "sm",
+                                flex: 1
+                            },
+                            {
+                                type: "button",
+                                style: "primary",
+                                action: {
+                                    type: "postback",
+                                    label: "⭐⭐",
+                                    data: `rating_${requestData.REQUEST_ID}_2`,
+                                    displayText: "ให้ 2 ดาว"
+                                },
+                                color: "#f97316",
+                                height: "sm",
+                                flex: 1
+                            },
+                            {
+                                type: "button",
+                                style: "primary",
+                                action: {
+                                    type: "postback",
+                                    label: "⭐⭐⭐",
+                                    data: `rating_${requestData.REQUEST_ID}_3`,
+                                    displayText: "ให้ 3 ดาว"
+                                },
+                                color: "#f59e0b",
+                                height: "sm",
+                                flex: 1
+                            }
+                        ]
+                    },
+                    {
+                        type: "box",
+                        layout: "horizontal",
+                        spacing: "xs",
+                        contents: [
+                            {
+                                type: "button",
+                                style: "primary",
+                                action: {
+                                    type: "postback",
+                                    label: "⭐⭐⭐⭐",
+                                    data: `rating_${requestData.REQUEST_ID}_4`,
+                                    displayText: "ให้ 4 ดาว"
+                                },
+                                color: "#84cc16",
+                                height: "sm",
+                                flex: 1
+                            },
+                            {
+                                type: "button",
+                                style: "primary",
+                                action: {
+                                    type: "postback",
+                                    label: "⭐⭐⭐⭐⭐",
+                                    data: `rating_${requestData.REQUEST_ID}_5`,
+                                    displayText: "ให้ 5 ดาว"
+                                },
+                                color: "#10b981",
+                                height: "sm",
+                                flex: 1
+                            }
+                        ]
+                    },
+                    {
+                        type: "button",
+                        style: "link",
+                        action: {
+                            type: "uri",
+                            label: "💬 แสดงความคิดเห็นเพิ่มเติม",
+                            uri: `${config.BASE_URL}/rating-form.html?requestId=${encodeURIComponent(requestData.REQUEST_ID)}&userId=${encodeURIComponent(requestData.LINE_USER_ID)}`
+                        },
+                        color: "#3b82f6",
+                        margin: "md"
+                    },
+                    {
+                        type: "button",
+                        style: "link",
+                        action: {
+                            type: "message",
+                            label: "⏭️ ข้าม",
+                            text: "ข้ามการให้คะแนน"
+                        },
+                        color: "#9ca3af"
+                    }
+                ],
+                paddingAll: "20px",
+                backgroundColor: "#f0fdf4"
             }
         }
     };
@@ -1772,12 +2163,40 @@ async function handleRepairFormSubmission(formData) {
 
 async function sendStatusUpdateToUser(requestDetails, newStatus, technicianNotes) {
     try {
-        if (requestDetails.LINE_USER_ID && newStatus) {
-            const statusUpdateMessage = createStatusUpdateFlexMessage(requestDetails, newStatus, technicianNotes);
-            await lineService.pushMessage(requestDetails.LINE_USER_ID, [statusUpdateMessage]);
-            
-            // Send Telegram notification
+        // ✅ นโยบายใหม่: แจ้งเตือนเฉพาะสถานะสำคัญเพื่อประหยัดโควต้า LINE Push Message
+        const NOTIFY_STATUSES = ['เสร็จสิ้น', 'ไม่อนุมัติโดยผู้บริหาร', 'ยกเลิก'];
+        
+        if (!NOTIFY_STATUSES.includes(newStatus)) {
+            console.log(`⏭️ ข้าม Push Notification สำหรับสถานะ: ${newStatus} (ให้ user ติดตามเอง)`);
+            // ส่ง Telegram notification ฝั่งเจ้าหน้าที่อยู่ดี
             await notificationService.sendStatusUpdateNotification(requestDetails, newStatus, technicianNotes);
+            return;
+        }
+        
+        if (requestDetails.LINE_USER_ID && newStatus) {
+            // กรณีงานเสร็จ: ส่ง Completion Message พร้อมขอ Rating
+            if (newStatus === 'เสร็จสิ้น') {
+                const completionMessage = createCompletionWithRatingFlexMessage(requestDetails);
+                await lineService.pushMessage(requestDetails.LINE_USER_ID, [completionMessage]);
+                
+                // ส่งหมายเหตุแยกถ้ามี
+                if (technicianNotes) {
+                    const noteMessage = {
+                        type: 'text',
+                        text: `📝 หมายเหตุจากเจ้าหน้าที่:\n${technicianNotes}`
+                    };
+                    await lineService.pushMessage(requestDetails.LINE_USER_ID, [noteMessage]);
+                }
+            } else {
+                // กรณีไม่อนุมัติ หรือ ยกเลิก: ส่ง Status Update แบบปกติ
+                const statusUpdateMessage = createStatusUpdateFlexMessage(requestDetails, newStatus, technicianNotes);
+                await lineService.pushMessage(requestDetails.LINE_USER_ID, [statusUpdateMessage]);
+            }
+            
+            // Send Telegram notification ฝั่งเจ้าหน้าที่
+            await notificationService.sendStatusUpdateNotification(requestDetails, newStatus, technicianNotes);
+            
+            console.log(`✅ Push Notification ส่งสำเร็จ: ${newStatus} → User ${requestDetails.LINE_USER_ID}`);
         }
     } catch (error) {
         console.error(`⚠️ Failed to send status update to user ${requestDetails.LINE_USER_ID}:`, error.message);
@@ -1803,6 +2222,45 @@ async function handleMessageEvent(userId, message, replyToken) {
 
 async function handlePostbackEvent(userId, postback, replyToken) {
     const postbackData = postback.data;
+    
+    // ตรวจสอบว่าเป็น Rating Postback หรือไม่
+    if (postbackData.startsWith('rating_')) {
+        // Format: rating_{REQUEST_ID}_{STARS}
+        const parts = postbackData.split('_');
+        if (parts.length === 3) {
+            const requestId = parts[1];
+            const stars = parseInt(parts[2]);
+            
+            if (stars >= 1 && stars <= 5) {
+                // บันทึกคะแนนลง Google Sheets
+                try {
+                    const success = await googleSheetsService.saveRating({
+                        requestId,
+                        lineUserId: userId,
+                        ratingDate: new Date().toLocaleString('th-TH', { timeZone: config.TIMEZONE }),
+                        overallRating: stars,
+                        speedRating: 0,
+                        qualityRating: 0,
+                        comment: ''
+                    });
+                    
+                    if (success) {
+                        // ส่ง Thank You Message
+                        await lineService.replyToUser(replyToken, `🙏 ขอบคุณสำหรับคะแนน ${stars} ดาว!\n\nความคิดเห็นของท่านช่วยเราพัฒนาบริการให้ดีขึ้น ✨`);
+                        console.log(`✅ Rating saved: ${requestId} - ${stars}⭐ from ${userId}`);
+                    } else {
+                        await lineService.replyToUser(replyToken, '❌ เกิดข้อผิดพลาดในการบันทึกคะแนน กรุณาลองใหม่อีกครั้ง');
+                    }
+                } catch (error) {
+                    console.error('❌ Error saving rating:', error.message);
+                    await lineService.replyToUser(replyToken, '❌ เกิดข้อผิดพลาดในการบันทึกคะแนน');
+                }
+                return;
+            }
+        }
+    }
+    
+    // กรณีอื่นๆ ส่งไปยัง processUserText
     await processUserText(userId, postbackData, replyToken);
 }
 
@@ -1811,9 +2269,11 @@ async function processUserText(userId, text, replyToken) {
     const currentState = getUserState(userId);
     let currentData = getUserData(userId);
 
-    if (lowerText === 'ยกเลิก' || lowerText === 'cancel') {
+    // Quick Actions: ยกเลิก หรือ เริ่มใหม่
+    if (lowerText === 'ยกเลิก' || lowerText === 'cancel' || lowerText === 'เริ่มใหม่' || lowerText === 'reset') {
         clearUserStateAndData(userId);
-        await lineService.replyToUser(replyToken, '🔄 การดำเนินการปัจจุบันถูกยกเลิกแล้วครับ\nหากต้องการเริ่มใหม่ กรุณาเลือกจากเมนูหลัก');
+        const actionText = (lowerText === 'เริ่มใหม่' || lowerText === 'reset') ? 'รีเซ็ตระบบ' : 'ยกเลิกการดำเนินการ';
+        await lineService.replyToUser(replyToken, `🔄 ${actionText}สำเร็จแล้วครับ\nกรุณาเลือกบริการที่ต้องการใช้งาน`);
         const welcomeMessage = createWelcomeFlexMessage();
         await lineService.pushMessage(userId, [welcomeMessage]);
         return;
@@ -1913,7 +2373,9 @@ async function processUserText(userId, text, replyToken) {
                 await lineService.replyToUser(replyToken, [personalFormMessage]);
                 setUserState(userId, config.STATES.AWAITING_FORM_COMPLETION);
             } else {
-                await lineService.replyToUser(replyToken, '❓ กรุณาเลือกจากตัวเลือกที่ให้ไว้\n"ยืนยันข้อมูล", "แก้ไขข้อมูล" หรือ "ยกเลิก"');
+                // Show Flex Message with buttons instead of text
+                const invalidActionMessage = createInvalidActionFlexMessage();
+                await lineService.replyToUser(replyToken, [invalidActionMessage]);
             }
             break;
 
@@ -1971,12 +2433,66 @@ async function initializeFlexSettings() {
 // Initialize on module load
 initializeFlexSettings();
 
+// --- Rating Submission Handler ---
+async function handleRatingSubmission(ratingData) {
+    try {
+        const { 
+            requestId, 
+            lineUserId, 
+            overallRating, 
+            speedRating, 
+            qualityRating, 
+            comment 
+        } = ratingData;
+        
+        // Validate
+        if (!requestId || !lineUserId || !overallRating) {
+            throw new Error('ข้อมูลไม่ครบถ้วน');
+        }
+        
+        // Validate rating range
+        const overall = parseInt(overallRating);
+        if (isNaN(overall) || overall < 1 || overall > 5) {
+            throw new Error('คะแนนต้องอยู่ระหว่าง 1-5');
+        }
+        
+        // บันทึกลง Google Sheets
+        const success = await googleSheetsService.saveRating({
+            requestId,
+            lineUserId,
+            ratingDate: new Date().toLocaleString('th-TH', { timeZone: config.TIMEZONE }),
+            overallRating: overall,
+            speedRating: speedRating ? parseInt(speedRating) : 0,
+            qualityRating: qualityRating ? parseInt(qualityRating) : 0,
+            comment: comment || ''
+        });
+        
+        if (success) {
+            // ส่ง Thank You Message
+            const thankYouMessage = {
+                type: "text",
+                text: "🙏 ขอบคุณสำหรับความคิดเห็นครับ!\n\nเราจะนำข้อมูลไปพัฒนาบริการให้ดีขึ้น 💪✨"
+            };
+            await lineService.pushMessage(lineUserId, [thankYouMessage]);
+            
+            console.log(`✅ Rating submitted: ${requestId} - ${overall}⭐`);
+            return { success: true, message: 'บันทึกคะแนนสำเร็จ' };
+        } else {
+            throw new Error('เกิดข้อผิดพลาดในการบันทึกคะแนน');
+        }
+    } catch (error) {
+        console.error('❌ Error in handleRatingSubmission:', error.message);
+        throw error;
+    }
+}
+
 // Export all functions
 module.exports = {
     // Main handlers
     handleWebhook,
     handlePersonalInfoSubmission,
     handleRepairFormSubmission,
+    handleRatingSubmission,
     sendStatusUpdateToUser,
     
     // Settings management
@@ -1988,9 +2504,11 @@ module.exports = {
     createRepairFormFlexMessage,
     createPersonalInfoConfirmationFlexMessage,
     createRepairConfirmationFlexMessage,
+    createCompletionWithRatingFlexMessage,
     createStatusUpdateFlexMessage,
     createTrackingMethodFlexMessage,
     createTrackingResultFlexMessage,
+    createInvalidActionFlexMessage,
     
     // State management (for external use if needed)
     setUserState,
